@@ -4,6 +4,7 @@ import { useSupabaseSession } from '../../hooks/useSupabaseSession.js';
 import { AuthPanel } from '../auth/AuthPanel.jsx';
 import { PayPalSubscriptionButton } from '../payments/PayPalSubscriptionButton.jsx';
 import { ScamLikelyApp } from './ScamLikelyApp.jsx';
+import { RiskyChristieApp } from '../risky_christie/RiskyChristieApp.jsx';
 
 const ACTIVE_STATUSES = new Set(['active', 'past_due']);
 
@@ -104,5 +105,10 @@ export function ScamLikelyGate() {
     );
   }
 
-  return <ScamLikelyApp session={session} />;
+  return (
+    <div className="space-y-16">
+      <ScamLikelyApp session={session} />
+      <RiskyChristieApp session={session} />
+    </div>
+  );
 }

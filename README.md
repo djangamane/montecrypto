@@ -36,6 +36,7 @@ Configure these values for the production deployment. Client-side variables shou
 | `PAYPAL_PLAN_ID` | Same plan ID used by the client button |
 | `PAYPAL_WEBHOOK_ID` | ID returned when you register the webhook in the PayPal dashboard |
 | `ETHERSCAN_API_KEY` | API key used by the scam analysis endpoint |
+| `GEMINI_API_KEY` | Server-side key for Gemini AI proxy |
 
 ## Supabase Schema
 
