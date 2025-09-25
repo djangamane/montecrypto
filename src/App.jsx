@@ -53,17 +53,9 @@ function App() {
 
         <section id="scam-likely" className="px-6 pb-24">
           <div className="mx-auto max-w-6xl space-y-10">
-            <div className="text-center">
-              <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">
-                Product Preview
-              </p>
-              <h2 className="mt-3 text-4xl font-bold text-white">
-                Scam Likely Detector (Alpha)
-              </h2>
-              <p className="mt-4 text-base text-slate-300">
-                Prototype of the self-hosted investigation console that combines
-                on-chain analytics, open-source intelligence, social sentiment, and
-                institutional interest into one clear scam meter.
+            <div className="flex h-64 w-full items-center justify-center rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm">
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-300/80">
+                Screenshot Placeholder • 0x2170ed0880ac9a755fd29b2688956bd959f933f8
               </p>
             </div>
             <ScamLikelyGate />
