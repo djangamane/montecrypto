@@ -8,6 +8,7 @@ import { PremiumCourse } from './components/PremiumCourse.jsx';
 import { Benefits } from './components/Benefits.jsx';
 import { Footer } from './components/Footer.jsx';
 import { BookingModal } from './components/BookingModal.jsx';
+import { ScamLikelyApp } from './components/scam_likely/ScamLikelyApp.jsx';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,6 +50,25 @@ function App() {
         <AdPlaceholder label="Ad Placeholder (e.g., In-article Ad)" />
 
         <Benefits />
+
+        <section id="scam-likely" className="px-6 pb-24">
+          <div className="mx-auto max-w-6xl space-y-10">
+            <div className="text-center">
+              <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">
+                Product Preview
+              </p>
+              <h2 className="mt-3 text-4xl font-bold text-white">
+                Scam Likely Detector (Alpha)
+              </h2>
+              <p className="mt-4 text-base text-slate-300">
+                Prototype of the self-hosted investigation console that combines
+                on-chain analytics, open-source intelligence, social sentiment, and
+                institutional interest into one clear scam meter.
+              </p>
+            </div>
+            <ScamLikelyApp />
+          </div>
+        </section>
       </main>
 
       <Footer />
