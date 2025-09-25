@@ -8,7 +8,7 @@ import { PremiumCourse } from './components/PremiumCourse.jsx';
 import { Benefits } from './components/Benefits.jsx';
 import { Footer } from './components/Footer.jsx';
 import { BookingModal } from './components/BookingModal.jsx';
-import { ScamLikelyApp } from './components/scam_likely/ScamLikelyApp.jsx';
+import { ScamLikelyGate } from './components/scam_likely/ScamLikelyGate.jsx';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,7 +66,7 @@ function App() {
                 institutional interest into one clear scam meter.
               </p>
             </div>
-            <ScamLikelyApp />
+            <ScamLikelyGate />
           </div>
         </section>
       </main>
