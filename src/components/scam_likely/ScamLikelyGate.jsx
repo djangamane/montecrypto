@@ -104,5 +104,5 @@ export function ScamLikelyGate() {
     );
   }
 
-  return <ScamLikelyApp />;
+  return <ScamLikelyApp session={session} />;
 }

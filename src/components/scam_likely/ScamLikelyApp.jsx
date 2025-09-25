@@ -1,66 +1,5 @@
 import { useMemo, useState } from 'react';
 
-const sampleAnalysis = {
-  query: '0x1234...DEADBEEF',
-  updatedAt: '15 minutes ago',
-  overallScore: 72,
-  verdict: 'High Risk',
-  confidence: 'Medium-High',
-  narrative:
-    'Institutional wallets began trimming positions this week while social sentiment spiked on promotion-heavy channels. Liquidity controls remain weak and ownership is concentrated.',
-  nextSteps: [
-    'Confirm liquidity lock or renounce status before any allocation.',
-    'Track tagged market-maker wallets for 48 hours to confirm sustained support.',
-    'Escalate to manual code review if the project claims recent contract upgrades.',
-  ],
-  pillars: [
-    {
-      name: 'On-Chain Integrity',
-      score: 68,
-      severity: 'High Risk',
-      summary: 'Owner can mint and pause transfers; liquidity pool remains fully unlockable.',
-      highlights: [
-        'Owner retains mint and blacklist privileges.',
-        'No evidence of liquidity lock on dominant DEX pair.',
-        'Top 5 wallets control 78% of supply; last move occurred 6h ago.',
-      ],
-    },
-    {
-      name: 'Off-Chain Intelligence',
-      score: 55,
-      severity: 'Moderate Risk',
-      summary: 'Project domain registered 12 days ago; no audits or KYC filings located.',
-      highlights: [
-        'domain.tld points to privacy-protected registrar in Seychelles.',
-        'No verified audit reports or GitHub repository activity.',
-        'Contract address not present on major allowlists.',
-      ],
-    },
-    {
-      name: 'Social & Community Signals',
-      score: 63,
-      severity: 'High Risk',
-      summary: 'Follower growth dominated by newly created accounts; coordinated shilling detected.',
-      highlights: [
-        '72% of Telegram joins in past 48h have <3 prior messages.',
-        'Twitter sentiment ratio flipped positive despite limited unique authors.',
-        'Multiple duplicate Medium articles posted simultaneously.',
-      ],
-    },
-    {
-      name: 'Institutional Interest',
-      score: 79,
-      severity: 'Critical Risk',
-      summary: 'Labeled funds exiting positions while derivatives open interest collapses.',
-      highlights: [
-        'Two venture wallets dumped 90% of holdings within 24h.',
-        'No exchange treasury custody detected for token pairs.',
-        'CME-style perp proxies show -38% funding rate divergence.',
-      ],
-    },
-  ],
-};
-
 const severityToBadge = {
   'Critical Risk': 'bg-red-500/20 text-red-300 border border-red-500/40',
   'High Risk': 'bg-orange-500/20 text-orange-200 border border-orange-500/40',
@@ -82,36 +21,90 @@ const overallToDescriptor = (score) => {
   return { label: 'Guarded', color: 'text-emerald-300' };
 };
 
-export function ScamLikelyApp() {
+const fallbackAnalysis = enrichAnalysis(
+  {
+    token: {
+      address: '0x1234…DEADBEEF',
+      name: 'Sample Token',
+      symbol: 'SLIKELY',
+      decimals: 18,
+      owner: '0xF00…BA5E',
+      totalSupply: 1000000000,
+      circulatingSupply: 850000000,
+    },
+    metrics: { supply: 1_000_000_000 },
+    risk: {
+      score: 72,
+      verdict: 'High Risk',
+      flags: [
+        {
+          severity: 'high',
+          title: 'Owner retains mint privileges',
+          detail: 'Ownership not renounced; contract can still mint or blacklist wallets.',
+        },
+        {
+          severity: 'moderate',
+          title: 'Liquidity not locked',
+          detail: 'Dominant LP pair shows removable liquidity; verify lock status.',
+        },
+      ],
+    },
+    fetchedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+  },
+  { query: '0x1234…DEADBEEF' }
+);
+
+export function ScamLikelyApp({ session }) {
   const [query, setQuery] = useState('');
-  const [analysis, setAnalysis] = useState(null);
+  const [analysis, setAnalysis] = useState(fallbackAnalysis);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const overallDescriptor = useMemo(() => {
-    const record = analysis ?? sampleAnalysis;
-    return overallToDescriptor(record.overallScore);
+    const score = analysis?.risk?.score ?? 0;
+    return overallToDescriptor(score);
   }, [analysis]);
 
-  const handleRunAnalysis = () => {
-    if (!query.trim()) {
-      setAnalysis(sampleAnalysis);
+  const handleRunAnalysis = async () => {
+    if (!session) {
+      setError('Sign in to run the scan.');
+      return;
+    }
+
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setError('Enter a token contract address.');
       return;
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setAnalysis({
-        ...sampleAnalysis,
-        query,
-        narrative:
-          'Mock analysis placeholder — replace with pipeline response once data services are wired.',
-        updatedAt: 'Just now',
+    setError(null);
+
+    try {
+      const response = await fetch('/api/scam-likely/run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ query: trimmed }),
       });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || 'Scan failed. Try again.');
+      }
+
+      const payload = await response.json();
+      setAnalysis(enrichAnalysis(payload, { query: trimmed }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-    }, 900);
+    }
   };
 
-  const record = analysis ?? sampleAnalysis;
+  const record = analysis;
 
   return (
     <section className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-8 text-slate-100 shadow-2xl backdrop-blur-xl">
@@ -123,9 +116,8 @@ export function ScamLikelyApp() {
               Multi-Signal Risk Scanner
             </h2>
             <p className="text-base text-slate-300">
-              Input a token name or contract address to generate a four-pillar scam
-              assessment. The institutional interest module surfaces smart-money
-              participation so you can validate momentum beyond retail hype.
+              Input a token contract address to generate an early risk snapshot. We combine
+              contract metadata with heuristics and feed that into the four-pillar scoring model.
             </p>
           </header>
 
@@ -137,8 +129,9 @@ export function ScamLikelyApp() {
               id="scam-likely-query"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="e.g. PEPE, 0xabc..."
+              placeholder="0xabc…"
               className="w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+              disabled={isLoading}
             />
             <button
               type="button"
@@ -150,6 +143,10 @@ export function ScamLikelyApp() {
             </button>
           </div>
 
+          {error ? (
+            <p className="text-sm text-orange-300">{error}</p>
+          ) : null}
+
           <div className="rounded-2xl border border-white/5 bg-slate-950/50 p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -158,7 +155,7 @@ export function ScamLikelyApp() {
                 </p>
                 <div className="flex items-baseline gap-x-3">
                   <span className="text-5xl font-semibold text-white">
-                    {record.overallScore}
+                    {record.risk.score}
                   </span>
                   <span className={`text-lg font-medium ${overallDescriptor.color}`}>
                     {overallDescriptor.label}
@@ -167,15 +164,15 @@ export function ScamLikelyApp() {
               </div>
               <div className="text-right text-sm text-slate-400">
                 <p>{record.query ?? 'Sample token'}</p>
-                <p>Updated {record.updatedAt}</p>
-                <p className="text-slate-500">Confidence {record.confidence}</p>
+                <p>Updated {formatRelativeTime(record.fetchedAt)}</p>
+                <p className="text-slate-500">Verdict {record.risk.verdict}</p>
               </div>
             </div>
 
             <div className="mt-5 h-3 w-full rounded-full bg-slate-800">
               <div
-                className={`h-full rounded-full ${scoreToBar(record.overallScore)} transition-all duration-700`}
-                style={{ width: `${Math.min(record.overallScore, 100)}%` }}
+                className={`h-full rounded-full ${scoreToBar(record.risk.score)} transition-all duration-700`}
+                style={{ width: `${Math.min(record.risk.score, 100)}%` }}
               />
             </div>
 
@@ -267,3 +264,95 @@ export function ScamLikelyApp() {
 }
 
 export default ScamLikelyApp;
+
+function enrichAnalysis(raw, { query }) {
+  const score = raw?.risk?.score ?? 0;
+  const verdict = raw?.risk?.verdict ?? (score >= 70 ? 'High Risk' : score >= 50 ? 'Elevated Risk' : 'Guarded');
+  const flags = raw?.risk?.flags ?? [];
+
+  const narrative =
+    raw?.narrative ??
+    (flags.length
+      ? `Initial heuristics surfaced ${flags.length} risk indicator${flags.length > 1 ? 's' : ''}. Examine the highlights below and escalate to manual review if you plan to deploy capital.`
+      : 'No critical heuristics fired, but this is a preliminary check. Continue with manual review and community vetting.');
+
+  const nextSteps = raw?.nextSteps ?? [
+    'Validate liquidity lock and ownership renounce status on-chain.',
+    'Inspect top holder activity over the past 72 hours.',
+    'Cross-reference the contract with reputable allowlists and audit repositories.',
+  ];
+
+  const pillarScore = (base) => Math.max(10, Math.min(95, base));
+  const derivedPillars = raw?.pillars ?? [
+    {
+      name: 'On-Chain Integrity',
+      score: pillarScore(score + (flags.some((flag) => flag.title.includes('Owner')) ? 10 : 0)),
+      severity: score >= 70 ? 'High Risk' : score >= 50 ? 'Moderate Risk' : 'Low Risk',
+      summary: raw?.token?.owner
+        ? 'Ownership remains active; confirm multisig or renounce transaction.'
+        : 'Ownership status unclear; investigate deployer wallet.',
+      highlights: [
+        raw?.token?.owner
+          ? `Reported owner: ${shortAddress(raw.token.owner)}`
+          : 'No owner surfaced from metadata.',
+        raw?.metrics?.supply ? `Reported total supply: ${formatNumber(raw.metrics.supply)}` : 'Total supply unavailable from API.',
+      ],
+    },
+    {
+      name: 'Off-Chain Intelligence',
+      score: pillarScore(score - 10),
+      severity: score >= 80 ? 'Critical Risk' : score >= 55 ? 'High Risk' : 'Moderate Risk',
+      summary: 'Add audited sources (RugDoc, CertiK, security repositories) to strengthen trust.',
+      highlights: ['No external audit linked in metadata.', 'Check for mentions on Cryptoscamdb and WalletLabels.'],
+    },
+    {
+      name: 'Social & Community Signals',
+      score: pillarScore(score - 5),
+      severity: score >= 70 ? 'High Risk' : 'Moderate Risk',
+      summary: 'Sentiment coverage deferred until social connectors are wired.',
+      highlights: ['Integrate Twitter/Telegram metrics to validate organic traction.', 'Watch for duplicate shilling campaigns.'],
+    },
+    {
+      name: 'Institutional Interest',
+      score: pillarScore(score + 5),
+      severity: score >= 70 ? 'Critical Risk' : 'High Risk',
+      summary: 'Institutional telemetry not yet collected; treat as unknown.',
+      highlights: ['Whale wallet and exchange custody integrations coming soon.', 'Monitor derivatives open interest for divergence.'],
+    },
+  ];
+
+  return {
+    ...raw,
+    query,
+    narrative,
+    nextSteps,
+    pillars: derivedPillars,
+    risk: { score, verdict, flags },
+  };
+}
+
+function formatRelativeTime(iso) {
+  if (!iso) return 'recently';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return 'recently';
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hr${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+function shortAddress(addr) {
+  if (!addr) return 'unknown';
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+}
+
+function formatNumber(value) {
+  if (value == null) return 'n/a';
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(2)}K`;
+  return value.toString();
+}

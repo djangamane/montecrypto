@@ -35,6 +35,7 @@ Configure these values for the production deployment. Client-side variables shou
 | `PAYPAL_CLIENT_SECRET` | PayPal REST client secret |
 | `PAYPAL_PLAN_ID` | Same plan ID used by the client button |
 | `PAYPAL_WEBHOOK_ID` | ID returned when you register the webhook in the PayPal dashboard |
+| `ETHERSCAN_API_KEY` | API key used by the scam analysis endpoint |
 
 ## Supabase Schema
 
@@ -69,4 +70,3 @@ Row level security is enabled so users only see their own data. The service role
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` stored in Vercel only.
 - [ ] Run `npm run build` locally to confirm the bundle succeeds.
 - [ ] Deploy to Vercel and test the full subscription lifecycle end-to-end.
-
