@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { Header } from '../Header';
-import { Hero } from '../Hero';
-import { AdPlaceholder } from '../AdPlaceholder';
-import { VideoSection } from '../VideoSection';
-import { PremiumCourse } from '../PremiumCourse';
-import { Benefits } from '../Benefits';
-import { Footer } from '../Footer';
-import { BookingModal } from '../BookingModal';
+import { Header } from './components/Header';
+import { Hero } from './components/Hero';
+import { AdPlaceholder } from './components/AdPlaceholder';
+import { VideoSection } from './components/VideoSection';
+import { PremiumCourse } from './components/PremiumCourse';
+import { Benefits } from './components/Benefits';
+import { Footer } from './components/Footer';
+import { BookingModal } from './components/BookingModal';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
