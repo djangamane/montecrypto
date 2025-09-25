@@ -21,48 +21,15 @@ const overallToDescriptor = (score) => {
   return { label: 'Guarded', color: 'text-emerald-300' };
 };
 
-const fallbackAnalysis = enrichAnalysis(
-  {
-    token: {
-      address: '0x1234…DEADBEEF',
-      name: 'Sample Token',
-      symbol: 'SLIKELY',
-      decimals: 18,
-      owner: '0xF00…BA5E',
-      totalSupply: 1000000000,
-      circulatingSupply: 850000000,
-    },
-    metrics: { supply: 1_000_000_000 },
-    risk: {
-      score: 72,
-      verdict: 'High Risk',
-      flags: [
-        {
-          severity: 'high',
-          title: 'Owner retains mint privileges',
-          detail: 'Ownership not renounced; contract can still mint or blacklist wallets.',
-        },
-        {
-          severity: 'moderate',
-          title: 'Liquidity not locked',
-          detail: 'Dominant LP pair shows removable liquidity; verify lock status.',
-        },
-      ],
-    },
-    fetchedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-  },
-  { query: '0x1234…DEADBEEF' }
-);
-
 export function ScamLikelyApp({ session }) {
   const [query, setQuery] = useState('');
-  const [analysis, setAnalysis] = useState(fallbackAnalysis);
+  const [analysis, setAnalysis] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const overallDescriptor = useMemo(() => {
-    const score = analysis?.risk?.score ?? 0;
-    return overallToDescriptor(score);
+    if (!analysis) return null;
+    return overallToDescriptor(analysis.risk.score);
   }, [analysis]);
 
   const handleRunAnalysis = async () => {
@@ -104,49 +71,14 @@ export function ScamLikelyApp({ session }) {
     }
   };
 
-  const record = analysis;
+  const renderResults = () => {
+    const record = analysis;
+    if (!record) return null;
+    const descriptor = overallDescriptor ?? { label: '', color: 'text-slate-300' };
 
-  return (
-    <section className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-8 text-slate-100 shadow-2xl backdrop-blur-xl">
+    return (
       <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
         <div className="space-y-8">
-          <header className="space-y-4">
-            <p className="text-sm uppercase tracking-widest text-sky-300/80">Scam Likely Lab</p>
-            <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-              Multi-Signal Risk Scanner
-            </h2>
-            <p className="text-base text-slate-300">
-              Input a token contract address to generate an early risk snapshot. We combine
-              contract metadata with heuristics and feed that into the four-pillar scoring model.
-            </p>
-          </header>
-
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-            <label className="sr-only" htmlFor="scam-likely-query">
-              Token query
-            </label>
-            <input
-              id="scam-likely-query"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="0xabc…"
-              className="w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={handleRunAnalysis}
-              className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 font-semibold text-white transition hover:bg-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60 disabled:cursor-not-allowed disabled:bg-slate-600"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Scanning…' : 'Run Analysis'}
-            </button>
-          </div>
-
-          {error ? (
-            <p className="text-sm text-orange-300">{error}</p>
-          ) : null}
-
           <div className="rounded-2xl border border-white/5 bg-slate-950/50 p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -157,13 +89,13 @@ export function ScamLikelyApp({ session }) {
                   <span className="text-5xl font-semibold text-white">
                     {record.risk.score}
                   </span>
-                  <span className={`text-lg font-medium ${overallDescriptor.color}`}>
-                    {overallDescriptor.label}
+                  <span className={`text-lg font-medium ${descriptor.color}`}>
+                    {descriptor.label}
                   </span>
                 </div>
               </div>
               <div className="text-right text-sm text-slate-400">
-                <p>{record.query ?? 'Sample token'}</p>
+                <p>{record.query}</p>
                 <p>Updated {formatRelativeTime(record.fetchedAt)}</p>
                 <p className="text-slate-500">Verdict {record.risk.verdict}</p>
               </div>
@@ -176,34 +108,34 @@ export function ScamLikelyApp({ session }) {
               />
             </div>
 
-            <p className="mt-6 text-sm leading-relaxed text-slate-300">
-              {record.narrative}
-            </p>
+            {record.narrative ? (
+              <p className="mt-6 text-sm leading-relaxed text-slate-300">{record.narrative}</p>
+            ) : null}
           </div>
 
-          <div className="space-y-5">
-            <h3 className="text-lg font-semibold text-white">Recommended Checks</h3>
-            <ul className="grid gap-3 text-sm text-slate-300">
-              {record.nextSteps.map((step) => (
-                <li
-                  key={step}
-                  className="flex items-start gap-3 rounded-xl border border-white/5 bg-slate-950/50 p-4"
-                >
-                  <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/10 text-sky-300">
-                    •
-                  </span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {record.nextSteps?.length ? (
+            <div className="space-y-5">
+              <h3 className="text-lg font-semibold text-white">Recommended Checks</h3>
+              <ul className="grid gap-3 text-sm text-slate-300">
+                {record.nextSteps.map((step) => (
+                  <li
+                    key={step}
+                    className="flex items-start gap-3 rounded-xl border border-white/5 bg-slate-950/50 p-4"
+                  >
+                    <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/10 text-sky-300">
+                      •
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
 
         <aside className="space-y-6">
           <div className="rounded-2xl border border-white/5 bg-slate-950/50 p-6">
-            <h3 className="text-lg font-semibold text-white">
-              Pillar Breakdown
-            </h3>
+            <h3 className="text-lg font-semibold text-white">Pillar Breakdown</h3>
             <p className="mt-2 text-sm text-slate-400">
               Scores roll up into the scam meter. Lower numbers are safer; anything over 60
               deserves deeper manual review.
@@ -241,20 +173,62 @@ export function ScamLikelyApp({ session }) {
                   </div>
                 </div>
 
-                <ul className="mt-5 grid gap-2 text-sm text-slate-300">
-                  {pillar.highlights.map((highlight) => (
-                    <li
-                      key={highlight}
-                      className="rounded-lg border border-white/5 bg-slate-900/60 px-3 py-2"
-                    >
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
+                {pillar.highlights?.length ? (
+                  <ul className="mt-5 grid gap-2 text-sm text-slate-300">
+                    {pillar.highlights.map((highlight) => (
+                      <li
+                        key={highlight}
+                        className="rounded-lg border border-white/5 bg-slate-900/60 px-3 py-2"
+                      >
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </article>
             ))}
           </div>
         </aside>
+      </div>
+    );
+  };
+
+  const results = renderResults();
+
+  return (
+    <section className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-8 text-slate-100 shadow-2xl backdrop-blur-xl">
+      <div className="space-y-8">
+        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <label className="sr-only" htmlFor="scam-likely-query">
+            Token query
+          </label>
+          <input
+            id="scam-likely-query"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="0xabc…"
+            className="w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            onClick={handleRunAnalysis}
+            className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 font-semibold text-white transition hover:bg-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60 disabled:cursor-not-allowed disabled:bg-slate-600"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Scanning…' : 'Run Analysis'}
+          </button>
+        </div>
+
+        {error ? (
+          <p className="text-sm text-orange-300">{error}</p>
+        ) : null}
+
+        {results ?? (!isLoading && !error ? (
+          <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
+            Enter a contract address above to generate a fresh on-chain risk snapshot.
+          </div>
+        ) : null)}
       </div>
 
       <div className="pointer-events-none absolute -top-48 right-10 h-80 w-80 rounded-full bg-sky-500/30 blur-3xl" />
