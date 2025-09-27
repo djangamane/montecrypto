@@ -1,6 +1,6 @@
 # MonteCrypto Platform
 
-The MonteCrypto site is a Vite + React frontend deployed on Vercel. It now includes the Scam Likely detector prototype, Supabase authentication, and PayPal subscription gating.
+The MonteCrypto site is a Vite + React frontend deployed on Vercel. It now includes the Scam Likely detector prototype, weekly Scam Watch newsletter delivery, Supabase authentication, and PayPal subscription gating.
 
 ## Local Development
 
@@ -15,7 +15,10 @@ Set the following environment variables in a `.env.local` file (Vite reads varia
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_PAYPAL_CLIENT_ID=your_paypal_sandbox_or_live_client_id
-VITE_PAYPAL_PLAN_ID=your_paypal_plan_id
+VITE_PAYPAL_MONTHLY_PLAN_ID=your_paypal_10usd_monthly_plan_id
+VITE_PAYPAL_ANNUAL_PLAN_ID=your_paypal_100usd_annual_plan_id
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=Scam Watch <alerts@yourdomain.com>
 ```
 
 ## Vercel Environment Variables
@@ -27,16 +30,20 @@ Configure these values for the production deployment. Client-side variables shou
 | `VITE_SUPABASE_URL` | Supabase project URL for browser clients |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key for browser auth |
 | `VITE_PAYPAL_CLIENT_ID` | PayPal REST client ID exposed to the browser |
-| `VITE_PAYPAL_PLAN_ID` | PayPal subscription plan ID used in the button |
+| `VITE_PAYPAL_MONTHLY_PLAN_ID` | PayPal monthly subscription plan ID |
+| `VITE_PAYPAL_ANNUAL_PLAN_ID` | PayPal annual subscription plan ID |
 | `SUPABASE_URL` | Supabase URL used by serverless functions |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key for entitlement updates (never expose client-side) |
 | `PAYPAL_API_BASE` | `https://api-m.paypal.com` for live, `https://api-m.sandbox.paypal.com` for sandbox |
 | `PAYPAL_CLIENT_ID` | PayPal REST client ID for server-side API calls |
 | `PAYPAL_CLIENT_SECRET` | PayPal REST client secret |
-| `PAYPAL_PLAN_ID` | Same plan ID used by the client button |
+| `PAYPAL_MONTHLY_PLAN_ID` | Same monthly plan ID used by the client button |
+| `PAYPAL_ANNUAL_PLAN_ID` | Same annual plan ID used by the client button |
 | `PAYPAL_WEBHOOK_ID` | ID returned when you register the webhook in the PayPal dashboard |
 | `ETHERSCAN_API_KEY` | API key used by the scam analysis endpoint |
 | `GEMINI_API_KEY` | Server-side key for Gemini AI proxy |
+| `RESEND_API_KEY` | Server-side key for the Resend email API |
+| `RESEND_FROM_EMAIL` | Verified sender address used to deliver Scam Watch briefings |
 
 ## Supabase Schema
 
@@ -52,9 +59,17 @@ Row level security is enabled so users only see their own data. The service role
 ## PayPal Integration
 
 1. Create a PayPal REST app (sandbox and live) and capture the client/secret.
-2. Create a product and $5/month plan; note the `plan_id` (e.g. `P-XXXXXXXX`).
+2. Create a product and both plans: $10/month and $100/year. Record each `plan_id` (e.g. `P-XXXXXXXX`).
 3. Register the webhook at `https://montecrypto.vercel.app/api/paypal/webhook` (or your preview URL) for subscription events and copy the `webhook_id`.
 4. Deploy to Vercel so the `/api/paypal/subscription` and `/api/paypal/webhook` functions can validate purchases and update Supabase entitlements.
+
+## Newsletter Workflow
+
+Refer to `docs/newsletter-operations.md` for end-to-end guidance on generating, publishing, and emailing Scam Watch briefings. The short version:
+
+- Admins can generate and publish issues from the Scam Likely section once their email is allowlisted.
+- `/api/newsletters/send` delivers the latest published issue through Resend and records `email_sent_at` for auditing.
+- Automations (Make/Zapier/Cron) should call the generate → publish → send endpoints with an admin Supabase token to run fully hands-free.
 
 ## Testing the Flow
 

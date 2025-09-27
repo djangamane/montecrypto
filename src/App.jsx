@@ -9,6 +9,7 @@ import { Benefits } from './components/Benefits.jsx';
 import { Footer } from './components/Footer.jsx';
 import { BookingModal } from './components/BookingModal.jsx';
 import { ScamLikelyGate } from './components/scam_likely/ScamLikelyGate.jsx';
+import { NewsletterGate } from './components/newsletter/NewsletterGate.jsx';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,6 +60,7 @@ function App() {
               </p>
             </div>
             <ScamLikelyGate />
+            <NewsletterGate />
           </div>
         </section>
       </main>

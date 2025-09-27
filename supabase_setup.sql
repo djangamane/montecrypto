@@ -189,3 +189,84 @@ begin
     updated_at = now();
 end;
 $$ language plpgsql security definer;
+
+-- Newsletters -----------------------------------------------------------------
+create table if not exists public.newsletters (
+  id uuid primary key default gen_random_uuid(),
+  headline text not null,
+  summary text,
+  insights jsonb not null,
+  sources jsonb default '[]'::jsonb,
+  status text not null default 'draft',
+  generated_by uuid references auth.users (id) on delete set null,
+  published_at timestamptz,
+  email_sent_at timestamptz,
+  metadata jsonb default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists set_newsletters_updated_at on public.newsletters;
+create trigger set_newsletters_updated_at
+  before update on public.newsletters
+  for each row execute procedure public.touch_updated_at();
+
+create index if not exists newsletters_published_idx
+  on public.newsletters (published_at desc nulls last);
+
+alter table public.newsletters enable row level security;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies where schemaname='public' and tablename='newsletters'
+      and policyname='Admin users manage newsletters'
+  ) then
+    create policy "Admin users manage newsletters"
+      on public.newsletters for all using (auth.jwt() ->> 'email' in (
+        'jason@abitofadvicellc.com'
+      )) with check (auth.jwt() ->> 'email' in (
+        'jason@abitofadvicellc.com'
+      ));
+  end if;
+
+  if not exists (
+    select 1 from pg_policies where schemaname='public' and tablename='newsletters'
+      and policyname='Subscribers read published newsletters'
+  ) then
+    create policy "Subscribers read published newsletters"
+      on public.newsletters for select using (
+        auth.uid() is not null
+        and exists (
+          select 1
+          from public.entitlements e
+          where e.user_id = auth.uid()
+            and e.product = 'scam_likely'
+            and e.status in ('active', 'past_due')
+        )
+        and coalesce(published_at, to_timestamp(0)) <= now()
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_policies where schemaname='public' and tablename='newsletters'
+      and policyname='Service role full access (newsletters)'
+  ) then
+    create policy "Service role full access (newsletters)"
+      on public.newsletters for all using (auth.role() = 'service_role') with check (auth.role() = 'service_role');
+  end if;
+end $$;
+
+create or replace function public.newsletter_recipient_emails()
+returns table(user_id uuid, email text)
+language sql
+security definer
+set search_path = public, auth
+as $$
+  select distinct u.id, u.email
+  from auth.users u
+  join public.entitlements e on e.user_id = u.id
+  where e.product = 'scam_likely'
+    and e.status in ('active', 'past_due')
+    and u.email is not null;
+$$;

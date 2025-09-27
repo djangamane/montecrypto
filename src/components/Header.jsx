@@ -13,6 +13,7 @@ export function Header({ onBookNowClick }) {
         <nav className="hidden md:flex space-x-8">
           <a href="#video" className="text-gray-300 hover:text-white transition-colors">Watch Video</a>
           <a href="#benefits" className="text-gray-300 hover:text-white transition-colors">Benefits</a>
+          <a href="#scam-likely" className="text-gray-300 hover:text-white transition-colors">Scam Watch</a>
           <a href="#course" className="text-gray-300 hover:text-white transition-colors">Course Details</a>
         </nav>
         <button onClick={onBookNowClick} className="hidden md:flex items-center space-x-2 bg-cyan-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-cyan-600 transition-colors shadow-lg shadow-cyan-500/30">
