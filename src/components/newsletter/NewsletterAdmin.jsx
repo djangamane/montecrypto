@@ -63,15 +63,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
       }
 
       const result = await response.json();
-      setDraftBriefing({
-        id: result.id || `draft-${Date.now()}`,
-        headline: result.headline,
-        summary: result.summary,
-        publishedAt: result.publishedAt,
-        insights: Array.isArray(result.insights) ? result.insights : [],
-        sources: Array.isArray(result.sources) ? result.sources : [],
-        status: result.status || 'draft',
-      });
+      setDraftBriefing(normalizeBriefing(result));
     } catch (err) {
       console.error('Failed to generate newsletter briefing', err);
       setError(err instanceof Error ? err.message : 'Unknown error generating briefing.');
@@ -116,14 +108,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
         setSuccessMessage('Briefing published and added to the archive.');
         setDraftBriefing(null);
         setLastPublished(saved);
-        onBriefingCreated?.({
-          id: saved.id,
-          headline: saved.headline,
-          summary: saved.summary,
-          publishedAt: saved.publishedAt,
-          insights: saved.insights,
-          sources: saved.sources,
-        });
+        onBriefingCreated?.(normalizeBriefing(saved));
       })
       .catch((err) => {
         console.error('Failed to publish newsletter', err);
@@ -307,7 +292,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
           </div>
         </div>
       ) : null}
-    </div>
+  </div>
   );
 }
 
@@ -317,4 +302,70 @@ async function safeJson(response) {
   } catch (error) {
     return null;
   }
+}
+
+function normalizeBriefing(raw) {
+  const fallbackHeadline = 'Weekly Scam Watch Briefing';
+  const fallbackSummary =
+    'Summary not provided by Gemini. Review and update before publishing.';
+
+  const normalizedInsights = Array.isArray(raw?.insights)
+    ? raw.insights.map((insight, index) => normalizeInsight(insight, index))
+    : [];
+
+  const normalizedSources = Array.isArray(raw?.sources)
+    ? raw.sources
+        .map((source, index) => normalizeSource(source, index))
+        .filter(Boolean)
+    : [];
+
+  return {
+    id: raw?.id || `draft-${Date.now()}`,
+    headline: textValue(raw?.headline) || fallbackHeadline,
+    summary: textValue(raw?.summary) || fallbackSummary,
+    publishedAt: raw?.publishedAt || new Date().toISOString(),
+    insights: normalizedInsights,
+    sources: normalizedSources,
+    status: raw?.status || 'draft',
+  };
+}
+
+function normalizeInsight(insight, index) {
+  const fallbackTitle = `Insight ${index + 1}`;
+  const fallbackSummary =
+    'Gemini did not include a summary for this threat. Add context before publishing.';
+  const fallbackAvoid =
+    'Gemini did not provide mitigation guidance. Insert manual recommendations.';
+
+  return {
+    title: textValue(insight?.title) || fallbackTitle,
+    summary: textValue(insight?.summary) || fallbackSummary,
+    howToAvoid: textValue(insight?.howToAvoid) || fallbackAvoid,
+    threatLevel: normalizeThreatLevel(insight?.threatLevel),
+  };
+}
+
+function normalizeSource(source, index) {
+  const uri = textValue(source?.uri);
+  if (!uri) return null;
+
+  return {
+    uri,
+    title: textValue(source?.title) || `Source ${index + 1}`,
+  };
+}
+
+function textValue(value) {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return '';
+}
+
+function normalizeThreatLevel(level) {
+  const normalized = textValue(level).toLowerCase();
+  if (normalized === 'high') return 'High';
+  if (normalized === 'medium') return 'Medium';
+  if (normalized === 'low') return 'Low';
+  return 'Medium';
 }
