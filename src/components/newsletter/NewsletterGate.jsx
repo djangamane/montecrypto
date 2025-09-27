@@ -146,12 +146,6 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
             The Weekly Risk Brief bundles with the AI Crypto Risk Assessment workspace. Sign in above and subscribe to
             unlock archived issues, Friday alerts, and the analyzer evidence trail.
           </p>
-          <a
-            href="#risk-meter"
-            className="inline-flex items-center justify-center rounded-xl border border-brand-link px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-brand-link transition hover:bg-brand-link hover:text-brand-bg"
-          >
-            Go to sign in
-          </a>
         </div>
       </section>
     );
