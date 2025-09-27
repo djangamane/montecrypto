@@ -139,15 +139,19 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
   if (!session) {
     return (
       <section className="rounded-3xl border border-white/10 bg-slate-950/60 p-10 text-slate-200 shadow-xl">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
-          <div className="space-y-3">
-            <h3 className="text-3xl font-semibold text-white">Unlock Scam Watch</h3>
-            <p className="text-sm text-slate-300">
-              Sign in or create an account to access the weekly Scam Watch newsletter alongside the
-              Scam Likely risk scanner.
-            </p>
-          </div>
-          <AuthPanel session={session} />
+        <div className="space-y-4 text-sm">
+          <h3 className="text-3xl font-semibold text-white">Unlock Scam Watch</h3>
+          <p className="text-slate-300">
+            Sign in above to access the weekly Scam Watch newsletter alongside the Scam Likely risk
+            scanner. New here? Use the “Unlock Scam Likely” panel to create your account once — the
+            same credentials unlock both experiences.
+          </p>
+          <a
+            href="#scam-likely"
+            className="inline-flex w-fit items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-400/40 hover:text-white"
+          >
+            Go to Sign In
+          </a>
         </div>
       </section>
     );

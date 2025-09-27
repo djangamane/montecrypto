@@ -10,10 +10,12 @@ import { Footer } from './components/Footer.jsx';
 import { BookingModal } from './components/BookingModal.jsx';
 import { ScamLikelyGate } from './components/scam_likely/ScamLikelyGate.jsx';
 import { NewsletterGate } from './components/newsletter/NewsletterGate.jsx';
+import { AdminAccessModal } from './components/AdminAccessModal.jsx';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const videoSectionRef = useRef(null);
 
   const openModal = () => setIsModalOpen(true);
@@ -26,6 +28,9 @@ function App() {
   const scrollToVideo = () => {
     videoSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const openAdminModal = () => setIsAdminModalOpen(true);
+  const closeAdminModal = () => setIsAdminModalOpen(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden scroll-smooth">
@@ -73,6 +78,15 @@ function App() {
         hasPaid={hasPaid}
         onSetHasPaid={setHasPaid}
       />
+      <AdminAccessModal isOpen={isAdminModalOpen} onClose={closeAdminModal} />
+
+      <button
+        type="button"
+        onClick={openAdminModal}
+        className="fixed bottom-4 right-4 z-40 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-white/70 backdrop-blur transition hover:border-cyan-400/60 hover:text-white"
+      >
+        Admin
+      </button>
       <Analytics />
     </div>
   );
