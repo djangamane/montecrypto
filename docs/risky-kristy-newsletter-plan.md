@@ -69,3 +69,6 @@
 - ✅ Resend integration available via `/api/newsletters/send`; admin panel now tracks the latest published briefing and lets you email subscribers. Supabase function `newsletter_recipient_emails` powers the recipient list.
 - ✅ Pricing, marketing copy, and PayPal subscription flow now reflect the $10/month or $100/year Scam Watch membership with in-app plan selection.
 - ✅ Added newsletter operations documentation and Resend environment guidance in `README.md` and `docs/newsletter-operations.md`.
+- ✅ Admin access consolidated via floating modal; allowlist expanded for active team members and the archive references the single sign-in flow.
+- ✅ Gemini briefings normalized so missing `title`, `summary`, or `howToAvoid` fields no longer block publishing.
+- 🚧 Next: Run the production end-to-end validation (Step 7) and capture results.
