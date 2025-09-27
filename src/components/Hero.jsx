@@ -35,9 +35,12 @@ export function Hero({ onRunRiskCheck, onStartCourse }) {
           </p>
         </div>
         <div className="rounded-3xl border border-brand-muted/30 bg-white/70 p-6 shadow-lg">
-          <div className="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-brand-muted/40 bg-brand-bg/80 text-center text-brand-muted">
-            Hero visualization placeholder
-          </div>
+          <img
+            src="/aibtc.png"
+            alt="AI-assisted crypto risk analysis visualization"
+            className="h-full w-full rounded-2xl border border-brand-muted/40 object-cover"
+            loading="lazy"
+          />
         </div>
       </div>
     </section>

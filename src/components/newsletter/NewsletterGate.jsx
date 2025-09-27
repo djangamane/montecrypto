@@ -147,6 +147,11 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
             unlock archived issues, Friday alerts, and the analyzer evidence trail.
           </p>
         </div>
+        <div className="mt-6">
+          <div className="flex h-28 w-full items-center justify-center rounded-2xl border border-dashed border-brand-muted/40 bg-white/70 text-sm text-brand-muted">
+            AdSense placement
+          </div>
+        </div>
       </section>
     );
   }
