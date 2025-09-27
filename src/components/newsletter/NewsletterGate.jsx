@@ -83,7 +83,8 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
     if (error) {
       console.error('Failed to load newsletters', error);
       if (isMountedRef.current) {
-        setBriefingsError('Failed to load newsletter archive.');
+        const message = derivesNewsletterErrorMessage(error);
+        setBriefingsError(message);
         setIsBriefingsLoading(false);
       }
       return;
@@ -214,4 +215,17 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
       />
     </>
   );
+}
+
+function derivesNewsletterErrorMessage(error) {
+  if (!error) return 'Failed to load newsletter archive.';
+
+  const rawMessage = typeof error.message === 'string' ? error.message : '';
+  const lowered = rawMessage.toLowerCase();
+
+  if (error.code === 'PGRST114' || lowered.includes('does not exist')) {
+    return 'Newsletter table not found. Run the newsletters migration from supabase_setup.sql to create public.newsletters.';
+  }
+
+  return 'Failed to load newsletter archive.';
 }
