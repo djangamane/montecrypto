@@ -128,10 +128,10 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
 
   if (isSessionLoading || isEntitlementLoading) {
     return (
-      <section className="rounded-3xl border border-white/10 bg-slate-950/60 p-10 text-slate-200 shadow-xl">
-        <div className="flex items-center justify-center gap-3 text-sm text-slate-300">
-          <LoadingSpinner className="h-5 w-5" />
-          Checking newsletter access…
+      <section className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-10 text-sm text-brand-muted">
+        <div className="flex items-center justify-center gap-3">
+          <LoadingSpinner className="h-5 w-5 text-brand-link" />
+          Checking Weekly Risk Brief access…
         </div>
       </section>
     );
@@ -139,19 +139,18 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
 
   if (!session) {
     return (
-      <section className="rounded-3xl border border-white/10 bg-slate-950/60 p-10 text-slate-200 shadow-xl">
-        <div className="space-y-4 text-sm">
-          <h3 className="text-3xl font-semibold text-white">Unlock Scam Watch</h3>
-          <p className="text-slate-300">
-            Sign in above to access the weekly Scam Watch newsletter alongside the Scam Likely risk
-            scanner. New here? Use the “Unlock Scam Likely” panel to create your account once — the
-            same credentials unlock both experiences.
+      <section className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-sm text-brand-muted">
+        <div className="space-y-4">
+          <h3 className="text-2xl font-heading uppercase text-brand-text">Sign in to view the Weekly Risk Brief</h3>
+          <p className="leading-relaxed">
+            The Weekly Risk Brief bundles with the AI Crypto Risk Assessment workspace. Sign in above and subscribe to
+            unlock archived issues, Friday alerts, and the analyzer evidence trail.
           </p>
           <a
-            href="#scam-likely"
-            className="inline-flex w-fit items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-400/40 hover:text-white"
+            href="#risk-meter"
+            className="inline-flex items-center justify-center rounded-xl border border-brand-link px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-brand-link transition hover:bg-brand-link hover:text-brand-bg"
           >
-            Go to Sign In
+            Go to sign in
           </a>
         </div>
       </section>
@@ -160,27 +159,24 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
 
   if (entitlementStatus !== 'active') {
     return (
-      <section className="rounded-3xl border border-white/10 bg-slate-950/60 p-10 text-slate-200 shadow-xl">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr,0.8fr]">
+      <section className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-sm text-brand-muted">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div>
-            <h3 className="text-3xl font-semibold text-white">
-              Newsletter Access Requires an Active Subscription
-            </h3>
-            <p className="mt-3 text-sm text-slate-300 leading-relaxed">
-              Scam Watch briefings are bundled with the Scam Likely subscription. Activate your plan to
-              read archived issues and receive new alerts every Friday.
+            <h3 className="text-3xl font-heading uppercase text-brand-text">Membership required for full brief access</h3>
+            <p className="mt-3 leading-relaxed">
+              Activate your membership to unlock archived issues, subscriber-only signals, and the Friday dispatch.
             </p>
             <div className="mt-6 max-w-xs">
               <PayPalSubscriptionButton session={session} />
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-sm text-slate-300">
-            <h4 className="text-lg font-semibold text-white">Included With Your Membership</h4>
-            <ul className="mt-4 list-none space-y-3 text-slate-300">
-              <li>- Gemini-assisted scam detection via the Scam Likely dashboard.</li>
-              <li>- Weekly Scam Watch newsletter delivered to your inbox.</li>
-              <li>- Archive access to investigate prior threat briefings.</li>
+          <div className="rounded-2xl border border-brand-muted/30 bg-white/80 p-6">
+            <h4 className="text-lg font-semibold text-brand-text">Included with membership</h4>
+            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm">
+              <li>AI Crypto Risk Assessment workspace with unlimited scans.</li>
+              <li>Weekly Risk Brief with on-chain, off-chain, social, and institutional highlights.</li>
+              <li>Evidence archive to revisit previous issues and share with your team.</li>
             </ul>
           </div>
         </div>
@@ -190,9 +186,9 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
 
   if (isBriefingsLoading && briefings.length === 0) {
     return (
-      <section className="rounded-3xl border border-white/10 bg-slate-950/60 p-10 text-slate-200 shadow-xl">
-        <div className="flex items-center justify-center gap-3 text-sm text-slate-300">
-          <LoadingSpinner className="h-5 w-5" />
+      <section className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-10 text-sm text-brand-muted">
+        <div className="flex items-center justify-center gap-3">
+          <LoadingSpinner className="h-5 w-5 text-brand-link" />
           Loading newsletter archive…
         </div>
       </section>
@@ -202,7 +198,7 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
   return (
     <>
       {briefingsError ? (
-        <section className="mb-6 rounded-3xl border border-red-500/40 bg-red-900/30 p-6 text-red-100">
+        <section className="mb-6 rounded-3xl border border-risk-high/40 bg-risk-high/10 p-6 text-risk-high">
           <p className="text-sm">{briefingsError}</p>
         </section>
       ) : null}

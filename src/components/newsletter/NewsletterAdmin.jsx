@@ -160,15 +160,15 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-sm text-brand-muted">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-link/70">
             Admin
           </p>
-          <h2 className="text-3xl font-semibold text-white">Generate Threat Briefing</h2>
-          <p className="text-sm text-slate-400">
-            Run the Gemini-assisted scan to create this week’s Scam Watch newsletter.
+          <h2 className="text-3xl font-heading uppercase text-brand-text">Generate Weekly Risk Brief</h2>
+          <p className="text-sm text-brand-muted">
+            Run the Gemini-assisted workflow to draft this week’s subscriber briefing.
           </p>
         </div>
 
@@ -176,7 +176,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
           type="button"
           onClick={handleGenerate}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-600"
+          className="inline-flex items-center gap-2 rounded-full bg-brand-link px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow transition hover:bg-brand-text disabled:cursor-not-allowed disabled:bg-brand-muted/50"
         >
           {isLoading ? (
             <LoadingSpinner className="h-5 w-5" />
@@ -188,56 +188,56 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
       </header>
 
       {error ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-500/40 bg-red-900/40 p-4 text-red-100">
+        <div className="flex items-start gap-3 rounded-2xl border border-risk-high/40 bg-risk-high/10 p-4 text-risk-high">
           <AlertTriangle className="h-6 w-6 flex-shrink-0" />
           <div>
-            <h3 className="text-base font-semibold">Action failed</h3>
-            <p className="text-sm text-red-200/80">{error}</p>
+            <h3 className="text-base font-semibold text-brand-text">Action failed</h3>
+            <p className="text-sm text-risk-high/80">{error}</p>
           </div>
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-2xl border border-emerald-500/40 bg-emerald-900/20 p-4 text-emerald-200 text-sm">
+        <div className="rounded-2xl border border-risk-moderate/40 bg-risk-moderate/10 p-4 text-risk-moderate text-sm">
           {successMessage}
         </div>
       ) : null}
 
       {sendError ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-500/40 bg-red-900/30 p-4 text-red-100">
+        <div className="flex items-start gap-3 rounded-2xl border border-risk-high/40 bg-risk-high/10 p-4 text-risk-high">
           <AlertTriangle className="h-6 w-6 flex-shrink-0" />
           <div>
-            <h3 className="text-base font-semibold">Email delivery failed</h3>
-            <p className="text-sm text-red-200/80">{sendError}</p>
+            <h3 className="text-base font-semibold text-brand-text">Email delivery failed</h3>
+            <p className="text-sm text-risk-high/80">{sendError}</p>
           </div>
         </div>
       ) : null}
 
       {sendSuccess ? (
-        <div className="rounded-2xl border border-emerald-500/40 bg-emerald-900/20 p-4 text-emerald-200 text-sm">
+        <div className="rounded-2xl border border-risk-moderate/40 bg-risk-moderate/10 p-4 text-risk-moderate text-sm">
           {sendSuccess}
         </div>
       ) : null}
 
       {!error && !isLoading && !draftBriefing ? (
-        <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 text-slate-300">
-          <p className="text-sm">
+        <div className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-brand-muted">
+          <p>
             No draft briefing yet. Generate one to preview insights before publishing to the subscriber archive.
           </p>
         </div>
       ) : null}
 
       {draftBriefing ? (
-        <article className="space-y-6 rounded-3xl border border-white/15 bg-slate-900/80 p-8">
+        <article className="space-y-6 rounded-3xl border border-brand-muted/30 bg-white/85 p-8 shadow">
           <header className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
-              Draft Preview
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-link/70">
+              Draft preview
             </p>
-            <h3 className="text-4xl font-bold text-white">{draftBriefing.headline}</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-4xl font-heading uppercase text-brand-text">{draftBriefing.headline}</h3>
+            <p className="text-sm text-brand-muted">
               Scheduled for {formatHeadlineDate(new Date(draftBriefing.publishedAt || Date.now()))}
             </p>
-            <p className="text-base text-slate-200 leading-relaxed">
+            <p className="text-base leading-relaxed text-brand-muted">
               {draftBriefing.summary}
             </p>
           </header>
@@ -253,15 +253,13 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
 
           <SourcesList sources={draftBriefing.sources} />
 
-          <div className="flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
-            <p>
-              Publish to move this draft into the archive for subscribers and queue the email send.
-            </p>
+          <div className="flex flex-col gap-3 border-t border-brand-muted/30 pt-6 text-brand-muted md:flex-row md:items-center md:justify-between">
+            <p>Publish to move this draft into the archive for subscribers and queue the email send.</p>
             <button
               type="button"
               onClick={handlePublish}
               disabled={isPublishing}
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-700/60"
+              className="inline-flex items-center justify-center rounded-full bg-brand-accent px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-brand-text shadow transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-brand-muted/50"
             >
               {isPublishing ? 'Publishing…' : 'Publish Draft'}
             </button>
@@ -270,14 +268,14 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
       ) : null}
 
       {lastPublished ? (
-        <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-slate-200">
+        <div className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-6 text-brand-muted">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-300">
-                Ready to Send
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-link/70">
+                Ready to send
               </p>
-              <h3 className="text-xl font-semibold text-white">{lastPublished.headline}</h3>
-              <p className="text-sm text-slate-400">
+              <h3 className="text-xl font-semibold text-brand-text">{lastPublished.headline}</h3>
+              <p className="text-sm text-brand-muted">
                 Published {formatHeadlineDate(new Date(lastPublished.publishedAt || Date.now()))}
               </p>
             </div>
@@ -285,7 +283,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
               type="button"
               onClick={handleSendEmail}
               disabled={isSending}
-              className="inline-flex items-center justify-center rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-600"
+              className="inline-flex items-center justify-center rounded-full bg-brand-link px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow transition hover:bg-brand-text disabled:cursor-not-allowed disabled:bg-brand-muted/50"
             >
               {isSending ? 'Sending…' : 'Send Newsletter Email'}
             </button>
@@ -305,7 +303,7 @@ async function safeJson(response) {
 }
 
 function normalizeBriefing(raw) {
-  const fallbackHeadline = 'Weekly Scam Watch Briefing';
+  const fallbackHeadline = 'Weekly Risk Brief';
   const fallbackSummary =
     'Summary not provided by Gemini. Review and update before publishing.';
 

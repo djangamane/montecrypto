@@ -14,14 +14,14 @@ export default function TokenInput({ onAnalyze, isLoading }) {
         type="text"
         value={token}
         onChange={(event) => setToken(event.target.value)}
-        placeholder="e.g. 0x… or token name"
+        placeholder="Paste a token, contract, or project URL"
         disabled={isLoading}
-        className="w-full rounded-lg border-2 border-brand-secondary bg-brand-primary px-4 py-3 text-brand-text placeholder:text-brand-subtext focus:outline-none focus:ring-2 focus:ring-brand-accent disabled:opacity-50"
+        className="w-full rounded-xl border border-brand-muted/40 bg-white px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30 disabled:opacity-60"
       />
       <button
         type="submit"
         disabled={isLoading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-accent px-6 py-3 font-semibold text-brand-primary transition disabled:cursor-not-allowed disabled:bg-brand-secondary disabled:text-brand-subtext sm:w-auto"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-link px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-text disabled:cursor-not-allowed disabled:bg-brand-muted/40 sm:w-auto"
       >
         {isLoading ? (
           <>
@@ -32,7 +32,7 @@ export default function TokenInput({ onAnalyze, isLoading }) {
             <span>Analyzing…</span>
           </>
         ) : (
-          <span>Analyze Token</span>
+          <span>Analyze risk</span>
         )}
       </button>
     </form>

@@ -1,7 +1,7 @@
 export function LoadingSpinner({ className = 'w-8 h-8' }) {
   return (
     <svg
-      className={`animate-spin text-blue-500 ${className}`}
+      className={`animate-spin text-brand-link ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

@@ -1,74 +1,130 @@
-# Risky Kristy Newsletter Plan
+# AI Crypto Risk Assessment — Implementation Plan
 
-## Current State
-- A standalone Vite+React app lives at `public/risky-kristy_newsletter`, served as static assets without Supabase or MonteCrypto auth context.
-- Landing page captures any email, flips a `localStorage` flag, then exposes the dashboard where visitors can trigger "Generate This Week's Briefing" which calls Gemini directly from the browser.
-- Past briefings are hard-coded mock entries; no persistent storage exists for real newsletters.
-- Scam Likely subscription copy in `src/components/scam_likely/ScamLikelyGate.jsx` and the repo `README.md` still advertise a `$5/month` plan, and the PayPal client/UI support only a single monthly price.
+> Legacy filename retained for continuity with previous project docs.
 
-## Goals
-- Bundle the Risky Kristy weekly newsletter with the Scam Likely service at $10/month or $100/year.
-- Keep public users focused on archived newsletters and the paid value proposition while reserving AI-powered generation tools for the internal team.
-- Ensure pricing, marketing copy, PayPal plans, and Supabase entitlements reflect the new offering.
+## 0. Brand & Message
+- **Site Title:** AI Crypto Risk Assessment
+- **Tagline:** *On-chain, off-chain, social, and institutional signals — simplified into one AI-powered risk score.*
+- **Promise:** Read risk before you read hype.
+- **Tone:** Neutral, evidence-based, no sensational claims. Use "scam" language only inside the closed newsletter.
 
-## Recommended Direction
-### 1. Integrate the newsletter experience into the main app
-- Move newsletter components into `src/` so we can reuse Supabase auth, Tailwind config, and layout (header/footer) instead of shipping a second Vite build from `public/`.
-- Expose two surfaces: a public-facing archive page and an authenticated admin workspace.
+## 1. One-Page Layout (MVP)
+1. **Hero**
+   - H1 `AI Crypto Risk Assessment`
+   - Subhead: explain the four-analyzer model and the single score output.
+   - Primary CTAs: `Run a free risk check` and `Start the free course`.
+2. **Risk Meter Module**
+   - Radial gauge (0–100) with band labels: Low · Moderate · Elevated · High · Severe.
+   - Four analyzer cards (On-Chain, Social Sentiment, Off-Chain, Institutional) with mini bars and summaries.
+   - Optional `Show evidence` disclosure that toggles a JSON payload.
+3. **Course Teaser**
+   - "Best Free Crypto Course in the World" headline with five bullets.
+   - Button: `Watch now`.
+4. **Weekly Risk Brief**
+   - Newsletter hook: "No spam. Evidence-based risk notes." Email capture + submit button.
+5. **About**
+   - Short founder story focused on credibility.
+6. **Footer**
+   - Legal links (Terms, Privacy, Disclaimer, Ad Disclosure, Contact) and trust language.
 
-### 2. Gate AI generation behind admin access
-- Reuse Supabase sessions inside the main app. Include a role/claims check (e.g., `profiles.role === 'admin'`) or a hard-coded allowlist of admin user IDs for now.
-- Route non-admin subscribers to the archive page; only admins see the "Generate" controls and Gemini call results.
-- Swap the current `localStorage`-based subscribe flow for either:
-  - A simple email capture form that posts to our marketing tooling, then links to `/#newsletter`, or
-  - A logged-in subscriber view that confirms newsletter access without toggling app state.
+**Ad placements (lightweight):** one responsive in-content unit under the course section, one right-rail/after meter for desktop. Avoid sticky units on mobile.
 
-### 3. Persist generated briefings
-- Create a `newsletters` table in Supabase to store `id`, `created_at`, `title`, `summary`, `threat_level`, `sources`, and `generated_by`.
-- When an admin runs a scan, store the canonical payload so the archive surfaces real data in chronological order.
-- Add lightweight moderation controls (e.g., mark as draft/published) if we want to curate before exposing publicly.
+## 2. Visual System
+- **Base Background:** `#F7F5EF`
+- **Primary Text:** `#121417`
+- **Accent / Action:** `#E5B200`
+- **Link & Trust:** `#3E5F5A`
+- **Risk Band Colors:**
+  - Low `#2E7D32`
+  - Moderate `#8BC34A`
+  - Elevated `#F9A825`
+  - High `#EF6C00`
+  - Severe `#C62828`
+- **Typography:** Headings set in Bebas Neue (fallback Oswald). Body copy in Inter.
+- **Iconography:** Shield with four quadrants (one per analyzer). Favicon uses shield mark.
 
-### 4. Update pricing & value proposition
-- Revise Scam Likely marketing copy to emphasize "Scam Detection Toolkit" that now includes the weekly newsletter alert service.
-- Update pricing references in:
-  - `src/components/scam_likely/ScamLikelyGate.jsx`
-  - `README.md`
-  - Any marketing components (hero/benefits) mentioning the subscription.
-- Adjust the CTA language inside the app to note the bundled newsletter.
+## 3. API Contract
+```
+POST /api/scan
+{ "input": "0xABC... | BTC | https://site.com" }
 
-### 5. Support monthly & annual PayPal plans
-- Create new PayPal billing plans for `$10/month` and `$100/year` (same product) and capture both plan IDs.
-- Update environment variable strategy to hold two plan IDs, e.g. `VITE_PAYPAL_MONTHLY_PLAN_ID`, `VITE_PAYPAL_ANNUAL_PLAN_ID` (and server-side equivalents).
-- Extend `PayPalSubscriptionButton` to offer plan selection, pass the chosen `plan_id`, and persist the chosen billing cadence in Supabase metadata.
-- Confirm the webhook handler doesn’t assume a single plan and continues to map PayPal events to the same `scam_likely` product entitlements.
+Response 200
+{
+  "score": 76,
+  "band": "Moderate",
+  "analyzers": {
+    "on_chain":      { "score": 82, "summary": "Ownership renounced; top10 holders 41%; LP locked 90d." },
+    "social":        { "score": 64, "summary": "Mentions up 140% with mixed sentiment; followers look organic." },
+    "off_chain":     { "score": 71, "summary": "Domain 2.1y old; docs present; team semi-doxxed." },
+    "institutional": { "score": 55, "summary": "No major fund filings; a few smart wallets hold small positions." }
+  },
+  "evidence": {
+    "optional_detailed_json_per_factor": true
+  },
+  "disclaimer": "Educational risk analysis. Not financial advice.",
+  "cached": true,
+  "scan_id": "scr_01Hx..."
+}
+```
+- Scoring uses equal weights (0.25) across analyzers.
+- Band mapping: 85–100 Low, 70–84 Moderate, 50–69 Elevated, 30–49 High, 0–29 Severe.
+- Cache by normalizing the `input` string and storing `{score, analyzers, evidence, created_at}`.
 
-### 6. Newsletter access for paying customers
-- Add a newsletters entry point in the main navigation / benefits section linking subscribers to the archive.
-- Protect the archive so only authenticated subscribers (active entitlement) can read full content while public visitors see teasers plus an upgrade prompt.
-- Consider republishing condensed excerpts for marketing on the public site while keeping full detail behind the subscription paywall.
+## 4. Analyzer Definitions (UI keeps one-liners)
+- **On-Chain Analysis:** contract powers, ownership, holder concentration, liquidity locks, age, unusual fees or volatility.
+- **Social Sentiment:** mention velocity, engagement authenticity, channel diversity, rumor spikes.
+- **Off-Chain Analysis:** domain age, docs, founder transparency, exchange listings, repo activity.
+- **Institutional Interest:** fund filings, analyst coverage, notable wallets, market-maker presence.
 
-## Decisions & Clarifications
-- Admin access will be guarded by a hard-coded allowlist of email addresses for the initial rollout (starting with `jason@abitofadvicellc.com`). We can migrate to a roles-based policy in `profiles` later.
-- The newsletter archive and individual issues stay fully behind the Scam Likely paywall; public pages will only tease the value proposition.
-- Keep the automation entirely in-house: schedule a Make (Integromat) scenario (or similar cron worker) each Friday to trigger our backend Gemini proxy, persist the generated briefing in Supabase, and dispatch emails through Resend. This preserves a single source of truth in Supabase and avoids third-party newsletter platforms.
-- Gemini calls for newsletter and scam analysis will be proxied through our backend so API keys remain server-side. Admin UI hits an authenticated API route that performs the generation and persistence steps.
+## 5. Core Copy Blocks
+- **Hero Subhead:** *On-chain, off-chain, social, and institutional signals — simplified into one AI-powered risk score.*
+- **Buttons:** `Run a free risk check`, `Start the free course`.
+- **Newsletter:** **Weekly Risk Brief** — "Every Friday: top risk moves, 5 tokens to watch, and one quick lesson. Evidence-based. No hype."
+- **About:** cite 2017 teaching history, early BitConnect warning, ETH/XMR mining setup, and present-day AI work. Close with "make risk visible" line.
+- **Footer:** "AI Crypto Risk Assessment provides educational risk analysis based on public data. **Not financial advice.**"
 
-## Next Implementation Steps
-1. Move `public/risky-kristy_newsletter` components into `src/components/newsletter/` and hook up routing for `NewsletterArchive` (subscriber view) and `NewsletterAdmin` (allowlisted emails only). ✅
-2. Implement Supabase-backed gating: only active Scam Likely entitlements can access the archive, only allowlisted admins see generation controls. ✅
-3. Design the `newsletters` Supabase schema (issue metadata + insights array + send status) and persist admin-generated briefings via a new API route that proxies Gemini. ✅
-4. Build the Resend integration: backend endpoint that sends latest briefing to all entitled users, plus Make scenario scaffolding for automatic Friday runs. ✅ (API + admin controls landed; automation hook pending.)
-5. Update pricing and marketing copy site-wide to reflect $10/mo or $100/yr, add the annual PayPal plan, and allow plan selection during checkout. ✅
-6. Refresh docs (`README.md`, env var examples) with new plan IDs, Resend key guidance, and newsletter workflow instructions. ✅
-7. Run end-to-end validation: admin generation → Supabase storage → Resend email → subscriber archive view → PayPal monthly & annual subscription flows. (Use `docs/e2e-validation-checklist.md`.)
+## 6. React Interfaces (shared types)
+```ts
+export type AnalyzerKey = "on_chain" | "social" | "off_chain" | "institutional";
+export interface AnalyzerResult { score: number; summary: string; }
+export interface ScanResult {
+  score: number;
+  band: "Low" | "Moderate" | "Elevated" | "High" | "Severe";
+  analyzers: Record<AnalyzerKey, AnalyzerResult>;
+  evidence?: unknown;
+  disclaimer: string;
+  cached: boolean;
+  scan_id: string;
+}
+```
 
-## Progress Log
-- ✅ Newsletter UI migrated into the main app with archive/admin views and shared components.
-- ✅ Newsletter access now respects Supabase entitlements and a shared admin allowlist, with live Supabase fetching for published issues.
-- ✅ Added `newsletters` table + RLS policies, `POST /api/newsletters/generate` Gemini proxy, and `POST /api/newsletters` persistence endpoint. Admin UI now calls these routes for generation and publishing.
-- ✅ Resend integration available via `/api/newsletters/send`; admin panel now tracks the latest published briefing and lets you email subscribers. Supabase function `newsletter_recipient_emails` powers the recipient list.
-- ✅ Pricing, marketing copy, and PayPal subscription flow now reflect the $10/month or $100/year Scam Watch membership with in-app plan selection.
-- ✅ Added newsletter operations documentation and Resend environment guidance in `README.md` and `docs/newsletter-operations.md`.
-- ✅ Admin access consolidated via floating modal; allowlist expanded for active team members and the archive references the single sign-in flow.
-- ✅ Gemini briefings normalized so missing `title`, `summary`, or `howToAvoid` fields no longer block publishing.
-- 🚧 Next: Run the production end-to-end validation (Step 7) and capture results.
+## 7. Tailwind Page Shell (reference)
+```html
+<body class="bg-[#F7F5EF] text-[#121417]">
+  <!-- Hero, Meter Module, Course, Newsletter, About, Footer as discussed -->
+</body>
+```
+
+## 8. Routes & SEO
+- Pages: `/`, `/course`, `/newsletter`, `/docs/how-we-score`, `/legal/terms`, `/legal/privacy`, `/disclaimer`.
+- Add `title`, `meta description`, `og:image`, `twitter:card`, canonical link.
+- JSON-LD: `WebSite` + `Organization` minimal schema.
+- Add `ads.txt` and visible **Ad Disclosure** copy.
+
+## 9. Implementation Notes
+- Default view: score + four analyzer bars + one-liners; evidence lives behind a disclosure control.
+- Keep tone factual; avoid "scam" labels in public UI.
+- Rate-limit `/api/scan`; keep API keys server-side.
+- Nightly tasks can re-score cached scans (optional for v1).
+
+## 10. Pricing & Checkout Updates
+- Premium coaching price: `$500 USD` (card/PayPal) or `$350` for Bitcoin payments.
+- Update copy wherever $200 is referenced, including the booking modal and course section.
+- Surface legal links (Terms, Privacy, Disclaimer, Ad Disclosure) during checkout.
+
+## 11. Next Steps
+1. Update Tailwind theme, fonts, and shared layout to adopt the new palette and typography.
+2. Rebuild the hero → meter → course → newsletter flow following the layout spec.
+3. Hook `/api/scan` mock/demo response so the UI can render realistic content.
+4. Draft legal pages and footer links; add schema.org JSON-LD and `<link rel="canonical">` tags.
+5. Refresh assets in `public/` (favicon, og:image) and confirm metadata works in the Vite head.

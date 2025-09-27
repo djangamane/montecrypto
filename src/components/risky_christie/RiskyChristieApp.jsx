@@ -13,12 +13,12 @@ export function RiskyChristieApp({ session }) {
 
   const handleAnalyze = async (tokenAddress) => {
     if (!session?.access_token) {
-      setError('Sign in to run the Gemini-assisted scan.');
+      setError('Sign in to run the AI-assisted scan.');
       return;
     }
 
     if (!tokenAddress) {
-      setError('Please enter a token name or address.');
+      setError('Please enter a token, contract, or URL.');
       return;
     }
 
@@ -31,24 +31,23 @@ export function RiskyChristieApp({ session }) {
       setAnalysisResult(result);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to analyze the token. Please try again.');
+      setError(err.message || 'Failed to analyze the input. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section className="rounded-3xl border border-brand-secondary/40 bg-brand-secondary/40 text-brand-text shadow-2xl">
+    <section className="rounded-3xl border border-brand-muted/30 bg-white/90 shadow-xl">
       <div className="overflow-hidden rounded-3xl">
         <Header />
-        <div className="mx-auto max-w-4xl px-4 pb-10 pt-6">
-          <div className="rounded-2xl border border-brand-secondary/50 bg-brand-secondary/70 p-6 md:p-8">
-            <h2 className="text-center text-2xl font-bold md:text-3xl">
-              Gemini-Assisted Market Intelligence
+        <div className="mx-auto max-w-4xl px-6 pb-12 pt-6">
+          <div className="rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-6 md:p-8">
+            <h2 className="text-center text-2xl font-heading uppercase text-brand-text md:text-3xl">
+              Run a four-analyzer risk scan
             </h2>
-            <p className="mt-2 text-center text-brand-subtext">
-              Provide a token name or contract address to pull AI-augmented intelligence from
-              public sources.
+            <p className="mt-2 text-center text-sm text-brand-muted">
+              We blend on-chain, social, off-chain, and institutional signals into a single score with linked evidence.
             </p>
 
             <div className="mt-8">
@@ -56,7 +55,7 @@ export function RiskyChristieApp({ session }) {
             </div>
 
             {error ? (
-              <div className="mt-6 rounded-lg border border-red-700/60 bg-red-900/40 px-4 py-3 text-center text-red-200">
+              <div className="mt-6 rounded-xl border border-risk-high/40 bg-risk-high/10 px-4 py-3 text-center text-risk-high">
                 <p>{error}</p>
               </div>
             ) : null}
@@ -69,8 +68,8 @@ export function RiskyChristieApp({ session }) {
               </div>
             ) : null}
           </div>
-          <p className="mt-6 text-center text-xs text-brand-subtext">
-            Powered by Gemini AI. Educational use only.
+          <p className="mt-6 text-center text-xs text-brand-muted">
+            Powered by Gemini. Educational risk analysis only — not financial advice.
           </p>
         </div>
       </div>

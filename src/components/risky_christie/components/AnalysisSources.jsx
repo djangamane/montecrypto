@@ -5,8 +5,8 @@ export default function AnalysisSources({ sources = [] }) {
 
   return (
     <div>
-      <h4 className="mb-4 text-center text-xl font-bold">Data Sources & Further Reading</h4>
-      <div className="rounded-lg border border-brand-secondary bg-brand-primary p-4">
+      <h4 className="mb-4 text-center text-xl font-semibold text-brand-text">Data sources & further reading</h4>
+      <div className="rounded-2xl border border-brand-muted/40 bg-white/80 p-4">
         <ul className="space-y-3">
           {sources.map(({ title, url }, index) => (
             <li key={index}>
@@ -14,9 +14,9 @@ export default function AnalysisSources({ sources = [] }) {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-3 text-brand-subtext transition-colors hover:text-brand-accent"
+                className="group flex items-center gap-3 text-sm text-brand-link transition hover:text-brand-text"
               >
-                <ExternalLinkIcon className="h-5 w-5" />
+                <ExternalLinkIcon className="h-4 w-4" />
                 <span className="group-hover:underline">{title}</span>
               </a>
             </li>

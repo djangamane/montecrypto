@@ -10,11 +10,11 @@ const annualPlanId = import.meta.env.VITE_PAYPAL_ANNUAL_PLAN_ID;
 const PLAN_COPY = {
   monthly: {
     label: '$10 per month',
-    description: 'Cancel anytime. Full access to Scam Likely + Scam Watch newsletter.',
+    description: 'Cancel anytime. Full access to the AI Crypto Risk Assessment workspace and Weekly Risk Brief.',
   },
   annual: {
     label: '$100 per year',
-    description: 'Get two months free with annual billing and priority support.',
+    description: 'Get two months free with annual billing and priority analyst support.',
   },
 };
 
@@ -45,7 +45,7 @@ export function PayPalSubscriptionButton({ session }) {
 
   if (!clientId || planOptions.length === 0 || !activePlan?.planId) {
     return (
-      <p className="rounded-xl border border-orange-500/40 bg-orange-500/10 p-4 text-sm text-orange-200">
+      <p className="rounded-xl border border-risk-high/40 bg-risk-high/10 p-4 text-sm text-risk-high">
         PayPal subscription details are not configured. Set VITE_PAYPAL_CLIENT_ID along with
         VITE_PAYPAL_MONTHLY_PLAN_ID and/or VITE_PAYPAL_ANNUAL_PLAN_ID.
       </p>
@@ -76,22 +76,22 @@ export function PayPalSubscriptionButton({ session }) {
                 key={option.id}
                 type="button"
                 onClick={() => setSelectedCadence(option.id)}
-                className={`w-full rounded-xl border px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-cyan-400/60 ${
+                className={`w-full rounded-xl border px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-brand-link/40 ${
                   isActive
-                    ? 'border-cyan-400/60 bg-cyan-500/10 text-white'
-                    : 'border-white/10 bg-white/5 text-slate-200 hover:border-cyan-400/40'
+                    ? 'border-brand-link bg-brand-bg text-brand-text shadow'
+                    : 'border-brand-muted/30 bg-white/70 text-brand-muted hover:border-brand-link/50 hover:text-brand-text'
                 }`}
               >
-                <p className="text-sm font-semibold">{option.label}</p>
-                <p className="text-xs text-slate-300/80">{option.description}</p>
+                <p className="text-sm font-semibold text-brand-text">{option.label}</p>
+                <p className="text-xs text-brand-muted">{option.description}</p>
               </button>
             );
           })}
         </div>
       ) : (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-          <p className="font-semibold">{activePlan.label}</p>
-          <p className="text-xs text-slate-300/80">{activePlan.description}</p>
+        <div className="rounded-xl border border-brand-muted/30 bg-white/70 p-4 text-sm text-brand-muted">
+          <p className="font-semibold text-brand-text">{activePlan.label}</p>
+          <p className="text-xs">{activePlan.description}</p>
         </div>
       )}
 

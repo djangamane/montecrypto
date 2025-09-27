@@ -34,7 +34,7 @@ export const DEFAULT_BRIEFINGS = [
       },
       {
         uri: 'https://example.com/telegram-revoke-scam',
-        title: 'Telegram Revoke Scams Explained',
+        title: 'Telegram Revoke Threats Explained',
       },
     ],
   },
@@ -132,26 +132,28 @@ export function NewsletterHub({
   }, [initialBriefings]);
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-950/60 p-10 text-slate-200 shadow-xl">
-      <div className="flex flex-col gap-4 pb-8 md:flex-row md:items-center md:justify-between">
+    <section className="rounded-3xl border border-brand-muted/30 bg-white/85 p-8 text-sm text-brand-muted">
+      <div className="flex flex-col gap-4 pb-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
-            Scam Watch Newsletter
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-link/70">
+            Weekly Risk Brief
           </p>
-          <h2 className="text-4xl font-bold text-white">Premium Threat Intelligence</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
-            Subscribers receive a weekly breakdown of emerging scams, red flags, and defensive moves
-            sourced from the Scam Likely research desk.
+          <h2 className="text-4xl font-heading uppercase text-brand-text">Premium risk intelligence</h2>
+          <p className="mt-2 max-w-2xl text-brand-muted">
+            Subscribers receive Friday dispatches covering the top risk movements, five tokens to watch, and
+            practical defensive moves sourced from the MonteCrypto research desk.
           </p>
         </div>
 
         {isAdmin ? (
-          <div className="flex gap-2 rounded-full border border-white/10 bg-slate-900/80 p-1 text-sm">
+          <div className="flex gap-2 rounded-full border border-brand-muted/40 bg-brand-bg/80 p-1 text-xs font-semibold uppercase tracking-[0.25em] text-brand-muted">
             <button
               type="button"
               onClick={() => setView('archive')}
-              className={`rounded-full px-4 py-1.5 font-semibold transition ${
-                view === 'archive' ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'
+              className={`rounded-full px-4 py-1.5 transition ${
+                view === 'archive'
+                  ? 'bg-brand-text text-brand-bg'
+                  : 'text-brand-muted hover:text-brand-text'
               }`}
             >
               Archive
@@ -159,8 +161,10 @@ export function NewsletterHub({
             <button
               type="button"
               onClick={() => setView('admin')}
-              className={`rounded-full px-4 py-1.5 font-semibold transition ${
-                view === 'admin' ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'
+              className={`rounded-full px-4 py-1.5 transition ${
+                view === 'admin'
+                  ? 'bg-brand-text text-brand-bg'
+                  : 'text-brand-muted hover:text-brand-text'
               }`}
             >
               Admin Tools

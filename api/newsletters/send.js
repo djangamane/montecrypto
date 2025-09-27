@@ -140,21 +140,22 @@ function renderEmail(newsletter) {
     .join('');
 
   const html = `
-    <div style="font-family:Arial, Helvetica, sans-serif;max-width:640px;margin:0 auto;padding:24px;background:#0f172a;color:#e2e8f0;">
-      <p style="color:#94a3b8;font-size:12px;margin:0 0 16px;">${escapeHtml(preheader)}</p>
-      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.3;color:#38bdf8;">${escapeHtml(newsletter.headline)}</h1>
-      <p style="font-size:16px;line-height:1.6;margin:0 0 24px;">${escapeHtml(newsletter.summary)}</p>
-      <ul style="list-style:none;padding:0;margin:0 0 24px;background:#0b1220;border-radius:16px;padding:24px;">
+    <div style="font-family:Arial, Helvetica, sans-serif;max-width:640px;margin:0 auto;padding:24px;background:#f7f5ef;color:#121417;">
+      <p style="color:#6b7168;font-size:12px;margin:0 0 16px;letter-spacing:0.18em;text-transform:uppercase;">${escapeHtml(preheader)}</p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.3;color:#121417;">${escapeHtml(newsletter.headline)}</h1>
+      <p style="font-size:16px;line-height:1.6;margin:0 0 24px;color:#3e5f5a;">${escapeHtml(newsletter.summary)}</p>
+      <ul style="list-style:none;padding:0;margin:0 0 24px;background:#ffffff;border-radius:16px;padding:24px;border:1px solid rgba(62,95,90,0.25);">
         ${htmlInsights}
       </ul>
-      <div style="background:#020617;border-radius:16px;padding:20px;">
-        <h2 style="margin:0 0 12px;font-size:18px;color:#38bdf8;">Sources</h2>
+      <div style="background:#ffffff;border-radius:16px;padding:20px;border:1px solid rgba(62,95,90,0.2);">
+        <h2 style="margin:0 0 12px;font-size:18px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.15em;">Sources</h2>
         <ul style="list-style:none;padding:0;margin:0;">
           ${htmlSources}
         </ul>
       </div>
-      <p style="margin-top:32px;font-size:12px;color:#64748b;">
-        You are receiving Scam Watch as part of your MonteCrypto Scam Likely subscription.
+      <p style="margin-top:32px;font-size:12px;color:#6b7168;">
+        You are receiving the Weekly Risk Brief as part of your MonteCrypto membership. This message is educational
+        and not financial advice.
       </p>
     </div>
   `;
@@ -167,7 +168,7 @@ function renderEmail(newsletter) {
     .map((source) => `- ${source.title || source.uri}: ${source.uri}`)
     .join('\n');
 
-  const text = `Scam Watch — ${newsletter.headline}\n\n${newsletter.summary}\n\n${textInsights}\n\nSources\n${textSources}\n\nYou are receiving Scam Watch as part of your Scam Likely subscription.`;
+  const text = `Weekly Risk Brief — ${newsletter.headline}\n\n${newsletter.summary}\n\n${textInsights}\n\nSources\n${textSources}\n\nYou are receiving the Weekly Risk Brief as part of your MonteCrypto membership.`;
 
   return { subject, html, text };
 }

@@ -35,12 +35,12 @@ export function AuthPanel({ session }) {
 
   if (session) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-6 text-slate-200">
-        <p className="text-sm">Signed in as {session.user.email}</p>
+      <div className="rounded-2xl border border-brand-muted/30 bg-white/85 p-6 text-sm text-brand-muted">
+        <p className="text-brand-text">Signed in as {session.user.email}</p>
         <button
           type="button"
           onClick={handleSignOut}
-          className="mt-4 inline-flex items-center justify-center rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-700"
+          className="mt-4 inline-flex items-center justify-center rounded-xl border border-brand-link px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-brand-link transition hover:bg-brand-link hover:text-brand-bg"
         >
           Sign out
         </button>
@@ -51,52 +51,52 @@ export function AuthPanel({ session }) {
   return (
     <form
       onSubmit={handleAuth}
-      className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-6"
+      className="space-y-4 rounded-2xl border border-brand-muted/30 bg-white/85 p-6 text-sm"
     >
       <div>
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-brand-text">
           {mode === 'signup' ? 'Create an account' : 'Sign in'}
         </h3>
-        <p className="mt-1 text-sm text-slate-400">
-          Use the same credentials across the MonteCrypto tools.
+        <p className="mt-1 text-brand-muted">
+          Use the same credentials across all MonteCrypto tools.
         </p>
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm text-slate-300">
+        <label className="block text-sm text-brand-text">
           Email
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
-            className="mt-1 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+            className="mt-1 w-full rounded-xl border border-brand-muted/40 bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30"
           />
         </label>
 
-        <label className="block text-sm text-slate-300">
+        <label className="block text-sm text-brand-text">
           Password
           <input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
-            className="mt-1 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+            className="mt-1 w-full rounded-xl border border-brand-muted/40 bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30"
           />
         </label>
       </div>
 
-      {message ? <p className="text-sm text-orange-300">{message}</p> : null}
+      {message ? <p className="text-xs text-brand-link">{message}</p> : null}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+        className="w-full rounded-xl bg-brand-link px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-text disabled:cursor-not-allowed disabled:bg-brand-muted/40"
       >
         {isSubmitting ? 'Working…' : mode === 'signup' ? 'Sign up' : 'Sign in'}
       </button>
 
-      <div className="text-center text-xs text-slate-500">
+      <div className="text-center text-xs text-brand-muted">
         {mode === 'signup' ? (
           <button
             type="button"

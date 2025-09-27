@@ -1,63 +1,57 @@
+const BAND_COLORS = {
+  Low: '#2E7D32',
+  Moderate: '#8BC34A',
+  Elevated: '#F9A825',
+  High: '#EF6C00',
+  Severe: '#C62828',
+};
+
 export default function RiskMeter({ score }) {
-  const normalizedScore = Math.max(0, Math.min(100, Number(score) || 0));
-  const colorClass = getScoreColor(normalizedScore);
-  const textClass = getTextColor(normalizedScore);
-  const riskLabel = getRiskLabel(normalizedScore);
+  const normalizedScore = normalizeScore(score);
+  const band = getBand(normalizedScore);
+  const strokeColor = BAND_COLORS[band];
 
   return (
-    <div className="relative mx-auto flex h-32 w-64 flex-col items-center justify-center">
-      <svg width="256" height="128" viewBox="0 0 256 128" className="h-full w-full">
-        <defs>
-          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#22C55E" />
-            <stop offset="50%" stopColor="#FACC15" />
-            <stop offset="100%" stopColor="#EF4444" />
-          </linearGradient>
-        </defs>
+    <div className="relative mx-auto flex h-40 w-72 flex-col items-center justify-center">
+      <svg width="288" height="160" viewBox="0 0 288 160" className="h-full w-full">
         <path
-          d="M 28 110 A 100 100 0 0 1 228 110"
-          stroke="url(#gaugeGradient)"
+          d="M 32 144 A 120 120 0 0 1 256 144"
+          stroke="#E0D9C6"
           strokeWidth="24"
           fill="none"
           strokeLinecap="round"
-          className="opacity-20"
         />
         <path
-          d="M 28 110 A 100 100 0 0 1 228 110"
+          d="M 32 144 A 120 120 0 0 1 256 144"
           strokeWidth="24"
           fill="none"
           strokeLinecap="round"
-          className={`${colorClass} transition-all duration-1000 ease-out`}
           style={{
-            strokeDasharray: Math.PI * 100,
-            strokeDashoffset: Math.PI * 100 * (1 - normalizedScore / 100),
+            stroke: strokeColor,
+            strokeDasharray: Math.PI * 120,
+            strokeDashoffset: Math.PI * 120 * (1 - normalizedScore / 100),
+            transition: 'stroke-dashoffset 1s ease-out',
           }}
         />
       </svg>
-      <div className="absolute bottom-0 flex flex-col items-center">
-        <span className={`text-4xl font-bold ${textClass}`}>{normalizedScore}</span>
-        <span className="text-sm font-semibold text-brand-subtext">{riskLabel}</span>
+      <div className="absolute bottom-4 flex flex-col items-center">
+        <span className="text-5xl font-heading uppercase text-brand-text">{normalizedScore}</span>
+        <span className="text-sm font-semibold tracking-[0.3em] text-brand-muted">{band}</span>
       </div>
     </div>
   );
 }
 
-function getScoreColor(score) {
-  if (score <= 33) return 'stroke-risk-low';
-  if (score <= 66) return 'stroke-risk-medium';
-  return 'stroke-risk-critical';
+function normalizeScore(value) {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return 0;
+  return Math.max(0, Math.min(100, Math.round(numeric)));
 }
 
-function getTextColor(score) {
-  if (score <= 33) return 'text-risk-low';
-  if (score <= 66) return 'text-risk-medium';
-  return 'text-risk-critical';
-}
-
-function getRiskLabel(score) {
-  if (score <= 10) return 'Very Low Risk';
-  if (score <= 33) return 'Low Risk';
-  if (score <= 66) return 'Medium Risk';
-  if (score <= 90) return 'High Risk';
-  return 'Critical Risk';
+function getBand(score) {
+  if (score >= 85) return 'Low';
+  if (score >= 70) return 'Moderate';
+  if (score >= 50) return 'Elevated';
+  if (score >= 30) return 'High';
+  return 'Severe';
 }

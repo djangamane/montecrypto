@@ -1,14 +1,23 @@
 export function Footer() {
   return (
-    <footer className="relative z-10 px-6 py-12 border-t border-gray-800">
-      <div className="max-w-7xl mx-auto text-center">
-        <p className="text-gray-400 mb-4">
-          © 2024 MonteCrypto. All rights reserved. | Learn. Trade. Prosper.
-        </p>
-        <div className="flex justify-center space-x-6">
-          <span className="text-gray-500 text-sm">Free Course Available</span>
-          <span className="text-gray-500 text-sm">Premium Coaching</span>
+    <footer className="border-t border-brand-muted/20 bg-brand-bg px-6 py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 text-sm text-brand-muted md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="font-semibold text-brand-text">AI Crypto Risk Assessment</p>
+          <p className="mt-2 max-w-md leading-relaxed">
+            Educational risk analysis sourced from public data. Nothing here is financial advice.
+          </p>
         </div>
+        <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <a href="/legal/terms" className="hover:text-brand-text">Terms</a>
+          <a href="/legal/privacy" className="hover:text-brand-text">Privacy</a>
+          <a href="/disclaimer" className="hover:text-brand-text">Disclaimer</a>
+          <a href="/legal/ad-disclosure" className="hover:text-brand-text">Ad Disclosure</a>
+          <a href="mailto:hello@montecrypto.ai" className="hover:text-brand-text">Contact</a>
+        </nav>
+      </div>
+      <div className="mx-auto mt-8 max-w-6xl text-xs text-brand-muted/70">
+        © {new Date().getFullYear()} MonteCrypto. All rights reserved.
       </div>
     </footer>
   );

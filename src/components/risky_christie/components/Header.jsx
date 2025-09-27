@@ -1,26 +1,21 @@
 export default function Header() {
   return (
-    <header className="bg-brand-secondary/50 backdrop-blur-sm border-b border-brand-secondary/40">
-      <div className="container mx-auto px-4 py-4 max-w-4xl flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-brand-text">
-            MonteCrypto Intelligence Lab
-          </h1>
-          <p className="text-brand-subtext text-sm">
-            Aggregating open intelligence, social sentiment, and institutional breadcrumbs via
-            Gemini.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-brand-subtext">
-          <span className="px-3 py-1 rounded-full border border-brand-subtext/30 bg-brand-primary/40">
-            Gemini 2.5 Flash
-          </span>
-          <span className="px-3 py-1 rounded-full border border-brand-subtext/30 bg-brand-primary/40">
-            Google Search Tooling
-          </span>
-          <span className="px-3 py-1 rounded-full border border-brand-subtext/30 bg-brand-primary/40">
-            Live Web Footprint
-          </span>
+    <header className="border-b border-brand-muted/30 bg-brand-bg/70">
+      <div className="container mx-auto max-w-4xl px-6 py-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-heading uppercase text-brand-text md:text-3xl">
+              AI Crypto Risk Assessment Workspace
+            </h1>
+            <p className="text-sm text-brand-muted">
+              Aggregating on-chain, off-chain, social, and institutional signals with Gemini assistance.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-brand-muted">
+            <span className="rounded-full border border-brand-muted/40 bg-white/70 px-3 py-1">Gemini 2.5 Flash</span>
+            <span className="rounded-full border border-brand-muted/40 bg-white/70 px-3 py-1">Live web sources</span>
+            <span className="rounded-full border border-brand-muted/40 bg-white/70 px-3 py-1">Four-analyzer model</span>
+          </div>
         </div>
       </div>
     </header>

@@ -11,63 +11,74 @@ import { BookingModal } from './components/BookingModal.jsx';
 import { ScamLikelyGate } from './components/scam_likely/ScamLikelyGate.jsx';
 import { NewsletterGate } from './components/newsletter/NewsletterGate.jsx';
 import { AdminAccessModal } from './components/AdminAccessModal.jsx';
+import { AboutSection } from './components/AboutSection.jsx';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
-  const videoSectionRef = useRef(null);
+  const riskSectionRef = useRef(null);
+  const courseSectionRef = useRef(null);
+  const newsletterSectionRef = useRef(null);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
     setIsModalOpen(false);
-    // Reset payment status when modal is closed
     setHasPaid(false);
   };
 
-  const scrollToVideo = () => {
-    videoSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToRisk = () => {
+    riskSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToCourse = () => {
+    courseSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToNewsletter = () => {
+    newsletterSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const openAdminModal = () => setIsAdminModalOpen(true);
   const closeAdminModal = () => setIsAdminModalOpen(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden scroll-smooth">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-cyan-400 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-48 h-48 bg-purple-500 rounded-full blur-2xl animate-pulse delay-500"></div>
-        <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-indigo-400 rounded-full blur-lg animate-pulse delay-1000"></div>
-      </div>
-
+    <div className="min-h-screen bg-brand-bg text-brand-text font-sans">
       <Header onBookNowClick={openModal} />
 
-      {/* Main Content */}
-      <main className="relative z-10">
-        <Hero onWatchCourseClick={scrollToVideo} onBookNowClick={openModal} />
+      <main>
+        <Hero onRunRiskCheck={scrollToRisk} onStartCourse={scrollToCourse} />
 
-        <AdPlaceholder label="Ad Placeholder (e.g., Display Ad)" />
+        <section id="risk-meter" ref={riskSectionRef} className="px-6 py-16">
+          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.15fr,0.85fr]">
+            <div className="rounded-3xl border border-brand-muted/30 bg-white/85 p-8 shadow-xl">
+              <ScamLikelyGate onScrollToNewsletter={scrollToNewsletter} />
+            </div>
+            <aside className="space-y-6">
+              <AdPlaceholder label="Sponsored research placement" />
+              <div className="rounded-3xl border border-dashed border-brand-muted/40 bg-brand-bg/60 p-6 text-sm text-brand-muted">
+                <p className="font-semibold text-brand-text">AdSense placement (desktop)</p>
+                <p className="mt-2">Swap this block with a responsive unit once live.</p>
+              </div>
+            </aside>
+          </div>
+        </section>
 
-        <VideoSection ref={videoSectionRef} />
+        <VideoSection ref={courseSectionRef} />
+
+        <AdPlaceholder label="Responsive in-content ad" />
 
         <PremiumCourse onBookNowClick={openModal} />
 
-        <AdPlaceholder label="Ad Placeholder (e.g., In-article Ad)" />
-
-        <Benefits />
-
-        <section id="scam-likely" className="px-6 pb-24">
-          <div className="mx-auto max-w-6xl space-y-10">
-            <div className="flex h-64 w-full items-center justify-center rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm">
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-300/80">
-                Screenshot Placeholder • 0x2170ed0880ac9a755fd29b2688956bd959f933f8
-              </p>
-            </div>
-            <ScamLikelyGate />
+        <section id="newsletter" ref={newsletterSectionRef} className="px-6 pb-16">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-brand-muted/30 bg-white/85 p-10 shadow-xl">
             <NewsletterGate />
           </div>
         </section>
+
+        <Benefits />
+
+        <AboutSection />
       </main>
 
       <Footer />
@@ -83,7 +94,7 @@ function App() {
       <button
         type="button"
         onClick={openAdminModal}
-        className="fixed bottom-4 right-4 z-40 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-white/70 backdrop-blur transition hover:border-cyan-400/60 hover:text-white"
+        className="fixed bottom-4 right-4 z-40 rounded-full border border-brand-muted/40 bg-white/80 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-brand-muted shadow backdrop-blur transition hover:border-brand-link hover:text-brand-text"
       >
         Admin
       </button>

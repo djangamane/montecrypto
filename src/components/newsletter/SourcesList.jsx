@@ -4,20 +4,20 @@ export function SourcesList({ sources = [] }) {
   if (!sources.length) return null;
 
   return (
-    <div className="bg-gray-800/50 rounded-lg shadow-xl border border-gray-700/50 p-6">
-      <h4 className="text-xl font-semibold text-gray-200 mb-4">Referenced Sources</h4>
-      <p className="text-sm text-gray-500 mb-4">
-        The AI generated this briefing based on information from the following web sources.
+    <div className="rounded-2xl border border-brand-muted/30 bg-brand-bg/80 p-6">
+      <h4 className="text-xl font-semibold text-brand-text">Referenced sources</h4>
+      <p className="mt-2 text-sm text-brand-muted">
+        The AI generated this briefing using the public data points below.
       </p>
-      <ul className="space-y-3">
+      <ul className="mt-4 space-y-3">
         {sources.map((source, index) => (
-          <li key={`${source.uri}-${index}`} className="flex items-start group">
-            <LinkIcon className="w-4 h-4 mr-3 mt-1 text-blue-400 flex-shrink-0" />
+          <li key={`${source.uri}-${index}`} className="flex items-start gap-3">
+            <LinkIcon className="mt-1 h-4 w-4 text-brand-link" />
             <a
               href={source.uri}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 group-hover:underline break-all"
+              className="break-all text-sm text-brand-link transition hover:text-brand-text hover:underline"
               aria-label={`Read more about ${source.title || 'this source'}`}
             >
               {source.title || source.uri}

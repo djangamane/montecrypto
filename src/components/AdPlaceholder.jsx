@@ -1,7 +1,7 @@
 export function AdPlaceholder({ label }) {
   return (
-    <div className="my-12 max-w-4xl mx-auto px-6">
-      <div className="bg-gray-800/50 border border-dashed border-gray-600 rounded-lg h-32 flex items-center justify-center text-gray-500">
+    <div className="my-16 px-6">
+      <div className="mx-auto flex h-28 max-w-4xl items-center justify-center rounded-2xl border border-dashed border-brand-muted/40 bg-white/70 text-sm text-brand-muted">
         {label}
       </div>
     </div>
