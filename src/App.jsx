@@ -54,17 +54,8 @@ function App() {
         <AdPlaceholder label="Responsive in-content ad" />
 
         <section id="risk-meter" ref={riskSectionRef} className="px-6 py-16">
-          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.15fr,0.85fr]">
-            <div className="rounded-3xl border border-brand-muted/30 bg-white/85 p-8 shadow-xl">
-              <ScamLikelyGate onScrollToNewsletter={scrollToNewsletter} />
-            </div>
-            <aside className="space-y-6">
-              <AdPlaceholder label="Sponsored research placement" />
-              <div className="rounded-3xl border border-dashed border-brand-muted/40 bg-brand-bg/60 p-6 text-sm text-brand-muted">
-                <p className="font-semibold text-brand-text">AdSense placement (desktop)</p>
-                <p className="mt-2">Swap this block with a responsive unit once live.</p>
-              </div>
-            </aside>
+          <div className="mx-auto max-w-6xl rounded-3xl border border-brand-muted/30 bg-white/85 p-8 shadow-xl">
+            <ScamLikelyGate onScrollToNewsletter={scrollToNewsletter} />
           </div>
         </section>
 
@@ -77,6 +68,8 @@ function App() {
         </section>
 
         <Benefits />
+
+        <AdPlaceholder label="Responsive in-content ad" />
 
         <AboutSection />
       </main>
