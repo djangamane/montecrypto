@@ -140,13 +140,6 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
   if (!session) {
     return (
       <section className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-sm text-brand-muted">
-        <div className="space-y-4">
-          <h3 className="text-2xl font-heading uppercase text-brand-text">Sign in to view the Weekly Risk Brief</h3>
-          <p className="leading-relaxed">
-            The Weekly Risk Brief bundles with the AI Crypto Risk Assessment workspace. Sign in above and subscribe to
-            unlock archived issues, Friday alerts, and the analyzer evidence trail.
-          </p>
-        </div>
         <div className="mt-6">
           <div className="flex h-28 w-full items-center justify-center rounded-2xl border border-dashed border-brand-muted/40 bg-white/70 text-sm text-brand-muted">
             AdSense placement
