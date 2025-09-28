@@ -49,6 +49,10 @@ function App() {
       <main>
         <Hero onRunRiskCheck={scrollToRisk} onStartCourse={scrollToCourse} />
 
+        <VideoSection ref={courseSectionRef} />
+
+        <AdPlaceholder label="Responsive in-content ad" />
+
         <section id="risk-meter" ref={riskSectionRef} className="px-6 py-16">
           <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.15fr,0.85fr]">
             <div className="rounded-3xl border border-brand-muted/30 bg-white/85 p-8 shadow-xl">
@@ -63,10 +67,6 @@ function App() {
             </aside>
           </div>
         </section>
-
-        <VideoSection ref={courseSectionRef} />
-
-        <AdPlaceholder label="Responsive in-content ad" />
 
         <PremiumCourse onBookNowClick={openModal} />
 
