@@ -14,7 +14,9 @@ export function AboutSection() {
             We do not sling smear campaigns. We surface evidence, explain the signal, and help you decide what is
             worth your time. That promise powers the course, the analyzers, and the Weekly Risk Brief.
           </p>
-          <p className="text-sm text-brand-muted/80">— Jason, MonteCrypto</p>
+          <p className="text-sm text-brand-muted/80">
+            — <a href="mailto:jason@abitofadvicellc.com" className="text-brand-link hover:text-brand-text">Jason Breckenridge</a>
+          </p>
         </div>
         <div className="rounded-3xl border border-dashed border-brand-muted/40 bg-brand-bg/70 p-6 text-sm leading-relaxed text-brand-muted">
           <p className="font-semibold uppercase tracking-[0.2em] text-brand-link">What you can expect</p>
