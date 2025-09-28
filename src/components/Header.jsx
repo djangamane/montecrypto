@@ -13,7 +13,7 @@ export function Header({ onBookNowClick }) {
         <nav className="hidden items-center gap-6 text-sm font-medium text-brand-muted md:flex">
           <a href="#risk-meter" className="transition hover:text-brand-text">Risk Meter</a>
           <a href="#course" className="transition hover:text-brand-text">Free Course</a>
-          <a href="#newsletter" className="transition hover:text-brand-text">Weekly Risk Brief</a>
+          <a href="#newsletter" className="transition hover:text-brand-text">Weekly Scam Watch</a>
           <a href="#about" className="transition hover:text-brand-text">About</a>
         </nav>
         <button

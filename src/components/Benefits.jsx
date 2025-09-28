@@ -1,25 +1,25 @@
-import { ShieldHalf, Network, Database, BarChart2 } from 'lucide-react';
+import { ShieldHalf, ScrollText, Award, Users } from 'lucide-react';
 
 const benefitItems = [
   {
     icon: <ShieldHalf className="h-9 w-9 text-brand-link" />,
-    title: 'Four analyzer model',
-    description: 'On-chain, off-chain, social, and institutional intelligence blended into one score.'
+    title: 'Seasoned risk scouts',
+    description: 'We have tracked scams, rug pulls, and risk anomalies since 2017 across tokens, DAOs, and exchanges.'
   },
   {
-    icon: <Database className="h-9 w-9 text-brand-link" />,
-    title: 'Explainable evidence',
-    description: 'Expand the JSON payload to inspect every factor before you make a decision.'
+    icon: <ScrollText className="h-9 w-9 text-brand-link" />,
+    title: 'Evidence-backed briefings',
+    description: 'Each run distills on-chain, social, and institutional patterns into guidance you can defend to clients or stakeholders.'
   },
   {
-    icon: <Network className="h-9 w-9 text-brand-link" />,
-    title: 'Weekly risk brief',
-    description: 'Receive a curated digest each Friday with the top risk moves and five tokens to watch.'
+    icon: <Award className="h-9 w-9 text-brand-link" />,
+    title: 'Weekly Scam Watch',
+    description: 'Friday dispatch covering the top fraud trends, five tokens under review, and what our analysts are watching next.'
   },
   {
-    icon: <BarChart2 className="h-9 w-9 text-brand-link" />,
-    title: 'Built for teams',
-    description: 'Share read-only dashboards, export scores, and sync with your research workflow.'
+    icon: <Users className="h-9 w-9 text-brand-link" />,
+    title: 'Trusted by teams',
+    description: 'Used by educators, compliance desks, and family offices who rely on us for reliable alerts and training.'
   }
 ];
 
@@ -28,10 +28,10 @@ export function Benefits() {
     <section className="border-y border-brand-muted/20 bg-white/80 px-6 py-16">
       <div className="mx-auto max-w-6xl space-y-10">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-link/70">Why analysts plug us in</p>
-          <h2 className="mt-3 text-3xl font-heading uppercase text-brand-text">Evidence that keeps up with the market</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-link/70">Why teams stay with us</p>
+          <h2 className="mt-3 text-3xl font-heading uppercase text-brand-text">Experience first. Hype never.</h2>
           <p className="mt-2 text-base text-brand-muted">
-            From self-custody investors to compliance teams, the platform surfaces risk faster than manual tab hunting.
+            We have spent years dissecting scams, coaching investors, and helping teams flag risk before headlines break.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
