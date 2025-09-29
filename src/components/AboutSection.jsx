@@ -15,7 +15,7 @@ export function AboutSection() {
             worth your time. That promise powers the course, the analyzers, and the Weekly Risk Brief.
           </p>
           <p className="text-sm text-brand-muted/80">
-            — <a href="mailto:jason@abitofadvicellc.com" className="text-brand-link hover:text-brand-text">Jason Breckenridge</a>
+            — <a href="mailto:jason@aicryptorisk.com" className="text-brand-link hover:text-brand-text">Jason Breckenridge</a>
           </p>
         </div>
         <div className="rounded-3xl border border-dashed border-brand-muted/40 bg-brand-bg/70 p-6 text-sm leading-relaxed text-brand-muted">

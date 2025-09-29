@@ -1,5 +1,5 @@
 export const NEWSLETTER_ADMIN_EMAILS = [
-  'jason@abitofadvicellc.com',
+  'jason@aicryptorisk.com',
   'janga.bussaja@gmail.com',
 ];
 
