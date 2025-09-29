@@ -252,6 +252,48 @@ function textValue(value) {
   return '';
 }
 
+function buildGeminiFallback({ focus, error }) {
+  const parsed = parseGeminiError(error);
+  const summaryMessage = parsed
+    ? `Gemini did not return a briefing. (${parsed}).`
+    : 'Gemini did not return a briefing. Manual review required.';
+
+  return {
+    headline: 'Weekly Risk Brief — Manual Review Required',
+    summary: summaryMessage,
+    insights: [],
+    sources: [],
+    status: 'draft',
+    metadata: {
+      geminiError: parsed,
+      geminiStatus: errorStatus(error) || null,
+      focus: textValue(focus) || null,
+    },
+  };
+}
+
+function parseGeminiError(error) {
+  if (!error) return '';
+  if (typeof error === 'string') return error.slice(0, 500);
+
+  const dataMessage = error?.response?.data?.error?.message;
+  const topMessage = error?.message;
+
+  const message = textValue(dataMessage || topMessage);
+  if (message) return message.slice(0, 500);
+
+  try {
+    return JSON.stringify(error, Object.getOwnPropertyNames(error)).slice(0, 500);
+  } catch (jsonError) {
+    console.error('Failed to serialize Gemini error', jsonError);
+    return 'Unknown Gemini error';
+  }
+}
+
+function errorStatus(error) {
+  return error?.response?.status ?? error?.status ?? null;
+}
+
 function normalizeThreatLevel(level) {
   const normalized = textValue(level).toLowerCase();
   if (normalized === 'high') return 'High';
@@ -456,7 +498,10 @@ Only use trustworthy coverage windows (≤ ${coverageDays} days old) and avoid s
 
 async function runNewsletterGeneration({ focus }) {
   const [geminiResult, deepResearchResult] = await Promise.all([
-    runGeminiBriefing({ focus }),
+    runGeminiBriefing({ focus }).catch((error) => {
+      console.error('Gemini workflow failed', error);
+      return buildGeminiFallback({ focus, error });
+    }),
     runDeepResearchAugmentation({ focus }).catch((error) => {
       console.error('Deep research augmentation failed', error);
       return null;
