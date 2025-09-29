@@ -165,13 +165,18 @@ async function runPerplexityCoinScan({ focus }) {
   const rawContent = extractPerplexityText(payload);
   const parsed = parsePerplexityJson(rawContent, payload);
 
+  const findings = normalizeCoinFindings(parsed?.findings ?? []);
+  const sources = normalizeCoinSources(parsed?.sources ?? []);
+
   return {
-    findings: normalizeCoinFindings(parsed?.findings ?? []),
-    sources: normalizeCoinSources(parsed?.sources ?? []),
+    findings,
+    sources,
     metadata: {
       timeframe: { start: start.toISOString(), end: now.toISOString() },
       generatedAt: now.toISOString(),
       model: PERPLEXITY_COIN_MODEL,
+      rawContent,
+      parsed: parsed ?? null,
     },
   };
 }
@@ -259,6 +264,19 @@ function mergeCoinScan(briefing, coinScan) {
         title: textValue(source.title) || uri,
       });
       existingSourceUris.add(uri);
+    }
+  }
+
+  if (!coinScan.findings.length && coinScan.metadata?.rawContent) {
+    const rawSummary = summarizeRawContent(coinScan.metadata.rawContent);
+    if (rawSummary) {
+      mergedInsights.push({
+        title: 'Coin Watch — Perplexity Summary',
+        summary: rawSummary,
+        howToAvoid:
+          'Treat unverified tokens with extreme caution. Validate claims through multiple trusted sources before engaging or investing.',
+        threatLevel: 'Medium',
+      });
     }
   }
 
@@ -401,7 +419,8 @@ function extractPerplexityText(payload) {
 
 function parsePerplexityJson(rawContent, payload) {
   if (!rawContent || typeof rawContent !== 'string') {
-    throw new Error('Empty response from Perplexity.');
+    console.warn('Perplexity response empty');
+    return null;
   }
 
   let trimmed = rawContent.trim();
@@ -412,12 +431,20 @@ function parsePerplexityJson(rawContent, payload) {
   try {
     return JSON.parse(trimmed);
   } catch (error) {
-    console.error('Failed to parse Perplexity JSON', { rawContent });
+    console.error('Failed to parse Perplexity JSON', { rawContent, error });
     if (payload?.choices?.[0]?.message?.content?.related_questions) {
       console.error('Perplexity related questions', payload.choices[0].message.content.related_questions);
     }
-    throw error;
+    return null;
   }
+}
+
+function summarizeRawContent(rawContent) {
+  if (typeof rawContent !== 'string') return '';
+  const cleaned = rawContent.replace(/```(json)?/gi, '').trim();
+  if (!cleaned) return '';
+  const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '600', 10);
+  return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
 }
 
 function parseGeminiError(error) {
