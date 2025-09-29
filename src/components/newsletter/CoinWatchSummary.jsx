@@ -62,10 +62,8 @@ export function CoinWatchSummary({ coinScan }) {
             </span>
           ) : null}
         </div>
-        {summary && findings.length === 0 ? (
-          <p className="text-sm leading-relaxed text-brand-muted">
-            {summary}
-          </p>
+        {summary ? (
+          <p className="text-sm leading-relaxed text-brand-muted">{summary}</p>
         ) : null}
       </header>
 

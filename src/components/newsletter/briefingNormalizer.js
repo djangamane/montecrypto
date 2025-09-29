@@ -170,7 +170,7 @@ export function normalizeBriefing(raw) {
 
   const metadata = isPlainObject(raw?.metadata) ? { ...raw.metadata } : {};
   const deepResearch = normalizeDeepResearch(raw?.deepResearch ?? metadata?.deepResearch);
-  const coinScan = normalizeCoinScan(metadata?.coinScan);
+  const coinScan = normalizeCoinScan(raw?.coinScan ?? metadata?.coinScan);
   const mergedMetadata = {
     ...metadata,
     ...(deepResearch ? { deepResearch } : {}),
