@@ -428,6 +428,8 @@ function parsePerplexityJson(rawContent, payload) {
   }
 
   let trimmed = rawContent.trim();
+  trimmed = trimmed.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
   if (trimmed.startsWith('```')) {
     trimmed = trimmed.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
   }
@@ -439,16 +441,56 @@ function parsePerplexityJson(rawContent, payload) {
     if (payload?.choices?.[0]?.message?.content?.related_questions) {
       console.error('Perplexity related questions', payload.choices[0].message.content.related_questions);
     }
+    const fallback = convertTextToFindings(trimmed);
+    if (fallback.findings.length || fallback.sources.length) {
+      return fallback;
+    }
     return null;
   }
 }
 
 function summarizeRawContent(rawContent) {
   if (typeof rawContent !== 'string') return '';
-  const cleaned = rawContent.replace(/```(json)?/gi, '').trim();
+  const cleaned = rawContent
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/```(json)?/gi, '')
+    .trim();
   if (!cleaned) return '';
   const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '600', 10);
   return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
+}
+
+function convertTextToFindings(text) {
+  if (!text) return { findings: [], sources: [] };
+
+  const findings = [];
+  const sources = [];
+
+  const findingRegex = /\n?\d+\.\s*\*\*(.+?)\*\*\s*-\s*([\s\S]*?)(?=\n\d+\.\s*\*\*|$)/g;
+  let match;
+  while ((match = findingRegex.exec(text)) !== null) {
+    const token = match[1]?.trim();
+    const summary = match[2]?.trim();
+    if (!summary) continue;
+    findings.push({
+      token,
+      title: token ? `${token} loss report` : '',
+      summary,
+      howToAvoid: `Exercise extreme caution with ${token || 'this project'} and verify all claims with trusted sources before interacting or investing.`,
+      threatLevel: 'High',
+      sources: [],
+    });
+  }
+
+  const sourceRegex = /\[(?:source\s*)?(\d+)\]\s*(https?:\/\/\S+)/gi;
+  let sourceMatch;
+  while ((sourceMatch = sourceRegex.exec(text)) !== null) {
+    const uri = sourceMatch[2]?.trim();
+    if (!uri) continue;
+    sources.push({ uri, title: `Source ${sourceMatch[1]}` });
+  }
+
+  return { findings, sources };
 }
 
 function parseGeminiError(error) {
