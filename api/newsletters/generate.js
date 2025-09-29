@@ -4,8 +4,22 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 import { supabase } from '../_lib/supabase.js';
 import { isNewsletterAdmin } from '../../config/newsletterAdminAllowlist.js';
-import { deepResearch } from '../../tools/deep-research/src/deep-research.js';
-import { getModel } from '../../tools/deep-research/src/ai/providers.js';
+let deepResearch;
+let getModel;
+
+async function loadDeepResearchModules() {
+  if (deepResearch && getModel) return;
+
+  const deepModule = await import('../../tools/deep-research/src/deep-research.js');
+  const providerModule = await import('../../tools/deep-research/src/ai/providers.js');
+
+  deepResearch = deepModule.deepResearch ?? deepModule.default?.deepResearch;
+  getModel = providerModule.getModel ?? providerModule.default?.getModel;
+
+  if (!deepResearch || !getModel) {
+    throw new Error('Deep research modules failed to load');
+  }
+}
 
 const client = initClient();
 
@@ -40,6 +54,7 @@ export default async function handler(req, res) {
   const { focus } = parseBody(req.body);
 
   try {
+    await loadDeepResearchModules();
     const result = await runNewsletterGeneration({ focus });
     return res.status(200).json(result);
   } catch (error) {
