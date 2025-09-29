@@ -163,7 +163,7 @@ async function runPerplexityCoinScan({ focus }) {
 
   const payload = await response.json();
   const rawContent = extractPerplexityText(payload);
-  const parsed = parsePerplexityJson(rawContent);
+  const parsed = parsePerplexityJson(rawContent, payload);
 
   return {
     findings: normalizeCoinFindings(parsed?.findings ?? []),
@@ -399,7 +399,7 @@ function extractPerplexityText(payload) {
   throw new Error('Perplexity message content in unexpected format.');
 }
 
-function parsePerplexityJson(rawContent) {
+function parsePerplexityJson(rawContent, payload) {
   if (!rawContent || typeof rawContent !== 'string') {
     throw new Error('Empty response from Perplexity.');
   }
@@ -413,6 +413,9 @@ function parsePerplexityJson(rawContent) {
     return JSON.parse(trimmed);
   } catch (error) {
     console.error('Failed to parse Perplexity JSON', { rawContent });
+    if (payload?.choices?.[0]?.message?.content?.related_questions) {
+      console.error('Perplexity related questions', payload.choices[0].message.content.related_questions);
+    }
     throw error;
   }
 }
