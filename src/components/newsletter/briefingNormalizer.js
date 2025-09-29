@@ -135,11 +135,21 @@ function normalizeCoinScan(raw) {
     : [];
 
   const metadata = isPlainObject(raw.metadata) ? { ...raw.metadata } : {};
+  let summaryText = textValue(raw.summary) || textValue(metadata.rawContent);
+  if (!summaryText && findings.length) {
+    summaryText = findings
+      .map((item) => {
+        const label = item.token || item.title || 'Finding';
+        return `${label}: ${item.summary}`;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
 
   return {
     findings,
     sources,
-    summary: textValue(raw.summary) || textValue(metadata.rawContent),
+    summary: summaryText,
     metadata: {
       model: textValue(metadata.model) || null,
       generatedAt: textValue(metadata.generatedAt) || null,
