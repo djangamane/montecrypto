@@ -168,6 +168,10 @@ async function runPerplexityCoinScan({ focus }) {
   const findings = normalizeCoinFindings(parsed?.findings ?? []);
   const sources = normalizeCoinSources(parsed?.sources ?? []);
 
+  console.log('[perplexity] raw content length', rawContent?.length ?? 0);
+  console.log('[perplexity] parsed keys', parsed ? Object.keys(parsed) : 'null');
+  console.log('[perplexity] findings count', findings.length, 'sources count', sources.length);
+
   return {
     findings,
     sources,
@@ -267,17 +271,17 @@ function mergeCoinScan(briefing, coinScan) {
     }
   }
 
-  if (!coinScan.findings.length && coinScan.metadata?.rawContent) {
-    const rawSummary = summarizeRawContent(coinScan.metadata.rawContent);
-    if (rawSummary) {
-      mergedInsights.push({
-        title: 'Coin Watch — Perplexity Summary',
-        summary: rawSummary,
-        howToAvoid:
-          'Treat unverified tokens with extreme caution. Validate claims through multiple trusted sources before engaging or investing.',
-        threatLevel: 'Medium',
-      });
-    }
+  if (!coinScan.findings.length) {
+    const rawSummary = summarizeRawContent(coinScan.metadata?.rawContent);
+    mergedInsights.push({
+      title: 'Coin Watch — Perplexity Summary',
+      summary:
+        rawSummary ||
+        'Perplexity did not return structured findings. Review the raw output in metadata.coinScan.rawContent for manual curation.',
+      howToAvoid:
+        'Treat unverified tokens with extreme caution. Validate claims through multiple trusted sources before engaging or investing.',
+      threatLevel: 'Medium',
+    });
   }
 
   for (const source of coinScan.sources || []) {
