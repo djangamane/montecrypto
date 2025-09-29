@@ -3,8 +3,8 @@ import { generateObject } from 'ai';
 import { compact } from 'lodash-es';
 import pLimit from 'p-limit';
 import { z } from 'zod';
-import { getModel, trimPrompt } from './ai/providers';
-import { systemPrompt } from './prompt';
+import { getModel, trimPrompt } from './ai/providers.js';
+import { systemPrompt } from './prompt.js';
 function log(...args) {
     console.log(...args);
 }

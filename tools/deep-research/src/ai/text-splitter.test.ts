@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it, beforeEach } from 'node:test';
-import { RecursiveCharacterTextSplitter } from './text-splitter';
+import { RecursiveCharacterTextSplitter } from './text-splitter.js';
 
 describe('RecursiveCharacterTextSplitter', () => {
   let splitter: RecursiveCharacterTextSplitter;

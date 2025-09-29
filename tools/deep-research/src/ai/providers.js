@@ -2,7 +2,7 @@ import { createFireworks } from '@ai-sdk/fireworks';
 import { createOpenAI } from '@ai-sdk/openai';
 import { extractReasoningMiddleware, wrapLanguageModel, } from 'ai';
 import { getEncoding } from 'js-tiktoken';
-import { RecursiveCharacterTextSplitter } from './text-splitter';
+import { RecursiveCharacterTextSplitter } from './text-splitter.js';
 // Providers
 const openai = process.env.OPENAI_KEY
     ? createOpenAI({
