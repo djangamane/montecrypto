@@ -65,7 +65,7 @@ const encoder = getEncoding('o200k_base');
 export function trimPrompt(
   prompt: string,
   contextSize = Number(process.env.CONTEXT_SIZE) || 128_000,
-) {
+): string {
   if (!prompt) {
     return '';
   }
