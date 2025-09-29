@@ -5,8 +5,8 @@
 - Committed email updates locally (`Update Jason contact email`).
 - Confirmed Resend delivery works with the new domain.
 - Cloned `dzhng/deep-research` into `tools/deep-research` for local Node worker integration.
-- `/api/newsletters/generate` now runs Gemini search + deep-research concurrently, merges the insights, and stores the structured results under `metadata.deepResearch` for the admin + archive views.
-- Gemini failures now fall back to a "manual review" draft instead of 500s, with the API surfacing the underlying error message in `metadata.geminiError`.
+- `/api/newsletters/generate` now calls Perplexity's pplx API (via `PERPLEXITY_API_KEY`) to draft the briefing and returns normalized results.
+- The Perplexity response is validated server-side; unexpected payloads turn into actionable errors in the admin UI.
 
 ## Deep-Research Integration Plan (dzhng/deep-research)
 1. **Repo Review** — Audit the TypeScript implementation to identify entry points (`src/index.ts`, report generator) and confirm dependency list (Firecrawl + OpenAI/Fireworks keys).
