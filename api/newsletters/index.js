@@ -58,7 +58,7 @@ export default async function handler(req, res) {
       generated_by: userResult.user.id,
       metadata: metadata ?? {},
     })
-    .select('id, headline, summary, insights, sources, status, published_at')
+    .select('id, headline, summary, insights, sources, status, published_at, metadata')
     .single();
 
   if (error) {
@@ -74,6 +74,7 @@ export default async function handler(req, res) {
     sources: data.sources,
     status: data.status,
     publishedAt: data.published_at,
+    metadata: data.metadata,
   });
 }
 

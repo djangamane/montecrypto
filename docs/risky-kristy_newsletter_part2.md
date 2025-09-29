@@ -5,6 +5,7 @@
 - Committed email updates locally (`Update Jason contact email`).
 - Confirmed Resend delivery works with the new domain.
 - Cloned `dzhng/deep-research` into `tools/deep-research` for local Node worker integration.
+- `/api/newsletters/generate` now runs Gemini search + deep-research concurrently, merges the insights, and stores the structured results under `metadata.deepResearch` for the admin + archive views.
 
 ## Deep-Research Integration Plan (dzhng/deep-research)
 1. **Repo Review** — Audit the TypeScript implementation to identify entry points (`src/index.ts`, report generator) and confirm dependency list (Firecrawl + OpenAI/Fireworks keys).
@@ -31,6 +32,7 @@
 - Worker invocation strategy: spawn `npm start` (interactive) replaced with scripted runner that feeds query/breadth/depth, or import `deepResearch` directly via custom wrapper for non-interactive jobs.
 - Output parsing: default markdown saved to `report.md`; we will pipe results to our Supabase persistence layer instead of relying on filesystem side effects.
 - Added `scripts/run-deep-research.ts` to wrap the agent non-interactively. Run with `npx tsx scripts/run-deep-research.ts --query "<topic>" [--breadth N --depth N --mode report|answer --output path.md --verbose true]` once env vars are configured.
+- Deep research metadata is rendered inside the admin preview & archive (coverage window, generated timestamp, findings, and raw URLs).
 
 ## Open Questions
 - Which deployment path aligns with current infrastructure budget and team capacity?
@@ -40,4 +42,4 @@
 ## Next Actions
 1. Document hosting approach (Node worker vs. container) and estimate Firecrawl/OpenAI cost envelope.
 2. Draft Supabase ERD updates for `research_runs` + `scam_findings` tables.
-3. Prototype prompt + parsing workflow so we reliably capture loss evidence and URLs for newsletter insertion.
+3. Add Supabase persistence for deep-research runs (current metadata lives in the newsletter record only); consider dedicated tables if we need historical re-use.

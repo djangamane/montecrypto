@@ -3,6 +3,8 @@ import { AlertTriangle, RefreshCw } from './Icons.jsx';
 import { InsightCard } from './InsightCard.jsx';
 import { SourcesList } from './SourcesList.jsx';
 import { LoadingSpinner } from './LoadingSpinner.jsx';
+import { DeepResearchSummary } from './DeepResearchSummary.jsx';
+import { normalizeBriefing } from './briefingNormalizer.js';
 
 function formatHeadlineDate(date) {
   return date.toLocaleDateString(undefined, {
@@ -85,7 +87,16 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
     setSendError(null);
     setSendSuccess(null);
 
-    const { id: _draftId, ...payload } = draftBriefing;
+    const {
+      id: _draftId,
+      deepResearch,
+      metadata: existingMetadata = {},
+      ...payload
+    } = draftBriefing;
+
+    const metadata = deepResearch
+      ? { ...existingMetadata, deepResearch }
+      : { ...existingMetadata };
 
     fetch('/api/newsletters', {
       method: 'POST',
@@ -95,6 +106,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
       },
       body: JSON.stringify({
         ...payload,
+        metadata,
         status: 'published',
         publishedAt: new Date().toISOString(),
       }),
@@ -168,7 +180,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
           </p>
           <h2 className="text-3xl font-heading uppercase text-brand-text">Generate Weekly Risk Brief</h2>
           <p className="text-sm text-brand-muted">
-            Run the Gemini-assisted workflow to draft this week’s subscriber briefing.
+            Run the combined Gemini + deep research workflow to draft this week’s subscriber briefing.
           </p>
         </div>
 
@@ -251,6 +263,10 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
             ))}
           </div>
 
+          {draftBriefing.deepResearch ? (
+            <DeepResearchSummary research={draftBriefing.deepResearch} />
+          ) : null}
+
           <SourcesList sources={draftBriefing.sources} />
 
           <div className="flex flex-col gap-3 border-t border-brand-muted/30 pt-6 text-brand-muted md:flex-row md:items-center md:justify-between">
@@ -300,70 +316,4 @@ async function safeJson(response) {
   } catch (error) {
     return null;
   }
-}
-
-function normalizeBriefing(raw) {
-  const fallbackHeadline = 'Weekly Risk Brief';
-  const fallbackSummary =
-    'Summary not provided by Gemini. Review and update before publishing.';
-
-  const normalizedInsights = Array.isArray(raw?.insights)
-    ? raw.insights.map((insight, index) => normalizeInsight(insight, index))
-    : [];
-
-  const normalizedSources = Array.isArray(raw?.sources)
-    ? raw.sources
-        .map((source, index) => normalizeSource(source, index))
-        .filter(Boolean)
-    : [];
-
-  return {
-    id: raw?.id || `draft-${Date.now()}`,
-    headline: textValue(raw?.headline) || fallbackHeadline,
-    summary: textValue(raw?.summary) || fallbackSummary,
-    publishedAt: raw?.publishedAt || new Date().toISOString(),
-    insights: normalizedInsights,
-    sources: normalizedSources,
-    status: raw?.status || 'draft',
-  };
-}
-
-function normalizeInsight(insight, index) {
-  const fallbackTitle = `Insight ${index + 1}`;
-  const fallbackSummary =
-    'Gemini did not include a summary for this threat. Add context before publishing.';
-  const fallbackAvoid =
-    'Gemini did not provide mitigation guidance. Insert manual recommendations.';
-
-  return {
-    title: textValue(insight?.title) || fallbackTitle,
-    summary: textValue(insight?.summary) || fallbackSummary,
-    howToAvoid: textValue(insight?.howToAvoid) || fallbackAvoid,
-    threatLevel: normalizeThreatLevel(insight?.threatLevel),
-  };
-}
-
-function normalizeSource(source, index) {
-  const uri = textValue(source?.uri);
-  if (!uri) return null;
-
-  return {
-    uri,
-    title: textValue(source?.title) || `Source ${index + 1}`,
-  };
-}
-
-function textValue(value) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  return '';
-}
-
-function normalizeThreatLevel(level) {
-  const normalized = textValue(level).toLowerCase();
-  if (normalized === 'high') return 'High';
-  if (normalized === 'medium') return 'Medium';
-  if (normalized === 'low') return 'Low';
-  return 'Medium';
 }

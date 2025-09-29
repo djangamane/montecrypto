@@ -1,6 +1,7 @@
 {
   "name": "open-deep-research",
   "version": "0.0.1",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",

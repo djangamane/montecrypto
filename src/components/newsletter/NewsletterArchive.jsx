@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Calendar, Info } from './Icons.jsx';
 import { InsightCard } from './InsightCard.jsx';
 import { SourcesList } from './SourcesList.jsx';
+import { DeepResearchSummary } from './DeepResearchSummary.jsx';
 
 function formatDate(isoDate) {
   if (!isoDate) return 'Unknown date';
@@ -104,6 +105,10 @@ export function NewsletterArchive({ briefings = [] }) {
                   <InsightCard key={`${selectedBriefing.id}-insight-${index}`} insight={insight} />
                 ))}
               </div>
+
+              {selectedBriefing.deepResearch ? (
+                <DeepResearchSummary research={selectedBriefing.deepResearch} />
+              ) : null}
             </section>
 
             <footer className="mt-8">

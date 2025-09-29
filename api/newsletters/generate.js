@@ -1,6 +1,11 @@
+/* eslint-env node */
 import { GoogleGenAI } from '@google/genai';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 import { supabase } from '../_lib/supabase.js';
 import { isNewsletterAdmin } from '../../config/newsletterAdminAllowlist.js';
+import { deepResearch } from '../../tools/deep-research/src/deep-research.js';
+import { getModel } from '../../tools/deep-research/src/ai/providers.js';
 
 const client = initClient();
 
@@ -48,14 +53,263 @@ function parseBody(body) {
   if (typeof body === 'string') {
     try {
       return JSON.parse(body);
-    } catch (error) {
+    } catch {
       return {};
     }
   }
   return body;
 }
 
-async function runNewsletterGeneration({ focus }) {
+async function summarizeDeepResearch({ focus, timeframe, learnings, visitedUrls }) {
+  const maxLearnings = Number.parseInt(process.env.DEEP_RESEARCH_MAX_LEARNINGS ?? '12', 10);
+  const maxItems = Number.isFinite(maxLearnings) && maxLearnings > 0 ? maxLearnings : 12;
+  const trimmedLearnings = learnings.slice(0, maxItems);
+  const trimmedUrls = visitedUrls.slice(0, 25);
+
+  const formattedLearnings = trimmedLearnings
+    .map((entry, index) => `${index + 1}. ${entry}`)
+    .join('\n');
+
+  const formattedUrls = trimmedUrls.map((url, index) => `${index + 1}. ${url}`).join('\n');
+
+  const focusLine = focus ? `Subscriber emphasis: ${focus}.` : '';
+  const coverageLabel = formatDisplayRange(new Date(timeframe.start), new Date(timeframe.end));
+
+  const prompt = `You are MonteCrypto's lead risk desk analyst preparing the Weekly Risk Brief for paying subscribers.
+Today's date: ${formatDisplayDate(new Date(timeframe.end || Date.now()))}.
+Coverage window: ${coverageLabel}.
+${focusLine}
+Use only the research learnings and URLs provided below to surface scam cases where victims reported losing funds. Highlight actionable mitigation guidance for each case.
+
+Research learnings (each line is an extracted fact):
+${formattedLearnings}
+
+Visited URLs (cite only from this list):
+${formattedUrls}
+
+Return strictly valid JSON with the structure:
+{
+  "summary": string overview tying the findings together,
+  "findings": [
+    {
+      "token": string token or project name (optional),
+      "eventDate": string ISO date (or "Unknown" if not explicit),
+      "title": string newsletter-ready headline,
+      "summary": string 1-2 sentence description referencing the losses,
+      "howToAvoid": string practical defensive guidance,
+      "threatLevel": "High" | "Medium" | "Low",
+      "sourceUris": string[] subset of the visited URLs supporting this finding
+    }
+  ]
+}
+If no credible loss events are present, return an empty findings array and explain why in the summary.`;
+
+  const schema = z.object({
+    summary: z.string().optional(),
+    findings: z
+      .array(
+        z.object({
+          token: z.string().optional(),
+          eventDate: z.string().optional(),
+          title: z.string(),
+          summary: z.string(),
+          howToAvoid: z.string(),
+          threatLevel: z.enum(['High', 'Medium', 'Low']).optional(),
+          sourceUris: z.array(z.string()).optional(),
+        }),
+      )
+      .max(Number.parseInt(process.env.DEEP_RESEARCH_MAX_FINDINGS ?? '5', 10)),
+  });
+
+  const result = await generateObject({
+    model: getModel(),
+    system: 'You are an exacting researcher. Answer with valid JSON only.',
+    prompt,
+    schema,
+  });
+
+  return result.object;
+}
+
+function normalizeResearchFinding(raw) {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      token: '',
+      title: '',
+      summary: '',
+      howToAvoid: '',
+      threatLevel: 'High',
+      eventDate: null,
+      sourceUris: [],
+    };
+  }
+
+  const sourceUris = Array.isArray(raw.sourceUris)
+    ? raw.sourceUris.map((uri) => textValue(uri)).filter(Boolean)
+    : [];
+
+  const normalizedDate = normalizeDateValue(raw.eventDate);
+
+  return {
+    token: textValue(raw.token),
+    title: textValue(raw.title),
+    summary: textValue(raw.summary),
+    howToAvoid: textValue(raw.howToAvoid),
+    threatLevel: normalizeThreatLevel(raw.threatLevel),
+    eventDate: normalizedDate,
+    sourceUris,
+  };
+}
+
+function formatResearchTitle(finding) {
+  const baseTitle = finding.title || (finding.token ? `${finding.token} scam losses` : 'Scam losses identified');
+  const dateLabel = finding.eventDate ? formatShortDate(new Date(finding.eventDate)) : null;
+  if (dateLabel) {
+    return `Deep Research — [${dateLabel}] ${baseTitle}`;
+  }
+  return `Deep Research — ${baseTitle}`;
+}
+
+function extractSourcesFromFindings(findings, fallbackUrls) {
+  const allowed = new Set(fallbackUrls);
+  const entries = [];
+  for (const finding of findings) {
+    const uris = Array.isArray(finding.sourceUris) ? finding.sourceUris : [];
+    for (const uri of uris) {
+      if (allowed.size && !allowed.has(uri)) continue;
+      entries.push({
+        uri,
+        title: finding.title || uri,
+      });
+    }
+  }
+  return entries;
+}
+
+function mergeInsights(baseInsights = [], extraInsights = []) {
+  const merged = [...baseInsights];
+  const seen = new Set(
+    baseInsights.map((insight) => textValue(insight?.title).toLowerCase()).filter(Boolean),
+  );
+
+  for (const insight of extraInsights) {
+    const key = textValue(insight?.title).toLowerCase();
+    if (!key || seen.has(key)) continue;
+    const normalizedInsight = {
+      title: textValue(insight?.title),
+      summary: textValue(insight?.summary),
+      howToAvoid: textValue(insight?.howToAvoid),
+      threatLevel: normalizeThreatLevel(insight?.threatLevel),
+    };
+
+    if (!normalizedInsight.title || !normalizedInsight.summary || !normalizedInsight.howToAvoid) {
+      continue;
+    }
+
+    merged.push(normalizedInsight);
+    seen.add(key);
+  }
+
+  return merged;
+}
+
+function mergeSources(baseSources = [], extraSources = []) {
+  const merged = [];
+  const seen = new Set();
+
+  for (const source of [...baseSources, ...extraSources]) {
+    const uri = textValue(source?.uri);
+    if (!uri || seen.has(uri)) continue;
+    seen.add(uri);
+    merged.push({
+      uri,
+      title: textValue(source?.title) || uri,
+    });
+  }
+
+  return merged;
+}
+
+function textValue(value) {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return '';
+}
+
+function normalizeThreatLevel(level) {
+  const normalized = textValue(level).toLowerCase();
+  if (normalized === 'high') return 'High';
+  if (normalized === 'low') return 'Low';
+  return 'Medium';
+}
+
+function normalizeDateValue(input) {
+  const value = textValue(input);
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString();
+}
+
+function formatDisplayDate(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return 'Unknown date';
+  }
+  return date.toLocaleDateString(undefined, {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatShortDate(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatDisplayRange(start, end) {
+  return `${formatDisplayDate(start)} – ${formatDisplayDate(end)}`;
+}
+
+function dedupeStrings(values) {
+  const seen = new Set();
+  const result = [];
+  for (const value of values) {
+    const normalized = textValue(value);
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+  }
+  return result;
+}
+
+function canRunDeepResearch() {
+  const hasFirecrawl = Boolean(process.env.FIRECRAWL_KEY);
+  const hasModel = Boolean(
+    process.env.OPENAI_KEY || process.env.CUSTOM_MODEL || process.env.FIREWORKS_KEY,
+  );
+  if (!hasFirecrawl || !hasModel) {
+    if (!hasFirecrawl) {
+      console.warn('Skipping deep research augmentation: FIRECRAWL_KEY not configured.');
+    }
+    if (!hasModel) {
+      console.warn('Skipping deep research augmentation: OpenAI-compatible model key missing.');
+    }
+    return false;
+  }
+  return true;
+}
+
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+async function runGeminiBriefing({ focus }) {
   const requestFocus = focus ? `Focus on ${focus}. ` : '';
   const prompt = `You are "Risky Kristy", a cryptocurrency threat analyst summarizing this week's most pressing scams.
 ${requestFocus}Use Google Search to identify the three most urgent and newsworthy crypto scam developments from the last 10 days.
@@ -101,6 +355,124 @@ The JSON must be parseable with no trailing prose. Threat levels must be consist
   result.status = 'draft';
 
   return result;
+}
+
+async function runDeepResearchAugmentation({ focus }) {
+  if (!canRunDeepResearch()) {
+    return null;
+  }
+
+  const now = new Date();
+  const endIso = now.toISOString();
+  const windowDays = Number.parseInt(process.env.DEEP_RESEARCH_WINDOW_DAYS ?? '10', 10);
+  const coverageDays = Number.isFinite(windowDays) && windowDays > 0 ? windowDays : 10;
+  const start = new Date(now.getTime() - coverageDays * DAY_IN_MS);
+  const startIso = start.toISOString();
+
+  const requestFocus = focus ? ` Focus on ${focus}.` : '';
+  const researchPrompt = `Research Objective: Identify cryptocurrency tokens or projects credibly accused of being scams where victims report losing funds.
+Timeframe: ${formatDisplayRange(start, now)}.
+Evidence Requirements: rely on firsthand loss reports, regulatory actions, or on-chain analyses that document losses. Capture token names, alleged scam pattern (rug pull, Ponzi, phishing, etc.), loss magnitude if stated, and impacted communities.${requestFocus}
+Only use trustworthy coverage windows (≤ ${coverageDays} days old) and avoid speculation.`;
+
+  const breadth = Number.parseInt(process.env.DEEP_RESEARCH_BREADTH ?? '4', 10);
+  const depth = Number.parseInt(process.env.DEEP_RESEARCH_DEPTH ?? '2', 10);
+  const researchBreadth = Number.isFinite(breadth) && breadth > 0 ? breadth : 4;
+  const researchDepth = Number.isFinite(depth) && depth > 0 ? depth : 2;
+
+  const { learnings = [], visitedUrls = [] } = await deepResearch({
+    query: researchPrompt,
+    breadth: researchBreadth,
+    depth: researchDepth,
+  });
+
+  const cleanLearnings = learnings.filter(Boolean);
+  const cleanUrls = dedupeStrings(visitedUrls.filter(Boolean));
+
+  if (!cleanLearnings.length) {
+    return {
+      insights: [],
+      sources: [],
+      metadata: {
+        generatedAt: endIso,
+        timeframe: { start: startIso, end: endIso },
+        summary: '',
+        findings: [],
+        learnings: [],
+        visitedUrls: cleanUrls,
+      },
+    };
+  }
+
+  const structured = await summarizeDeepResearch({
+    focus,
+    timeframe: { start: startIso, end: endIso },
+    learnings: cleanLearnings,
+    visitedUrls: cleanUrls,
+  });
+
+  const findings = (structured.findings || [])
+    .map(normalizeResearchFinding)
+    .filter((finding) => finding.summary && finding.howToAvoid);
+  const insights = findings
+    .map((finding) => ({
+      title: formatResearchTitle(finding),
+      summary: finding.summary,
+      howToAvoid: finding.howToAvoid,
+      threatLevel: finding.threatLevel,
+    }))
+    .filter((insight) => insight.title && insight.summary && insight.howToAvoid);
+
+  const sources = mergeSources([], extractSourcesFromFindings(findings, cleanUrls));
+
+  return {
+    insights,
+    sources,
+    metadata: {
+      generatedAt: endIso,
+      timeframe: { start: startIso, end: endIso },
+      summary: textValue(structured.summary),
+      findings,
+      learnings: cleanLearnings,
+      visitedUrls: cleanUrls,
+    },
+  };
+}
+
+async function runNewsletterGeneration({ focus }) {
+  const [geminiResult, deepResearchResult] = await Promise.all([
+    runGeminiBriefing({ focus }),
+    runDeepResearchAugmentation({ focus }).catch((error) => {
+      console.error('Deep research augmentation failed', error);
+      return null;
+    }),
+  ]);
+
+  const normalizedGemini = {
+    ...geminiResult,
+    insights: Array.isArray(geminiResult.insights) ? geminiResult.insights : [],
+    sources: Array.isArray(geminiResult.sources) ? geminiResult.sources : [],
+    metadata: geminiResult.metadata && typeof geminiResult.metadata === 'object'
+      ? { ...geminiResult.metadata }
+      : {},
+  };
+
+  if (!deepResearchResult) {
+    return normalizedGemini;
+  }
+
+  const mergedInsights = mergeInsights(normalizedGemini.insights, deepResearchResult.insights);
+  const mergedSources = mergeSources(normalizedGemini.sources, deepResearchResult.sources);
+
+  return {
+    ...normalizedGemini,
+    insights: mergedInsights,
+    sources: mergedSources,
+    metadata: {
+      ...normalizedGemini.metadata,
+      deepResearch: deepResearchResult.metadata,
+    },
+  };
 }
 
 async function extractText(response) {

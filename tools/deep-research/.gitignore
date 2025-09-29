@@ -32,6 +32,14 @@ out/
 build
 dist
 
+# TypeScript build artifacts
+src/**/*.d.ts
+src/**/*.d.ts.map
+src/api.js
+src/feedback.js
+src/run.js
+src/ai/text-splitter.test.js
+
 
 # Debug
 npm-debug.log*

@@ -4,6 +4,7 @@ import { useSupabaseSession } from '../../hooks/useSupabaseSession.js';
 import { AuthPanel } from '../auth/AuthPanel.jsx';
 import { PayPalSubscriptionButton } from '../payments/PayPalSubscriptionButton.jsx';
 import { NewsletterHub, DEFAULT_BRIEFINGS } from './NewsletterHub.jsx';
+import { normalizeBriefing } from './briefingNormalizer.js';
 import { LoadingSpinner } from './LoadingSpinner.jsx';
 import {
   getEntitlementStatus,
@@ -15,7 +16,12 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
   const { session, isLoading: isSessionLoading } = useSupabaseSession();
   const [entitlement, setEntitlement] = useState(null);
   const [isEntitlementLoading, setIsEntitlementLoading] = useState(true);
-  const [briefings, setBriefings] = useState(initialBriefings);
+  const [briefings, setBriefings] = useState(() => {
+    if (!Array.isArray(initialBriefings)) return initialBriefings;
+    return initialBriefings
+      .map((item) => normalizeBriefing(item) || null)
+      .filter(Boolean);
+  });
   const [isBriefingsLoading, setIsBriefingsLoading] = useState(false);
   const [briefingsError, setBriefingsError] = useState(null);
   const isMountedRef = useRef(true);
@@ -77,7 +83,7 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
 
     const { data, error } = await supabase
       .from('newsletters')
-      .select('id, headline, summary, insights, sources, published_at')
+      .select('id, headline, summary, insights, sources, metadata, published_at')
       .order('published_at', { ascending: false, nullsFirst: false });
 
     if (error) {
@@ -98,14 +104,9 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
       return;
     }
 
-    const sanitized = data.map((item) => ({
-      id: item.id,
-      headline: item.headline,
-      summary: item.summary,
-      publishedAt: item.published_at,
-      insights: Array.isArray(item.insights) ? item.insights : [],
-      sources: Array.isArray(item.sources) ? item.sources : [],
-    }));
+    const sanitized = data
+      .map((item) => normalizeBriefing({ ...item, publishedAt: item.published_at }))
+      .filter(Boolean);
 
     if (isMountedRef.current) {
       setBriefings(sanitized);
