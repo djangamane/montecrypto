@@ -1,34 +1,9 @@
 /* eslint-env node */
-import { z } from 'zod';
+import { GoogleGenAI } from '@google/genai';
 import { supabase } from '../_lib/supabase.js';
 import { isNewsletterAdmin } from '../../config/newsletterAdminAllowlist.js';
 
-const PERPLEXITY_ENDPOINT = process.env.PERPLEXITY_API_URL || 'https://api.perplexity.ai/chat/completions';
-const PERPLEXITY_MODEL = process.env.PERPLEXITY_MODEL || 'pplx-7b-online';
-const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || '';
-
-const OutputSchema = z.object({
-  headline: z.string().min(1, 'headline required'),
-  summary: z.string().min(1, 'summary required'),
-  insights: z
-    .array(
-      z.object({
-        title: z.string().min(1),
-        summary: z.string().min(1),
-        howToAvoid: z.string().min(1),
-        threatLevel: z.enum(['High', 'Medium', 'Low']).optional(),
-      }),
-    )
-    .default([]),
-  sources: z
-    .array(
-      z.object({
-        uri: z.string().min(1),
-        title: z.string().optional(),
-      }),
-    )
-    .default([]),
-});
+const client = initClient();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -54,14 +29,14 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  if (!PERPLEXITY_API_KEY) {
-    return res.status(500).json({ error: 'PERPLEXITY_API_KEY is not configured.' });
+  if (!client) {
+    return res.status(500).json({ error: 'Gemini API key not configured' });
   }
 
   const { focus } = parseBody(req.body);
 
   try {
-    const result = await runPerplexityBriefing({ focus: typeof focus === 'string' ? focus.trim() : '' });
+    const result = await runNewsletterGeneration({ focus });
     return res.status(200).json(result);
   } catch (error) {
     console.error('Failed to generate newsletter briefing', error);
@@ -81,183 +56,197 @@ function parseBody(body) {
   return body;
 }
 
-async function runPerplexityBriefing({ focus }) {
-  const timeWindowDays = Number.parseInt(process.env.PERPLEXITY_WINDOW_DAYS ?? '10', 10);
-  const now = new Date();
-  const start = new Date(now.getTime() - Math.max(timeWindowDays, 1) * DAY_IN_MS);
-
-  const requestBody = buildPerplexityRequest({ focus, start, now });
-  const response = await fetch(PERPLEXITY_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
-    },
-    body: JSON.stringify(requestBody),
+async function runNewsletterGeneration({ focus }) {
+  const briefing = await runGeminiBriefing({ focus }).catch((error) => {
+    console.error('Gemini workflow failed', error);
+    return buildGeminiFallback({ focus, error });
   });
 
-  if (!response.ok) {
-    const errorPayload = await safeReadJson(response);
-    const message = errorPayload?.error?.message || response.statusText;
-    throw new Error(`Perplexity API error (${response.status}): ${message}`);
-  }
-
-  const payload = await response.json();
-  const rawContent = extractAssistantText(payload);
-  const parsed = OutputSchema.safeParse(normalizeJson(rawContent));
-
-  if (!parsed.success) {
-    console.error('Perplexity response did not match schema', parsed.error);
-    throw new Error('Perplexity returned an unexpected response.');
-  }
-
-  return normalizeBriefing(parsed.data, {
-    generatedAt: now.toISOString(),
-    timeframe: { start: start.toISOString(), end: now.toISOString() },
-    focus,
-  });
+  return normalizeBriefing(briefing);
 }
 
-function buildPerplexityRequest({ focus, start, now }) {
-  const focusLine = focus ? `Focus on: ${focus}.` : '';
-  const prompt = `You are "Risky Kristy", a cryptocurrency threat analyst who writes the MonteCrypto Weekly Risk Brief.
-Summarize the most urgent crypto scam or fraud developments from the last ${Math.max(
-    Number.parseInt(process.env.PERPLEXITY_WINDOW_DAYS ?? '10', 10),
-    1,
-  )} days (${formatDate(start)} to ${formatDate(now)}).
-${focusLine}
-Return JSON ONLY, no prose, following this schema:
+async function runGeminiBriefing({ focus }) {
+  const requestFocus = focus ? `Focus on ${focus}. ` : '';
+  const prompt = `You are "Risky Kristy", a cryptocurrency threat analyst summarizing this week's most pressing scams.
+${requestFocus}Use Google Search to identify the three most urgent and newsworthy crypto scam developments from the last 10 days.
+Return ONLY valid JSON with the following structure:
 {
-  "headline": string,
-  "summary": string,
+  "headline": string catchy weekly headline,
+  "summary": string 2-3 sentences overview suitable for newsletter intro,
   "insights": [
     {
-      "title": string,
-      "summary": string,
-      "howToAvoid": string,
+      "title": string descriptive scam title,
+      "summary": string concise explanation of how the scam operates and who it targets,
+      "howToAvoid": string actionable defensive guidance,
       "threatLevel": "High" | "Medium" | "Low"
     }
   ],
   "sources": [
     {
-      "uri": string,
-      "title": string
+      "uri": string URL reference,
+      "title": string human readable title
     }
   ]
 }
-Rules:
-- Cite real URLs in sources (no placeholders).
-- Prioritize cases where victims lost funds (rug pulls, phishing, Ponzi, hacks).
-- Keep insights concise but actionable, with clear defensive advice.
-- If no credible losses were found, provide an empty insights array and explain why in the summary.`;
+The JSON must be parseable with no trailing prose. Threat levels must be consistent with risk severity.`;
+
+  const response = await client.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+    config: {
+      tools: [{ googleSearch: {} }],
+    },
+  });
+
+  const rawText = await extractText(response);
+  const jsonPayload = sanitizeJson(rawText);
+  return JSON.parse(jsonPayload);
+}
+
+function buildGeminiFallback({ focus, error }) {
+  const parsed = parseGeminiError(error);
+  const summaryMessage = parsed
+    ? `Gemini did not return a briefing. (${parsed}).`
+    : 'Gemini did not return a briefing. Manual review required.';
 
   return {
-    model: PERPLEXITY_MODEL,
-    max_tokens: Number.parseInt(process.env.PERPLEXITY_MAX_TOKENS ?? '1200', 10),
-    temperature: Number.parseFloat(process.env.PERPLEXITY_TEMPERATURE ?? '0.2'),
-    frequency_penalty: 1,
-    stream: false,
-    messages: [
-      {
-        role: 'system',
-        content: 'Be precise and concise in your responses. Respond in English.',
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  };
-}
-
-function extractAssistantText(payload) {
-  const choice = payload?.choices?.[0];
-  if (!choice) throw new Error('Perplexity response missing choices array.');
-  const message = choice.message;
-  if (!message) throw new Error('Perplexity response missing message content.');
-
-  if (typeof message.content === 'string') {
-    return message.content;
-  }
-
-  if (Array.isArray(message.content)) {
-    return message.content
-      .map((part) => (typeof part === 'string' ? part : part?.text ?? ''))
-      .join('\n')
-      .trim();
-  }
-
-  throw new Error('Perplexity message content in unexpected format.');
-}
-
-function normalizeJson(rawContent) {
-  if (!rawContent || typeof rawContent !== 'string') {
-    throw new Error('Empty response from Perplexity.');
-  }
-
-  let trimmed = rawContent.trim();
-  if (trimmed.startsWith('```')) {
-    trimmed = trimmed.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
-  }
-
-  try {
-    return JSON.parse(trimmed);
-  } catch (error) {
-    console.error('Failed to parse Perplexity JSON', { rawContent });
-    throw error;
-  }
-}
-
-function normalizeBriefing(data, metadata) {
-  const insights = data.insights
-    .map((insight) => ({
-      title: insight.title.trim(),
-      summary: insight.summary.trim(),
-      howToAvoid: insight.howToAvoid.trim(),
-      threatLevel: normalizeThreatLevel(insight.threatLevel),
-    }))
-    .filter((item) => item.title && item.summary && item.howToAvoid);
-
-  const sources = data.sources
-    .map((source, index) => ({
-      uri: source.uri.trim(),
-      title: (source.title || `Source ${index + 1}`).trim(),
-    }))
-    .filter((item) => item.uri);
-
-  return {
-    id: `draft-${Date.now()}`,
-    headline: data.headline.trim(),
-    summary: data.summary.trim(),
-    insights,
-    sources,
+    headline: 'Weekly Risk Brief — Manual Review Required',
+    summary: summaryMessage,
+    insights: [],
+    sources: [],
     status: 'draft',
-    publishedAt: new Date().toISOString(),
     metadata: {
-      ...metadata,
-      perplexityModel: PERPLEXITY_MODEL,
+      geminiError: parsed,
+      geminiStatus: errorStatus(error) || null,
+      focus: typeof focus === 'string' ? focus : null,
     },
   };
 }
 
+function normalizeBriefing(raw) {
+  const fallbackHeadline = 'Weekly Risk Brief';
+  const fallbackSummary =
+    'Summary not provided by Gemini. Review and update before publishing.';
+
+  const normalizedInsights = Array.isArray(raw?.insights)
+    ? raw.insights.map((insight, index) => normalizeInsight(insight, index))
+    : [];
+
+  const normalizedSources = Array.isArray(raw?.sources)
+    ? raw.sources
+        .map((source, index) => normalizeSource(source, index))
+        .filter(Boolean)
+    : [];
+
+  return {
+    id: raw?.id || `draft-${Date.now()}`,
+    headline: textValue(raw?.headline) || fallbackHeadline,
+    summary: textValue(raw?.summary) || fallbackSummary,
+    publishedAt: raw?.publishedAt || new Date().toISOString(),
+    insights: normalizedInsights,
+    sources: normalizedSources,
+    status: raw?.status || 'draft',
+    metadata: raw?.metadata || {},
+  };
+}
+
+function normalizeInsight(insight, index) {
+  const fallbackTitle = `Insight ${index + 1}`;
+  const fallbackSummary =
+    'Gemini did not include a summary for this threat. Add context before publishing.';
+  const fallbackAvoid =
+    'Gemini did not provide mitigation guidance. Insert manual recommendations.';
+
+  return {
+    title: textValue(insight?.title) || fallbackTitle,
+    summary: textValue(insight?.summary) || fallbackSummary,
+    howToAvoid: textValue(insight?.howToAvoid) || fallbackAvoid,
+    threatLevel: normalizeThreatLevel(insight?.threatLevel),
+  };
+}
+
+function normalizeSource(source, index) {
+  const uri = textValue(source?.uri);
+  if (!uri) return null;
+
+  return {
+    uri,
+    title: textValue(source?.title) || `Source ${index + 1}`,
+  };
+}
+
+function textValue(value) {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return '';
+}
+
 function normalizeThreatLevel(level) {
-  const normalized = typeof level === 'string' ? level.trim().toLowerCase() : '';
+  const normalized = textValue(level).toLowerCase();
   if (normalized === 'high') return 'High';
+  if (normalized === 'medium') return 'Medium';
   if (normalized === 'low') return 'Low';
   return 'Medium';
 }
 
-async function safeReadJson(response) {
+function parseGeminiError(error) {
+  if (!error) return '';
+  if (typeof error === 'string') return error.slice(0, 500);
+
+  const dataMessage = error?.response?.data?.error?.message;
+  const topMessage = error?.message;
+
+  const message = textValue(dataMessage || topMessage);
+  if (message) return message.slice(0, 500);
+
   try {
-    return await response.json();
-  } catch {
-    return null;
+    return JSON.stringify(error, Object.getOwnPropertyNames(error)).slice(0, 500);
+  } catch (jsonError) {
+    console.error('Failed to serialize Gemini error', jsonError);
+    return 'Unknown Gemini error';
   }
 }
 
-function formatDate(date) {
-  return date.toISOString().split('T')[0];
+function errorStatus(error) {
+  return error?.response?.status ?? error?.status ?? null;
 }
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
+async function extractText(response) {
+  if (!response) return '';
+  if (typeof response.text === 'function') {
+    return response.text();
+  }
+  if (typeof response.text === 'string') {
+    return response.text;
+  }
+  const candidates = response.candidates || [];
+  const parts = candidates[0]?.content?.parts;
+  if (Array.isArray(parts)) {
+    return parts
+      .map((part) => (typeof part.text === 'string' ? part.text : ''))
+      .join('');
+  }
+  return '';
+}
+
+function sanitizeJson(raw) {
+  if (!raw || typeof raw !== 'string') {
+    throw new Error('Gemini response empty');
+  }
+  const firstBrace = raw.indexOf('{');
+  const lastBrace = raw.lastIndexOf('}');
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+    throw new Error('Gemini returned invalid JSON.');
+  }
+  return raw.slice(firstBrace, lastBrace + 1);
+}
+
+function initClient() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn('GEMINI_API_KEY is not set. Newsletter generation endpoint disabled.');
+    return null;
+  }
+  return new GoogleGenAI({ apiKey });
+}
