@@ -5,8 +5,8 @@
 - Committed email updates locally (`Update Jason contact email`).
 - Confirmed Resend delivery works with the new domain.
 - Cloned `dzhng/deep-research` into `tools/deep-research` for local Node worker integration.
-- `/api/newsletters/generate` rolls back to the Gemini-only workflow: Google search-powered summary with manual fallback (no deep research augmentation).
-- Removed the DeepResearch augmentation pipeline; the admin view will only show Gemini insights and sources.
+- `/api/newsletters/generate` now runs Gemini for the weekly summary and Perplexity for scam coin findings (no more DeepResearch pipeline).
+- DeepResearch integration remains archived; admin surfaces Gemini insights plus Perplexity "Coin Watch" items when available.
 
 ## Deep-Research Integration Plan (dzhng/deep-research)
 1. **Repo Review** — Audit the TypeScript implementation to identify entry points (`src/index.ts`, report generator) and confirm dependency list (Firecrawl + OpenAI/Fireworks keys).
