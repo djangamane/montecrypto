@@ -4,7 +4,7 @@ import { supabase } from '../_lib/supabase.js';
 import { isNewsletterAdmin } from '../../config/newsletterAdminAllowlist.js';
 
 const PERPLEXITY_ENDPOINT = process.env.PERPLEXITY_API_URL || 'https://api.perplexity.ai/chat/completions';
-const PERPLEXITY_MODEL = process.env.PERPLEXITY_MODEL || 'pplx-7b-online';
+const PERPLEXITY_COIN_MODEL = process.env.PERPLEXITY_COIN_MODEL || process.env.PERPLEXITY_MODEL || 'pplx-7b-online';
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || '';
 
 const client = initClient();
@@ -137,7 +137,7 @@ async function runPerplexityCoinScan({ focus }) {
       Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
     },
     body: JSON.stringify({
-      model: PERPLEXITY_MODEL,
+      model: PERPLEXITY_COIN_MODEL,
       max_tokens: Number.parseInt(process.env.PERPLEXITY_MAX_TOKENS ?? '1200', 10),
       temperature: Number.parseFloat(process.env.PERPLEXITY_TEMPERATURE ?? '0.1'),
       frequency_penalty: 1,
@@ -171,7 +171,7 @@ async function runPerplexityCoinScan({ focus }) {
     metadata: {
       timeframe: { start: start.toISOString(), end: now.toISOString() },
       generatedAt: now.toISOString(),
-      model: PERPLEXITY_MODEL,
+      model: PERPLEXITY_COIN_MODEL,
     },
   };
 }
