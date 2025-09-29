@@ -94,6 +94,61 @@ function normalizeDeepResearch(raw) {
   };
 }
 
+function normalizeCoinScanFinding(raw) {
+  if (!isPlainObject(raw)) return null;
+
+  const sources = Array.isArray(raw.sources)
+    ? raw.sources
+        .map((item, index) => ({
+          uri: textValue(item?.uri),
+          title: textValue(item?.title) || `Source ${index + 1}`,
+        }))
+        .filter((item) => item.uri)
+    : [];
+
+  return {
+    token: textValue(raw.token),
+    title: textValue(raw.title),
+    summary: textValue(raw.summary),
+    howToAvoid: textValue(raw.howToAvoid),
+    threatLevel: normalizeThreatLevel(raw.threatLevel),
+    sources,
+  };
+}
+
+function normalizeCoinScan(raw) {
+  if (!isPlainObject(raw)) return null;
+
+  const findings = Array.isArray(raw.findings)
+    ? raw.findings
+        .map((item) => normalizeCoinScanFinding(item))
+        .filter((item) => item && item.summary && item.howToAvoid)
+    : [];
+
+  const sources = Array.isArray(raw.sources)
+    ? raw.sources
+        .map((item, index) => ({
+          uri: textValue(item?.uri),
+          title: textValue(item?.title) || `Source ${index + 1}`,
+        }))
+        .filter((item) => item.uri)
+    : [];
+
+  const metadata = isPlainObject(raw.metadata) ? { ...raw.metadata } : {};
+
+  return {
+    findings,
+    sources,
+    summary: textValue(raw.summary) || textValue(metadata.rawContent),
+    metadata: {
+      model: textValue(metadata.model) || null,
+      generatedAt: textValue(metadata.generatedAt) || null,
+      timeframe: normalizeTimeframe(metadata.timeframe),
+      rawContent: textValue(metadata.rawContent),
+    },
+  };
+}
+
 export function normalizeBriefing(raw) {
   if (!raw) {
     return null;
@@ -115,7 +170,12 @@ export function normalizeBriefing(raw) {
 
   const metadata = isPlainObject(raw?.metadata) ? { ...raw.metadata } : {};
   const deepResearch = normalizeDeepResearch(raw?.deepResearch ?? metadata?.deepResearch);
-  const mergedMetadata = deepResearch ? { ...metadata, deepResearch } : metadata;
+  const coinScan = normalizeCoinScan(metadata?.coinScan);
+  const mergedMetadata = {
+    ...metadata,
+    ...(deepResearch ? { deepResearch } : {}),
+    ...(coinScan ? { coinScan } : {}),
+  };
 
   return {
     id: raw?.id || `draft-${Date.now()}`,
@@ -127,5 +187,6 @@ export function normalizeBriefing(raw) {
     status: raw?.status || 'draft',
     metadata: mergedMetadata,
     deepResearch,
+    coinScan,
   };
 }

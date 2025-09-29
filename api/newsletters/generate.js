@@ -234,75 +234,43 @@ function buildGeminiFallback({ focus, error }) {
 }
 
 function mergeCoinScan(briefing, coinScan) {
-  const mergedInsights = Array.isArray(briefing.insights) ? [...briefing.insights] : [];
-  const mergedSources = Array.isArray(briefing.sources) ? [...briefing.sources] : [];
-  const existingInsightKeys = new Set(
-    mergedInsights.map((insight) => textValue(insight?.title).toLowerCase()).filter(Boolean),
-  );
-  const existingSourceUris = new Set(mergedSources.map((source) => textValue(source?.uri)).filter(Boolean));
+  const summaryText = coinScan.findings.length
+    ? textValue(coinScan.summary)
+    : summarizeRawContent(coinScan.metadata?.rawContent);
 
-  for (const finding of coinScan.findings) {
-    const baseTitle = finding.title || (finding.token ? `${finding.token} scam watch` : 'Coin scam update');
-    const prefixedTitle = `Coin Watch — ${baseTitle}`;
-    const titleKey = textValue(prefixedTitle).toLowerCase();
-    const summary = textValue(finding.summary);
-    const howToAvoid = textValue(finding.howToAvoid);
+  const normalizedCoinScan = {
+    ...coinScan,
+    summary: summaryText || null,
+  };
 
-    if (!titleKey || !summary || !howToAvoid || existingInsightKeys.has(titleKey)) {
-      continue;
-    }
-
-    mergedInsights.push({
-      title: prefixedTitle,
-      summary,
-      howToAvoid,
-      threatLevel: normalizeThreatLevel(finding.threatLevel),
-    });
-    existingInsightKeys.add(titleKey);
-
-    for (const source of finding.sources || []) {
-      const uri = textValue(source.uri);
-      if (!uri || existingSourceUris.has(uri)) continue;
-      mergedSources.push({
-        uri,
-        title: textValue(source.title) || uri,
-      });
-      existingSourceUris.add(uri);
-    }
-  }
-
-  if (!coinScan.findings.length) {
-    const rawSummary = summarizeRawContent(coinScan.metadata?.rawContent);
-    mergedInsights.push({
-      title: 'Coin Watch — Perplexity Summary',
-      summary:
-        rawSummary ||
-        'Perplexity did not return structured findings. Review the raw output in metadata.coinScan.rawContent for manual curation.',
-      howToAvoid:
-        'Treat unverified tokens with extreme caution. Validate claims through multiple trusted sources before engaging or investing.',
-      threatLevel: 'Medium',
-    });
-  }
-
-  for (const source of coinScan.sources || []) {
-    const uri = textValue(source.uri);
-    if (!uri || existingSourceUris.has(uri)) continue;
-    mergedSources.push({
-      uri,
-      title: textValue(source.title) || uri,
-    });
-    existingSourceUris.add(uri);
-  }
+  const mergedSources = mergeSourceLists(briefing.sources, normalizedCoinScan.sources);
 
   return {
     ...briefing,
-    insights: mergedInsights,
     sources: mergedSources,
     metadata: {
       ...(briefing.metadata || {}),
-      coinScan,
+      coinScan: normalizedCoinScan,
     },
+    coinScan: normalizedCoinScan,
   };
+}
+
+function mergeSourceLists(base = [], extras = []) {
+  const merged = Array.isArray(base) ? [...base] : [];
+  const seen = new Set(merged.map((item) => textValue(item?.uri)).filter(Boolean));
+
+  for (const source of extras || []) {
+    const uri = textValue(source?.uri);
+    if (!uri || seen.has(uri)) continue;
+    merged.push({
+      uri,
+      title: textValue(source?.title) || uri,
+    });
+    seen.add(uri);
+  }
+
+  return merged;
 }
 
 function normalizeBriefing(raw) {

@@ -4,6 +4,7 @@ import { InsightCard } from './InsightCard.jsx';
 import { SourcesList } from './SourcesList.jsx';
 import { LoadingSpinner } from './LoadingSpinner.jsx';
 import { DeepResearchSummary } from './DeepResearchSummary.jsx';
+import { CoinWatchSummary } from './CoinWatchSummary.jsx';
 import { normalizeBriefing } from './briefingNormalizer.js';
 
 function formatHeadlineDate(date) {
@@ -90,13 +91,16 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
     const {
       id: _draftId,
       deepResearch,
+      coinScan,
       metadata: existingMetadata = {},
       ...payload
     } = draftBriefing;
 
-    const metadata = deepResearch
-      ? { ...existingMetadata, deepResearch }
-      : { ...existingMetadata };
+    const metadata = {
+      ...existingMetadata,
+      ...(deepResearch ? { deepResearch } : {}),
+      ...(coinScan ? { coinScan } : {}),
+    };
 
     fetch('/api/newsletters', {
       method: 'POST',
@@ -265,6 +269,10 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
 
           {draftBriefing.deepResearch ? (
             <DeepResearchSummary research={draftBriefing.deepResearch} />
+          ) : null}
+
+          {draftBriefing.coinScan ? (
+            <CoinWatchSummary coinScan={draftBriefing.coinScan} />
           ) : null}
 
           <SourcesList sources={draftBriefing.sources} />

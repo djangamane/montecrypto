@@ -3,6 +3,7 @@ import { Calendar, Info } from './Icons.jsx';
 import { InsightCard } from './InsightCard.jsx';
 import { SourcesList } from './SourcesList.jsx';
 import { DeepResearchSummary } from './DeepResearchSummary.jsx';
+import { CoinWatchSummary } from './CoinWatchSummary.jsx';
 
 function formatDate(isoDate) {
   if (!isoDate) return 'Unknown date';
@@ -108,6 +109,10 @@ export function NewsletterArchive({ briefings = [] }) {
 
               {selectedBriefing.deepResearch ? (
                 <DeepResearchSummary research={selectedBriefing.deepResearch} />
+              ) : null}
+
+              {selectedBriefing.coinScan ? (
+                <CoinWatchSummary coinScan={selectedBriefing.coinScan} />
               ) : null}
             </section>
 
