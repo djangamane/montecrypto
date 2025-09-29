@@ -238,15 +238,27 @@ function mergeCoinScan(briefing, coinScan) {
     ? textValue(coinScan.summary)
     : summarizeRawContent(coinScan.metadata?.rawContent);
 
+  const prefixedFindings = coinScan.findings.map((finding) => ({
+    title: `Coin Watch — ${finding.title || finding.token || 'Scam finding'}`,
+    summary: finding.summary,
+    howToAvoid: finding.howToAvoid,
+    threatLevel: normalizeThreatLevel(finding.threatLevel),
+  }));
+
   const normalizedCoinScan = {
     ...coinScan,
     summary: summaryText || null,
   };
 
+  const mergedInsights = Array.isArray(briefing.insights)
+    ? [...briefing.insights, ...prefixedFindings]
+    : prefixedFindings;
+
   const mergedSources = mergeSourceLists(briefing.sources, normalizedCoinScan.sources);
 
   return {
     ...briefing,
+    insights: mergedInsights,
     sources: mergedSources,
     metadata: {
       ...(briefing.metadata || {}),
@@ -424,6 +436,19 @@ function summarizeRawContent(rawContent) {
     .replace(/```(json)?/gi, '')
     .trim();
   if (!cleaned) return '';
+  try {
+    const parsed = JSON.parse(cleaned);
+    if (Array.isArray(parsed?.findings) && parsed.findings.length) {
+      return parsed.findings
+        .map((item) => {
+          const token = textValue(item?.token);
+          const sum = textValue(item?.summary);
+          return token ? `${token}: ${sum}` : sum;
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+  } catch {}
   const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '600', 10);
   return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
 }
@@ -433,6 +458,19 @@ function convertTextToFindings(text) {
 
   const findings = [];
   const sources = [];
+
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed?.findings)) {
+      findings.push(...parsed.findings);
+    }
+    if (Array.isArray(parsed?.sources)) {
+      sources.push(...parsed.sources);
+    }
+    if (findings.length || sources.length) {
+      return { findings, sources };
+    }
+  } catch {}
 
   const findingRegex = /\n?\d+\.\s*\*\*(.+?)\*\*\s*-\s*([\s\S]*?)(?=\n\d+\.\s*\*\*|$)/g;
   let match;
