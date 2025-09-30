@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { Header } from "./components/Header.jsx";
 import { Hero } from "./components/Hero.jsx";
-import { AdPlaceholder } from "./components/AdPlaceholder.jsx";
 import { VideoSection } from "./components/VideoSection.jsx";
 import { PremiumCourse } from "./components/PremiumCourse.jsx";
 import { Benefits } from "./components/Benefits.jsx";
@@ -60,8 +59,6 @@ function App() {
 
         <VideoSection ref={courseSectionRef} />
 
-        <AdPlaceholder label="Responsive in-content ad" />
-
         <PremiumCourse onBookNowClick={openModal} />
 
         <section id="risk-meter" ref={riskSectionRef} className="px-6 py-16">
@@ -83,8 +80,6 @@ function App() {
         </section>
 
         <Benefits />
-
-        <AdPlaceholder label="Responsive in-content ad" />
 
         <AboutSection />
       </main>
