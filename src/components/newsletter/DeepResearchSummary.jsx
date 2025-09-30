@@ -1,18 +1,18 @@
-import { Calendar, Info, Tag } from './Icons.jsx';
+import { Calendar, Info, Tag } from "./Icons.jsx";
 
 function formatDateLabel(isoDate) {
-  if (!isoDate) return 'Date unknown';
+  if (!isoDate) return "Date unknown";
   const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return 'Date unknown';
+  if (Number.isNaN(date.getTime())) return "Date unknown";
   return date.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
 function formatRange(range) {
-  if (!range) return 'Timeframe unknown';
+  if (!range) return "Timeframe unknown";
   const { start, end } = range;
   const startLabel = formatDateLabel(start);
   const endLabel = formatDateLabel(end);
@@ -25,11 +25,11 @@ function formatGeneratedAt(iso) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
@@ -50,16 +50,23 @@ function uniqueSources(findings = []) {
 export function DeepResearchSummary({ research }) {
   if (!research) return null;
 
-  const { timeframe, summary, findings = [], generatedAt } = research;
+  const {
+    timeframe,
+    summary,
+    findings = [],
+    generatedAt,
+    metadata = {},
+  } = research;
   const coverageDisplay = formatRange(timeframe);
   const generatedLabel = formatGeneratedAt(generatedAt);
   const sources = uniqueSources(findings).slice(0, 6);
+  const model = metadata.model || "deep-research";
 
   return (
     <section className="space-y-5 rounded-3xl border border-brand-link/30 bg-brand-link/5 p-6">
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-link/70">
-          Deep research findings
+          Coin Watch — Perplexity Deep Research
         </p>
         <div className="flex flex-wrap items-center gap-3 text-xs text-brand-muted">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-link/40 px-3 py-1 text-brand-link">
@@ -72,9 +79,17 @@ export function DeepResearchSummary({ research }) {
               Generated {generatedLabel}
             </span>
           ) : null}
+          <span className="inline-flex items-center gap-2 rounded-full border border-brand-muted/40 px-3 py-1 text-brand-muted">
+            <Tag className="h-4 w-4" />
+            Model {model}
+          </span>
         </div>
         {summary ? (
-          <p className="text-sm leading-relaxed text-brand-muted">{summary}</p>
+          <div className="space-y-2 text-sm leading-relaxed text-brand-muted">
+            {summary.split(/\n+/).map((line, index) => (
+              <p key={`deep-research-summary-${index}`}>{line}</p>
+            ))}
+          </div>
         ) : null}
       </header>
 
@@ -102,19 +117,28 @@ export function DeepResearchSummary({ research }) {
                 </span>
               ) : null}
               <span className="rounded-full border border-risk-high/30 bg-risk-high/10 px-2 py-1 text-[0.65rem] font-semibold text-risk-high">
-                {finding.threatLevel || 'High'} risk
+                {finding.threatLevel || "High"} risk
               </span>
             </div>
 
-            <h4 className="text-lg font-semibold text-brand-text">{finding.title}</h4>
-            <p className="text-sm leading-relaxed text-brand-muted">{finding.summary}</p>
+            <h4 className="text-lg font-semibold text-brand-text">
+              {finding.title}
+            </h4>
+            <p className="text-sm leading-relaxed text-brand-muted">
+              {finding.summary}
+            </p>
             <p className="text-sm font-medium text-brand-link">
-              Defensive move: <span className="font-normal text-brand-muted">{finding.howToAvoid}</span>
+              Defensive move:{" "}
+              <span className="font-normal text-brand-muted">
+                {finding.howToAvoid}
+              </span>
             </p>
 
             {Array.isArray(finding.sourceUris) && finding.sourceUris.length ? (
               <div className="border-t border-brand-muted/20 pt-3 text-xs text-brand-muted">
-                <p className="font-semibold uppercase tracking-[0.2em] text-brand-link/70">Sources</p>
+                <p className="font-semibold uppercase tracking-[0.2em] text-brand-link/70">
+                  Sources
+                </p>
                 <ul className="mt-2 space-y-1 break-words">
                   {finding.sourceUris.slice(0, 4).map((uri) => (
                     <li key={uri}>
@@ -137,7 +161,9 @@ export function DeepResearchSummary({ research }) {
 
       {sources.length ? (
         <footer className="border-t border-brand-muted/20 pt-4 text-xs text-brand-muted">
-          <p className="font-semibold uppercase tracking-[0.2em] text-brand-link/70">All research URLs</p>
+          <p className="font-semibold uppercase tracking-[0.2em] text-brand-link/70">
+            All research URLs
+          </p>
           <ul className="mt-2 space-y-1 break-words">
             {sources.map((source) => (
               <li key={source.uri}>

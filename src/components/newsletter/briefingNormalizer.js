@@ -1,32 +1,42 @@
+function stripThink(text) {
+  if (!text) return "";
+  const endTag = "</think>";
+  const endTagIndex = text.indexOf(endTag);
+  if (endTagIndex !== -1) {
+    return text.substring(endTagIndex + endTag.length).trim();
+  }
+  return text;
+}
+
 function textValue(value) {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value.trim();
   }
-  return '';
+  return "";
 }
 
 function normalizeThreatLevel(level) {
   const normalized = textValue(level).toLowerCase();
-  if (normalized === 'high') return 'High';
-  if (normalized === 'medium') return 'Medium';
-  if (normalized === 'low') return 'Low';
-  return 'Medium';
+  if (normalized === "high") return "High";
+  if (normalized === "medium") return "Medium";
+  if (normalized === "low") return "Low";
+  return "Medium";
 }
 
 function isPlainObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value);
+  return value && typeof value === "object" && !Array.isArray(value);
 }
 
 function normalizeInsight(insight, index) {
   const fallbackTitle = `Insight ${index + 1}`;
   const fallbackSummary =
-    'Gemini did not include a summary for this threat. Add context before publishing.';
+    "Gemini did not include a summary for this threat. Add context before publishing.";
   const fallbackAvoid =
-    'Gemini did not provide mitigation guidance. Insert manual recommendations.';
+    "Gemini did not provide mitigation guidance. Insert manual recommendations.";
 
   return {
     title: textValue(insight?.title) || fallbackTitle,
-    summary: textValue(insight?.summary) || fallbackSummary,
+    summary: stripThink(textValue(insight?.summary)) || fallbackSummary,
     howToAvoid: textValue(insight?.howToAvoid) || fallbackAvoid,
     threatLevel: normalizeThreatLevel(insight?.threatLevel),
   };
@@ -63,7 +73,7 @@ function normalizeResearchFinding(raw) {
   return {
     token: textValue(raw.token),
     title: textValue(raw.title),
-    summary: textValue(raw.summary),
+    summary: stripThink(textValue(raw.summary)),
     howToAvoid: textValue(raw.howToAvoid),
     threatLevel: normalizeThreatLevel(raw.threatLevel),
     eventDate: textValue(raw.eventDate) || null,
@@ -82,7 +92,7 @@ function normalizeDeepResearch(raw) {
 
   return {
     generatedAt: textValue(raw.generatedAt) || null,
-    summary: textValue(raw.summary),
+    summary: stripThink(textValue(raw.summary)),
     timeframe: normalizeTimeframe(raw.timeframe),
     findings,
     learnings: Array.isArray(raw.learnings)
@@ -139,11 +149,11 @@ function normalizeCoinScan(raw) {
   if (!summaryText && findings.length) {
     summaryText = findings
       .map((item) => {
-        const label = item.token || item.title || 'Finding';
+        const label = item.token || item.title || "Finding";
         return `${label}: ${item.summary}`;
       })
       .filter(Boolean)
-      .join('\n');
+      .join("\n");
   }
 
   return {
@@ -164,9 +174,9 @@ export function normalizeBriefing(raw) {
     return null;
   }
 
-  const fallbackHeadline = 'Weekly Risk Brief';
+  const fallbackHeadline = "Weekly Risk Brief";
   const fallbackSummary =
-    'Summary not provided by Gemini. Review and update before publishing.';
+    "Summary not provided by Gemini. Review and update before publishing.";
 
   const normalizedInsights = Array.isArray(raw?.insights)
     ? raw.insights.map((insight, index) => normalizeInsight(insight, index))
@@ -179,7 +189,9 @@ export function normalizeBriefing(raw) {
     : [];
 
   const metadata = isPlainObject(raw?.metadata) ? { ...raw.metadata } : {};
-  const deepResearch = normalizeDeepResearch(raw?.deepResearch ?? metadata?.deepResearch);
+  const deepResearch = normalizeDeepResearch(
+    raw?.deepResearch ?? metadata?.deepResearch,
+  );
   const coinScan = normalizeCoinScan(raw?.coinScan ?? metadata?.coinScan);
   const mergedMetadata = {
     ...metadata,
@@ -191,10 +203,11 @@ export function normalizeBriefing(raw) {
     id: raw?.id || `draft-${Date.now()}`,
     headline: textValue(raw?.headline) || fallbackHeadline,
     summary: textValue(raw?.summary) || fallbackSummary,
-    publishedAt: raw?.publishedAt || raw?.published_at || new Date().toISOString(),
+    publishedAt:
+      raw?.publishedAt || raw?.published_at || new Date().toISOString(),
     insights: normalizedInsights,
     sources: normalizedSources,
-    status: raw?.status || 'draft',
+    status: raw?.status || "draft",
     metadata: mergedMetadata,
     deepResearch,
     coinScan,
