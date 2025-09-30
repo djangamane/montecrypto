@@ -1,7 +1,7 @@
 "use client";
 
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 const monthlyPlanId = import.meta.env.VITE_PAYPAL_MONTHLY_PLAN_ID;
@@ -28,6 +28,7 @@ const PLAN_COPY = {
 export function PayPalSubscriptionButton({ session }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCadence, setSelectedCadence] = useState("monthly");
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const planOptions = useMemo(() => {
     const options = [];
@@ -49,7 +50,7 @@ export function PayPalSubscriptionButton({ session }) {
       });
     }
     return options;
-  }, [monthlyPlanId, annualPlanId, lifetimePlanId]);
+  }, []);
 
   useEffect(() => {
     if (!planOptions.length) return;
@@ -65,6 +66,54 @@ export function PayPalSubscriptionButton({ session }) {
     planOptions.find((option) => option.id === selectedCadence) ??
     planOptions[0];
 
+  const isAuthenticated = Boolean(session?.access_token);
+
+  const handleApprove = useCallback(
+    async (subscriptionId) => {
+      if (!subscriptionId) return false;
+
+      if (!isAuthenticated) {
+        setErrorMessage(
+          "Please sign in or create a free account before completing your upgrade.",
+        );
+        return false;
+      }
+
+      const headers = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
+
+      try {
+        const response = await fetch("/api/paypal/subscription", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ subscriptionId }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(
+            typeof payload.error === "string"
+              ? payload.error
+              : "We could not activate your membership. Contact support if this continues.",
+          );
+        }
+
+        return true;
+      } catch (error) {
+        console.error("Failed to activate PayPal subscription", error);
+        setErrorMessage(
+          error instanceof Error && error.message
+            ? error.message
+            : "We could not activate your membership. Contact support if this continues.",
+        );
+        return false;
+      }
+    },
+    [isAuthenticated, session?.access_token],
+  );
+
   if (!clientId || planOptions.length === 0 || !activePlan?.planId) {
     return (
       <p className="rounded-xl border border-risk-high/40 bg-risk-high/10 p-4 text-sm text-risk-high">
@@ -74,19 +123,6 @@ export function PayPalSubscriptionButton({ session }) {
       </p>
     );
   }
-
-  const handleApprove = async (subscriptionId) => {
-    const headers = { "Content-Type": "application/json" };
-    if (session?.access_token) {
-      headers.Authorization = `Bearer ${session.access_token}`;
-    }
-
-    await fetch("/api/paypal/subscription", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ subscriptionId }),
-    });
-  };
 
   return (
     <div className="space-y-4">
@@ -120,6 +156,17 @@ export function PayPalSubscriptionButton({ session }) {
         </div>
       )}
 
+      {!isAuthenticated ? (
+        <div className="rounded-xl border border-brand-muted/30 bg-white/70 p-4 text-sm text-brand-muted">
+          <p className="font-semibold text-brand-text">Sign in to continue</p>
+          <p className="mt-2 text-xs">
+            Create a free account or sign in using the panel above before you upgrade.
+            Your membership is linked to your Supabase login so we can unlock the
+            Scam Likely workspace and weekly newsletter immediately.
+          </p>
+        </div>
+      ) : null}
+
       <PayPalScriptProvider
         options={{ clientId, intent: "subscription", vault: true }}
       >
@@ -134,15 +181,35 @@ export function PayPalSubscriptionButton({ session }) {
             actions.subscription.create({ plan_id: activePlan.planId })
           }
           onApprove={async (data) => {
-            if (!data.subscriptionID) return;
+            if (!data.subscriptionID || !isAuthenticated) {
+              setErrorMessage(
+                "Sign in before completing checkout so we can activate your membership.",
+              );
+              return;
+            }
+            setErrorMessage(null);
             setIsSubmitting(true);
-            await handleApprove(data.subscriptionID);
+            const activated = await handleApprove(data.subscriptionID);
             setIsSubmitting(false);
-            window.location.href = "/thankyou";
+            if (activated) {
+              window.location.assign("/thankyou");
+            }
           }}
-          disabled={isSubmitting}
+          onError={(error) => {
+            console.error("PayPal button error", error);
+            setErrorMessage(
+              "PayPal could not complete the checkout. Please refresh and try again.",
+            );
+          }}
+          disabled={!isAuthenticated || isSubmitting}
         />
       </PayPalScriptProvider>
+
+      {errorMessage ? (
+        <p className="rounded-xl border border-risk-high/40 bg-risk-high/10 p-4 text-sm text-risk-high">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="mt-4 rounded-xl border border-brand-muted/30 bg-white/70 p-4 text-center">
         <a
