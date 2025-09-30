@@ -14,7 +14,7 @@ export default function TokenInput({ onAnalyze, isLoading }) {
         type="text"
         value={token}
         onChange={(event) => setToken(event.target.value)}
-        placeholder="Paste a token, contract, or project URL"
+        placeholder="Paste a contract address"
         disabled={isLoading}
         className="w-full rounded-xl border border-brand-muted/40 bg-white px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30 disabled:opacity-60"
       />

@@ -54,6 +54,19 @@ export function RiskyChristieApp({ session }) {
               <TokenInput onAnalyze={handleAnalyze} isLoading={isLoading} />
             </div>
 
+            <p className="mt-2 text-center text-xs text-brand-muted">
+              —
+              <a
+                href="https://youtu.be/Dv8qbpEVYcg?si=tpPqWt1Z84AEGrpE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mx-1 underline hover:text-brand-link"
+              >
+                How do I find the contract address?
+              </a>
+              —
+            </p>
+
             {error ? (
               <div className="mt-6 rounded-xl border border-risk-high/40 bg-risk-high/10 px-4 py-3 text-center text-risk-high">
                 <p>{error}</p>
