@@ -504,7 +504,8 @@ function extractPerplexityData(payload) {
 
   const content = message.content;
   if (typeof content === 'string') {
-    return { rawContent: content, structured: null };
+    const cleaned = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    return { rawContent: cleaned, structured: extractEmbeddedJson(cleaned) };
   }
 
   if (Array.isArray(content)) {
@@ -527,15 +528,17 @@ function extractPerplexityData(payload) {
       .join('\n')
       .trim();
 
+    const cleanedParts = rawParts.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
     if (!structured) {
-      structured = extractEmbeddedJson(rawParts);
+      structured = extractEmbeddedJson(cleanedParts);
     }
 
-    if (!rawParts && structured) {
+    if (!cleanedParts && structured) {
       return { rawContent: JSON.stringify(structured, null, 2), structured };
     }
 
-    return { rawContent: rawParts, structured };
+    return { rawContent: cleanedParts, structured };
   }
 
   if (content?.output_json) {
