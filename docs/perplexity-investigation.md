@@ -33,16 +33,19 @@ No `output_json` is returned. When we print the raw message (truncated), the `<t
 4. **Logging** – Added Vercel runtime logs to inspect `payload.choices` and raw content. Logs show only the plain string response.
 5. **UI Separation** – Moved the coin results into a dedicated `CoinWatchSummary` React component so insight cards remain unaffected.
 
-## Questions for Follow-up Research
-1. Does `sonar-deep-research` fully support `response_format` JSON schemas, or is that exclusive to other models (`sonar-pro`, `pplx-7b-online`, etc.)?
-2. Is there a separate Deep Research endpoint (async job) that guarantees structured output? The rate limit table references `/deep-research`, but their quickstart uses `/chat/completions`.
-3. Are there request headers or SDK-specific flags needed when using deep research models? The Perplexity docs might require `X-Mode: research` or similar.
-4. Does the API strip `<think>` only when the client specifies a particular `Accept` header or uses the beta SDK? We’re currently making raw `fetch` calls.
-5. Are there examples from Perplexity’s docs demonstrating how to trigger structured outputs with the deep research model? What constraints or limitations do they note?
+## Confirmed Findings from Perplexity Docs & Community Notes
+Recent documentation and community posts (see references) clarify:
+
+1. **JSON schema is best-effort for Perplexity models.** `response_format` is parsed, but `sonar`/`sonar-deep-research` frequently emit the `<think>` reasoning trace and markdown before or after the JSON payload. Only select OpenAI GPT-4o family models enforce strict schema output.
+2. **`sonar-deep-research` does not expose `output_json`.** Even with the schema request, the API returns `choices[0].message.content` as plain text. No SDK flag or header suppresses `<think>`; clients are expected to strip it.
+3. **No `/deep-research` REST endpoint.** The rate-limit table references a model capability, but the public API is the same `/chat/completions` route. There is no documented async job that returns a guaranteed-structured report.
+4. **Client-side parsing is required.** Perplexity’s own guides recommend removing the reasoning block and extracting the JSON/markdown manually. This matches what we are doing now.
+
+Refer to the sources in docs/perplexity-investigation.md for details (Perplexity docs, community threads, promptfoo article, etc.).
 
 ## Next Steps Before Coding Again
-- Confirm the documentation for `sonar-deep-research` regarding supported response formats. The usage page (https://docs.perplexity.ai/getting-started/overview) and API reference should clarify whether the schema is honored.
-- Investigate the `/deep-research` REST endpoint: request body, async polling, and response shape. Determine if it is the recommended path for structured outputs.
-- Verify if Perplexity’s SDK (Node/Python) uses a different base URL or additional parameters to request structured responses.
+- Since strict JSON enforcement is not supported, keep our robust fallback (strip `<think>`, parse embedded JSON, or convert markdown to findings).
+- Monitor Perplexity’s changelog for future support. If they introduce a true structured-output mode, we can simplify the parser.
+- For stronger guarantees today, consider an alternative provider (e.g., OpenAI GPT-4o with JSON schema) if compliance is critical.
 
 This file consolidates the current state so the next investigation pass (e.g., via ChatGPT-5) can focus on the right portion of Perplexity’s docs, rather than rehashing the implementation history.
