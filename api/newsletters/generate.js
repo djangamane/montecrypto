@@ -235,19 +235,33 @@ async function runPerplexityCoinScan({ focus }) {
   }
 
   const payload = await response.json();
+  console.log(
+    '[perplexity] choices length',
+    Array.isArray(payload?.choices) ? payload.choices.length : 0,
+  );
+  if (Array.isArray(payload?.choices) && payload.choices.length) {
+    try {
+      const firstChoice = JSON.stringify(payload.choices[0], null, 2);
+      console.log('[perplexity] first choice (truncated)', firstChoice.slice(0, 6000));
+    } catch (error) {
+      console.log('[perplexity] failed to log choice', error);
+    }
+  }
+
   const rawContent = getPerplexityContent(payload);
+  if (rawContent) {
+    console.log('[perplexity] raw content preview', rawContent.slice(0, 1200));
+  }
+
   const parsed = robustStripThinkAndParse(rawContent) || {};
+
+  console.log('[perplexity] parsed keys', parsed ? Object.keys(parsed) : 'null');
 
   const findings = normalizeCoinFindings(parsed?.findings ?? []);
   const sources = normalizeCoinSources(parsed?.sources ?? []);
   const summaryText = textValue(parsed?.summary);
 
-  console.log(
-    "[perplexity] findings count",
-    findings.length,
-    "sources count",
-    sources.length,
-  );
+  console.log('[perplexity] findings count', findings.length, 'sources count', sources.length);
 
   return {
     findings,
