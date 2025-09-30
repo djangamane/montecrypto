@@ -72,7 +72,7 @@ export function CoinWatchSummary({ coinScan }) {
       </header>
 
       <div className="space-y-4">
-        {findings.length === 0 ? (
+        {findings.length === 0 && !summary ? (
           <div className="rounded-2xl border border-dashed border-brand-muted/40 bg-brand-bg/70 p-4 text-sm text-brand-muted">
             No structured coin findings returned. Review the summary above for manual insights.
           </div>

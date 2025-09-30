@@ -167,10 +167,13 @@ async function runPerplexityCoinScan({ focus }) {
 
   const findings = normalizeCoinFindings(parsed?.findings ?? []);
   const sources = normalizeCoinSources(parsed?.sources ?? []);
+  const parsedSummary = textValue(parsed?.summary);
 
   console.log('[perplexity] raw content length', rawContent?.length ?? 0);
   console.log('[perplexity] parsed keys', parsed ? Object.keys(parsed) : 'null');
   console.log('[perplexity] findings count', findings.length, 'sources count', sources.length);
+
+  const rawContentForMetadata = findings.length ? '' : rawContent;
 
   return {
     findings,
@@ -179,9 +182,10 @@ async function runPerplexityCoinScan({ focus }) {
       timeframe: { start: start.toISOString(), end: now.toISOString() },
       generatedAt: now.toISOString(),
       model: PERPLEXITY_COIN_MODEL,
-      rawContent,
-      parsed: parsed ?? null,
+      rawContent: rawContentForMetadata,
+      parsed: findings.length ? null : parsed ?? null,
     },
+    summary: parsedSummary || '',
   };
 }
 
@@ -454,10 +458,11 @@ function summarizeRawContent(rawContent) {
 }
 
 function convertTextToFindings(text) {
-  if (!text) return { findings: [], sources: [] };
+  if (!text) return { findings: [], sources: [], summary: '' };
 
   const findings = [];
   const sources = [];
+  let summary = '';
 
   try {
     const parsed = JSON.parse(text);
@@ -467,8 +472,11 @@ function convertTextToFindings(text) {
     if (Array.isArray(parsed?.sources)) {
       sources.push(...parsed.sources);
     }
-    if (findings.length || sources.length) {
-      return { findings, sources };
+    if (parsed?.summary) {
+      summary = textValue(parsed.summary);
+    }
+    if (findings.length || sources.length || summary) {
+      return { findings, sources, summary };
     }
   } catch {}
 
@@ -476,16 +484,19 @@ function convertTextToFindings(text) {
   let match;
   while ((match = findingRegex.exec(text)) !== null) {
     const token = match[1]?.trim();
-    const summary = match[2]?.trim();
-    if (!summary) continue;
+    const bulletSummary = match[2]?.trim();
+    if (!bulletSummary) continue;
     findings.push({
       token,
       title: token ? `${token} loss report` : '',
-      summary,
+      summary: bulletSummary,
       howToAvoid: `Exercise extreme caution with ${token || 'this project'} and verify all claims with trusted sources before interacting or investing.`,
       threatLevel: 'High',
       sources: [],
     });
+    summary = summary
+      ? `${summary}\n${token || 'Finding'}: ${bulletSummary}`
+      : `${token || 'Finding'}: ${bulletSummary}`;
   }
 
   if (!findings.length) {
@@ -494,15 +505,20 @@ function convertTextToFindings(text) {
       const heading = match[1]?.trim();
       const body = match[2]?.trim();
       if (!body) continue;
+      const cleanedBody = body.replace(/\n+/g, ' ').trim();
+      const token = heading.split(':')[0]?.trim();
       findings.push({
-        token: heading.split(':')[0]?.trim(),
+        token,
         title: heading,
-        summary: body.replace(/\n+/g, ' ').trim(),
+        summary: cleanedBody,
         howToAvoid:
           'Run enhanced due diligence on this project and verify all smart-contract permissions before interacting.',
         threatLevel: 'High',
         sources: [],
       });
+      summary = summary
+        ? `${summary}\n${heading}: ${cleanedBody}`
+        : `${heading}: ${cleanedBody}`;
     }
   }
 
@@ -514,7 +530,7 @@ function convertTextToFindings(text) {
     sources.push({ uri, title: `Source ${sourceMatch[1]}` });
   }
 
-  return { findings, sources };
+  return { findings, sources, summary };
 }
 
 function parseGeminiError(error) {
