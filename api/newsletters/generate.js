@@ -216,14 +216,21 @@ async function runPerplexityCoinScan({ focus }) {
 
   const payload = await response.json();
   const { rawContent, structured } = extractPerplexityData(payload);
+  if (payload?.choices?.length) {
+    try {
+      const messagePreview = JSON.stringify(payload.choices[0].message).slice(0, 5000);
+      console.log('[perplexity] message preview', messagePreview);
+    } catch (error) {
+      console.log('[perplexity] message logging failed', error);
+    }
+  }
+
   const parsed = structured || parsePerplexityJson(rawContent, payload) || {};
 
   const findings = normalizeCoinFindings(parsed?.findings ?? []);
   const sources = normalizeCoinSources(parsed?.sources ?? []);
-  const summaryText = textValue(parsed?.summary) || summarizeRawContent(rawContent);
+  const summaryText = textValue(parsed?.summary);
 
-  console.log('[perplexity] raw content length', rawContent?.length ?? 0);
-  console.log('[perplexity] parsed keys', parsed ? Object.keys(parsed) : 'null');
   console.log('[perplexity] findings count', findings.length, 'sources count', sources.length);
 
   return {
@@ -234,7 +241,7 @@ async function runPerplexityCoinScan({ focus }) {
       timeframe: { start: start.toISOString(), end: now.toISOString() },
       generatedAt: now.toISOString(),
       model: PERPLEXITY_COIN_MODEL,
-      rawContent: findings.length ? '' : rawContent,
+      rawContent: structured ? '' : rawContent,
     },
   };
 }
@@ -567,7 +574,6 @@ function convertTextToFindings(text) {
 
   const findings = [];
   const sources = [];
-  let summary = '';
 
   try {
     const parsed = JSON.parse(text);
@@ -578,10 +584,10 @@ function convertTextToFindings(text) {
       sources.push(...parsed.sources);
     }
     if (parsed?.summary) {
-      summary = textValue(parsed.summary);
+      return { findings, sources, summary: textValue(parsed.summary) };
     }
-    if (findings.length || sources.length || summary) {
-      return { findings, sources, summary };
+    if (findings.length || sources.length) {
+      return { findings, sources, summary: '' };
     }
   } catch {}
 
@@ -599,9 +605,6 @@ function convertTextToFindings(text) {
       threatLevel: 'High',
       sources: [],
     });
-    summary = summary
-      ? `${summary}\n${token || 'Finding'}: ${bulletSummary}`
-      : `${token || 'Finding'}: ${bulletSummary}`;
   }
 
   if (!findings.length) {
@@ -621,9 +624,6 @@ function convertTextToFindings(text) {
         threatLevel: 'High',
         sources: [],
       });
-      summary = summary
-        ? `${summary}\n${heading}: ${cleanedBody}`
-        : `${heading}: ${cleanedBody}`;
     }
   }
 
@@ -635,7 +635,7 @@ function convertTextToFindings(text) {
     sources.push({ uri, title: `Source ${sourceMatch[1]}` });
   }
 
-  return { findings, sources, summary };
+  return { findings, sources, summary: '' };
 }
 
 function parseGeminiError(error) {
