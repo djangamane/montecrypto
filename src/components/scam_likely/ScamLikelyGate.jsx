@@ -90,29 +90,19 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
       <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
         <div className="rounded-3xl border border-brand-muted/40 bg-brand-bg/80 p-8">
           <h3 className="text-2xl font-heading uppercase text-brand-text">
-            Activate your risk intelligence membership
+            Membership unlocks Scam Watch newsletter access
           </h3>
           <p className="mt-4 text-sm leading-relaxed text-brand-muted">
-            Our free plan includes one scan per day. For more comprehensive
-            access, choose a monthly, annual, or lifetime membership to unlock
-            higher limits and additional features like the Weekly Risk Brief and
-            data exports.
+            Free members can still run daily scans. Upgrade when you’re ready to
+            unlock weekly Scam Watch briefings, the full archive, and advanced
+            risk tooling.
           </p>
 
           <ul className="mt-6 list-disc space-y-2 pl-5 text-sm text-brand-muted">
-            <li>Up to 400 scans per month with our premium tiers.</li>
-            <li>
-              Weekly Risk Brief with the top five moves, delivered every Friday.
-            </li>
-            <li>
-              Archive access, timeline filters, and upcoming automation
-              releases.
-            </li>
+            <li>Weekly Scam Watch digest highlighting the highest-risk moves.</li>
+            <li>Evidence archive with timeline filters and shareable briefs.</li>
+            <li>Automation and export features as they roll out.</li>
           </ul>
-
-          <div className="mt-8 max-w-xs">
-            <PayPalSubscriptionButton session={session} />
-          </div>
         </div>
 
         <AuthPanel session={session} />
