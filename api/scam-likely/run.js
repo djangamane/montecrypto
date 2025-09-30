@@ -1,47 +1,71 @@
-import { supabase } from '../_lib/supabase.js';
-import { getTokenInfo, getTokenSupply } from '../_lib/etherscan.js';
+import { supabase } from "../_lib/supabase.js";
+import { getTokenInfo, getTokenSupply } from "../_lib/etherscan.js";
+import { checkUsageAndEntitlements } from "../_lib/limits.js";
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ')
-    ? authHeader.substring('Bearer '.length)
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring("Bearer ".length)
     : null;
 
   if (!token) {
-    return res.status(401).json({ error: 'Missing Supabase access token' });
+    return res.status(401).json({ error: "Missing Supabase access token" });
   }
 
-  const { data: userResult, error: userError } = await supabase.auth.getUser(token);
+  const { data: userResult, error: userError } =
+    await supabase.auth.getUser(token);
   if (userError || !userResult?.user) {
-    return res.status(401).json({ error: 'Invalid Supabase session' });
+    return res.status(401).json({ error: "Invalid Supabase session" });
+  }
+
+  const userId = userResult.user.id;
+
+  try {
+    const { isOverLimit, plan } = await checkUsageAndEntitlements(userId);
+    if (isOverLimit) {
+      const message =
+        plan === "free"
+          ? "You have exceeded your daily limit of 1 free scan."
+          : "You have exceeded your monthly scan limit.";
+      return res
+        .status(429)
+        .json({ error: message, code: "rate_limit_exceeded" });
+    }
+  } catch (error) {
+    console.error("Usage check failed", error);
+    return res.status(500).json({ error: "Could not verify usage limits." });
   }
 
   let body = req.body;
-  if (typeof body === 'string') {
+  if (typeof body === "string") {
     try {
       body = JSON.parse(body);
     } catch (error) {
-      return res.status(400).json({ error: 'Invalid JSON payload' });
+      return res.status(400).json({ error: "Invalid JSON payload" });
     }
   }
 
   const query = body?.query?.trim();
   if (!query) {
-    return res.status(400).json({ error: 'Query is required' });
+    return res.status(400).json({ error: "Query is required" });
   }
 
   const isAddress = /^0x[a-fA-F0-9]{40}$/.test(query);
   if (!isAddress) {
-    return res.status(400).json({ error: 'Only direct contract addresses are supported in this preview' });
+    return res
+      .status(400)
+      .json({
+        error: "Only direct contract addresses are supported in this preview",
+      });
   }
 
   if (!process.env.ETHERSCAN_API_KEY) {
-    return res.status(503).json({ error: 'Etherscan API key not configured' });
+    return res.status(503).json({ error: "Etherscan API key not configured" });
   }
 
   try {
@@ -50,7 +74,9 @@ export default async function handler(req, res) {
       getTokenSupply(query),
     ]);
 
-    const tokenInfo = Array.isArray(tokenInfoResult) ? tokenInfoResult[0] : tokenInfoResult;
+    const tokenInfo = Array.isArray(tokenInfoResult)
+      ? tokenInfoResult[0]
+      : tokenInfoResult;
 
     const analysis = buildAnalysis({ tokenInfo, supplyResult, address: query });
 
@@ -62,7 +88,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json(analysis);
   } catch (error) {
-    console.error('Scan run failed', error);
+    console.error("Scan run failed", error);
     return res.status(500).json({ error: error.message });
   }
 }
@@ -70,22 +96,25 @@ export default async function handler(req, res) {
 function buildAnalysis({ tokenInfo, supplyResult, address }) {
   const supply = supplyResult ? Number(supplyResult) : null;
   const owner = tokenInfo?.owner || null;
-  const decimals = tokenInfo?.tokenDecimal ? Number(tokenInfo.tokenDecimal) : null;
+  const decimals = tokenInfo?.tokenDecimal
+    ? Number(tokenInfo.tokenDecimal)
+    : null;
 
   const flags = [];
-  if (!owner || owner === '0x0000000000000000000000000000000000000000') {
+  if (!owner || owner === "0x0000000000000000000000000000000000000000") {
     flags.push({
-      severity: 'moderate',
-      title: 'Ownership unclear',
-      detail: 'Unable to determine contract owner; verify renounce or multi-sig custody.',
+      severity: "moderate",
+      title: "Ownership unclear",
+      detail:
+        "Unable to determine contract owner; verify renounce or multi-sig custody.",
     });
   }
 
   if (!decimals || Number.isNaN(decimals)) {
     flags.push({
-      severity: 'moderate',
-      title: 'Decimals missing',
-      detail: 'Token decimals not reported; check contract metadata.',
+      severity: "moderate",
+      title: "Decimals missing",
+      detail: "Token decimals not reported; check contract metadata.",
     });
   }
 
@@ -98,7 +127,7 @@ function buildAnalysis({ tokenInfo, supplyResult, address }) {
       name: tokenInfo?.tokenName || null,
       symbol: tokenInfo?.tokenSymbol || null,
       decimals,
-      type: tokenInfo?.type || 'ERC20',
+      type: tokenInfo?.type || "ERC20",
       owner,
       totalSupply: supplyResult ?? null,
       circulatingSupply: tokenInfo?.circulatingSupply || null,
@@ -109,7 +138,8 @@ function buildAnalysis({ tokenInfo, supplyResult, address }) {
     },
     risk: {
       score,
-      verdict: score >= 70 ? 'High Risk' : score >= 50 ? 'Elevated Risk' : 'Guarded',
+      verdict:
+        score >= 70 ? "High Risk" : score >= 50 ? "Elevated Risk" : "Guarded",
       flags,
     },
     sources: {
@@ -120,18 +150,16 @@ function buildAnalysis({ tokenInfo, supplyResult, address }) {
 }
 
 async function persistScan({ userId, query, analysis }) {
-  const { error } = await supabase
-    .from('scans')
-    .insert({
-      user_id: userId,
-      product: 'scam_likely',
-      query,
-      score: analysis.risk.score,
-      verdict: analysis.risk.verdict,
-      raw_response: analysis,
-    });
+  const { error } = await supabase.from("scans").insert({
+    user_id: userId,
+    product: "scam_likely",
+    query,
+    score: analysis.risk.score,
+    verdict: analysis.risk.verdict,
+    raw_response: analysis,
+  });
 
   if (error) {
-    console.error('Supabase insert error', error);
+    console.error("Supabase insert error", error);
   }
 }

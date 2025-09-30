@@ -1,12 +1,20 @@
-import { useState } from 'react';
-import { supabase } from '../../lib/supabaseClient.js';
+import { useState, useEffect } from "react";
+import { supabase } from "../../lib/supabaseClient.js";
+import OnboardingModal from "../OnboardingModal.jsx";
 
-export function AuthPanel({ session }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [mode, setMode] = useState('signin');
+export function AuthPanel({ session: initialSession }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState("signin");
   const [message, setMessage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [session, setSession] = useState(initialSession);
+  const [newUser, setNewUser] = useState(null);
+
+  useEffect(() => {
+    setSession(initialSession);
+  }, [initialSession]);
 
   const handleAuth = async (event) => {
     event.preventDefault();
@@ -14,12 +22,18 @@ export function AuthPanel({ session }) {
     setMessage(null);
 
     try {
-      if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email, password });
+      if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setMessage('Check your inbox to confirm your email.');
+        if (data.user) {
+          setNewUser(data.user);
+          setShowOnboarding(true);
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (error) throw error;
       }
     } catch (error) {
@@ -31,7 +45,18 @@ export function AuthPanel({ session }) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    setSession(null);
   };
+
+  const handleOnboardingClose = () => {
+    setShowOnboarding(false);
+    setNewUser(null);
+    setMessage("Check your inbox to confirm your email.");
+  };
+
+  if (showOnboarding && newUser) {
+    return <OnboardingModal user={newUser} onClose={handleOnboardingClose} />;
+  }
 
   if (session) {
     return (
@@ -55,7 +80,7 @@ export function AuthPanel({ session }) {
     >
       <div>
         <h3 className="text-lg font-semibold text-brand-text">
-          {mode === 'signup' ? 'Create an account' : 'Sign in'}
+          {mode === "signup" ? "Create an account" : "Sign in"}
         </h3>
         <p className="mt-1 text-brand-muted">
           Use the same credentials across all MonteCrypto tools.
@@ -93,14 +118,14 @@ export function AuthPanel({ session }) {
         disabled={isSubmitting}
         className="w-full rounded-xl bg-brand-link px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-text disabled:cursor-not-allowed disabled:bg-brand-muted/40"
       >
-        {isSubmitting ? 'Working…' : mode === 'signup' ? 'Sign up' : 'Sign in'}
+        {isSubmitting ? "Working…" : mode === "signup" ? "Sign up" : "Sign in"}
       </button>
 
       <div className="text-center text-xs text-brand-muted">
-        {mode === 'signup' ? (
+        {mode === "signup" ? (
           <button
             type="button"
-            onClick={() => setMode('signin')}
+            onClick={() => setMode("signin")}
             className="underline decoration-dotted"
           >
             Already have an account?
@@ -108,7 +133,7 @@ export function AuthPanel({ session }) {
         ) : (
           <button
             type="button"
-            onClick={() => setMode('signup')}
+            onClick={() => setMode("signup")}
             className="underline decoration-dotted"
           >
             Need an account?

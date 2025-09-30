@@ -130,6 +130,21 @@ create table if not exists public.scans (
   created_at timestamptz not null default now()
 );
 
+-- Onboarding Responses --------------------------------------------------------
+create table if not exists public.onboarding_responses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  responses jsonb not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.onboarding_responses enable row level security;
+
+create policy "Users can insert their own onboarding responses" on public.onboarding_responses for insert with check (auth.uid() = user_id);
+create policy "Users can read their own onboarding responses" on public.onboarding_responses for select using (auth.uid() = user_id);
+
+alter table public.profiles add column if not exists scan_count integer not null default 0;
+
 create index if not exists scans_user_created_idx
   on public.scans (user_id, created_at desc);
 
