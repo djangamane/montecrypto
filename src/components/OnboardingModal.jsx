@@ -6,10 +6,26 @@ const OnboardingModal = ({ user, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const questions = [
-    { id: "q1", text: "What is your primary goal for using our service?" },
-    { id: "q2", text: "How did you hear about us?" },
-    { id: "q3", text: "What is your experience level with cryptocurrency?" },
-    { id: "q4", text: "Which feature are you most excited about?" },
+    {
+      id: "q1",
+      text: "What is your primary goal for using our service?",
+      choices: ["Risk assessment", "Investment research", "General curiosity"],
+    },
+    {
+      id: "q2",
+      text: "How did you hear about us?",
+      choices: ["Social media", "Friend or colleague", "Search engine"],
+    },
+    {
+      id: "q3",
+      text: "What is your experience level with cryptocurrency?",
+      choices: ["Beginner", "Intermediate", "Advanced"],
+    },
+    {
+      id: "q4",
+      text: "Which feature are you most excited about?",
+      choices: ["Token scanner", "Weekly newsletter", "Portfolio analysis"],
+    },
   ];
 
   const handleCheckboxChange = (questionId, value) => {
@@ -45,27 +61,15 @@ const OnboardingModal = ({ user, onClose }) => {
             <div key={q.id}>
               <p className="font-semibold">{q.text}</p>
               <div className="flex space-x-4 mt-2">
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(q.id, "A")}
-                  />{" "}
-                  Option A
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(q.id, "B")}
-                  />{" "}
-                  Option B
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(q.id, "C")}
-                  />{" "}
-                  Option C
-                </label>
+                {q.choices.map((choice) => (
+                  <label key={choice}>
+                    <input
+                      type="checkbox"
+                      onChange={() => handleCheckboxChange(q.id, choice)}
+                    />{" "}
+                    {choice}
+                  </label>
+                ))}
               </div>
             </div>
           ))}

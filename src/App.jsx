@@ -1,17 +1,21 @@
-import { useState, useRef } from 'react';
-import { Analytics } from '@vercel/analytics/react';
-import { Header } from './components/Header.jsx';
-import { Hero } from './components/Hero.jsx';
-import { AdPlaceholder } from './components/AdPlaceholder.jsx';
-import { VideoSection } from './components/VideoSection.jsx';
-import { PremiumCourse } from './components/PremiumCourse.jsx';
-import { Benefits } from './components/Benefits.jsx';
-import { Footer } from './components/Footer.jsx';
-import { BookingModal } from './components/BookingModal.jsx';
-import { ScamLikelyGate } from './components/scam_likely/ScamLikelyGate.jsx';
-import { NewsletterGate } from './components/newsletter/NewsletterGate.jsx';
-import { AdminAccessModal } from './components/AdminAccessModal.jsx';
-import { AboutSection } from './components/AboutSection.jsx';
+import { useState, useRef } from "react";
+import { Analytics } from "@vercel/analytics/react";
+import { Header } from "./components/Header.jsx";
+import { Hero } from "./components/Hero.jsx";
+import { AdPlaceholder } from "./components/AdPlaceholder.jsx";
+import { VideoSection } from "./components/VideoSection.jsx";
+import { PremiumCourse } from "./components/PremiumCourse.jsx";
+import { Benefits } from "./components/Benefits.jsx";
+import { Footer } from "./components/Footer.jsx";
+import { BookingModal } from "./components/BookingModal.jsx";
+import { ScamLikelyGate } from "./components/scam_likely/ScamLikelyGate.jsx";
+import { NewsletterGate } from "./components/newsletter/NewsletterGate.jsx";
+import { useSupabaseSession } from "./hooks/useSupabaseSession.js";
+import { AdminAccessModal } from "./components/AdminAccessModal.jsx";
+import { AboutSection } from "./components/AboutSection.jsx";
+import { Pricing } from "./components/Pricing.jsx";
+
+import { ThankYou } from "./components/ThankYou.jsx";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,6 +24,11 @@ function App() {
   const riskSectionRef = useRef(null);
   const courseSectionRef = useRef(null);
   const newsletterSectionRef = useRef(null);
+  const { session } = useSupabaseSession();
+
+  if (window.location.pathname === "/thankyou") {
+    return <ThankYou />;
+  }
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
@@ -28,15 +37,15 @@ function App() {
   };
 
   const scrollToRisk = () => {
-    riskSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    riskSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToCourse = () => {
-    courseSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    courseSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToNewsletter = () => {
-    newsletterSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    newsletterSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const openAdminModal = () => setIsAdminModalOpen(true);
@@ -61,7 +70,13 @@ function App() {
 
         <PremiumCourse onBookNowClick={openModal} />
 
-        <section id="newsletter" ref={newsletterSectionRef} className="px-6 pb-16">
+        <Pricing session={session} />
+
+        <section
+          id="newsletter"
+          ref={newsletterSectionRef}
+          className="px-6 pb-16"
+        >
           <div className="mx-auto max-w-6xl rounded-3xl border border-brand-muted/30 bg-white/85 p-10 shadow-xl">
             <NewsletterGate />
           </div>

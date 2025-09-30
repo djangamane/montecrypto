@@ -1,4 +1,4 @@
-import { Shield, ArrowRight } from 'lucide-react';
+import { Shield, ArrowRight } from "lucide-react";
 
 export function Header({ onBookNowClick }) {
   return (
@@ -8,13 +8,26 @@ export function Header({ onBookNowClick }) {
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-text text-brand-bg shadow-sm">
             <Shield className="h-5 w-5" />
           </span>
-          <span className="text-2xl font-heading tracking-tight uppercase">AI Crypto Risk Assessment</span>
+          <span className="text-2xl font-heading tracking-tight uppercase">
+            AI Crypto Risk Assessment
+          </span>
         </a>
         <nav className="hidden items-center gap-6 text-sm font-medium text-brand-muted md:flex">
-          <a href="#risk-meter" className="transition hover:text-brand-text">Risk Meter</a>
-          <a href="#course" className="transition hover:text-brand-text">Free Course</a>
-          <a href="#newsletter" className="transition hover:text-brand-text">Weekly Scam Watch</a>
-          <a href="#about" className="transition hover:text-brand-text">About</a>
+          <a href="#risk-meter" className="transition hover:text-brand-text">
+            Risk Meter
+          </a>
+          <a href="#course" className="transition hover:text-brand-text">
+            Free Course
+          </a>
+          <a href="#newsletter" className="transition hover:text-brand-text">
+            Weekly Scam Watch
+          </a>
+          <a href="#about" className="transition hover:text-brand-text">
+            About
+          </a>
+          <a href="#pricing" className="transition hover:text-brand-text">
+            Pricing
+          </a>
         </nav>
         <button
           type="button"

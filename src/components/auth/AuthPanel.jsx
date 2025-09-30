@@ -28,6 +28,7 @@ export function AuthPanel({ session: initialSession }) {
         if (data.user) {
           setNewUser(data.user);
           setShowOnboarding(true);
+          setMessage("Check your inbox to confirm your email.");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -50,8 +51,6 @@ export function AuthPanel({ session: initialSession }) {
 
   const handleOnboardingClose = () => {
     setShowOnboarding(false);
-    setNewUser(null);
-    setMessage("Check your inbox to confirm your email.");
   };
 
   if (showOnboarding && newUser) {

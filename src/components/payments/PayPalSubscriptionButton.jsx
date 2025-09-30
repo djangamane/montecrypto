@@ -138,7 +138,7 @@ export function PayPalSubscriptionButton({ session }) {
             setIsSubmitting(true);
             await handleApprove(data.subscriptionID);
             setIsSubmitting(false);
-            window.location.reload();
+            window.location.href = "/thankyou";
           }}
           disabled={isSubmitting}
         />
