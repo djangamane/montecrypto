@@ -9,7 +9,7 @@ const PERPLEXITY_ENDPOINT =
 const PERPLEXITY_COIN_MODEL =
   process.env.PERPLEXITY_COIN_MODEL ||
   process.env.PERPLEXITY_MODEL ||
-  "pplx-7b-online";
+  "sonar-pro";
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || "";
 
 const client = initClient();
