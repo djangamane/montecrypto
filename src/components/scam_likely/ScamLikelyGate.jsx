@@ -83,7 +83,9 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
     );
   }
 
-  if (entitlementStatus !== "active") {
+  const allowFreeAccess = entitlementStatus === "none";
+
+  if (!allowFreeAccess && entitlementStatus !== "active") {
     return (
       <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
         <div className="rounded-3xl border border-brand-muted/40 bg-brand-bg/80 p-8">

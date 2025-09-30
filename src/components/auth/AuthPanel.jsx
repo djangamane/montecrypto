@@ -23,7 +23,17 @@ export function AuthPanel({ session: initialSession }) {
 
     try {
       if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const redirectTo =
+          typeof window !== "undefined" ? window.location.origin : undefined;
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: redirectTo
+            ? {
+                emailRedirectTo: redirectTo,
+              }
+            : undefined,
+        });
         if (error) throw error;
         if (data.user) {
           setNewUser(data.user);
