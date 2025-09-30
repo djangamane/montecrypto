@@ -7,7 +7,7 @@ export function Certificate() {
         </h2>
         <div className="mt-10 inline-block rounded-2xl border border-brand-muted/30 bg-white/85 p-4 shadow-lg">
           <img
-            src="/btc_pro.png"
+            src="/btc_pro.jpg"
             alt="Bitcoin Certified Professional Certificate"
             className="rounded-lg"
           />

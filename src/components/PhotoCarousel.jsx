@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const images = [
-  '/ccp-vc.png',
-  '/course_pic.png',
-  '/mining.png',
-  '/old_logo.png',
+  '/ccp-vc.jpg',
+  '/course_pic.jpg',
+  '/mining.jpg',
+  '/old_logo.jpg',
   '/scam.png',
-  '/scamcheck2021.png',
+  '/scamcheck2021.jpg',
 ];
 
 export function PhotoCarousel() {
