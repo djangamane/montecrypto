@@ -449,7 +449,7 @@ function summarizeRawContent(rawContent) {
         .join('\n');
     }
   } catch {}
-  const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '600', 10);
+  const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '1600', 10);
   return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
 }
 
@@ -486,6 +486,24 @@ function convertTextToFindings(text) {
       threatLevel: 'High',
       sources: [],
     });
+  }
+
+  if (!findings.length) {
+    const headingRegex = /###\s+(.+?)\n([\s\S]*?)(?=\n###|\n##|\n#|$)/g;
+    while ((match = headingRegex.exec(text)) !== null) {
+      const heading = match[1]?.trim();
+      const body = match[2]?.trim();
+      if (!body) continue;
+      findings.push({
+        token: heading.split(':')[0]?.trim(),
+        title: heading,
+        summary: body.replace(/\n+/g, ' ').trim(),
+        howToAvoid:
+          'Run enhanced due diligence on this project and verify all smart-contract permissions before interacting.',
+        threatLevel: 'High',
+        sources: [],
+      });
+    }
   }
 
   const sourceRegex = /\[(?:source\s*)?(\d+)\]\s*(https?:\/\/\S+)/gi;
