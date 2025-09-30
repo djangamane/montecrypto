@@ -1,11 +1,13 @@
 function stripThink(text) {
   if (!text) return "";
-  const endTag = "</think>";
-  const endTagIndex = text.indexOf(endTag);
-  if (endTagIndex !== -1) {
-    return text.substring(endTagIndex + endTag.length).trim();
+  let processedText = text;
+  if (
+    processedText.includes("<think>") &&
+    !processedText.includes("</think>")
+  ) {
+    processedText += "</think>";
   }
-  return text;
+  return processedText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
 }
 
 function textValue(value) {
@@ -119,7 +121,7 @@ function normalizeCoinScanFinding(raw) {
   return {
     token: textValue(raw.token),
     title: textValue(raw.title),
-    summary: textValue(raw.summary),
+    summary: stripThink(textValue(raw.summary)),
     howToAvoid: textValue(raw.howToAvoid),
     threatLevel: normalizeThreatLevel(raw.threatLevel),
     sources,
@@ -145,7 +147,9 @@ function normalizeCoinScan(raw) {
     : [];
 
   const metadata = isPlainObject(raw.metadata) ? { ...raw.metadata } : {};
-  let summaryText = textValue(raw.summary) || textValue(metadata.rawContent);
+  let summaryText = stripThink(
+    textValue(raw.summary) || textValue(metadata.rawContent),
+  );
   if (!summaryText && findings.length) {
     summaryText = findings
       .map((item) => {
