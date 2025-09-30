@@ -527,6 +527,10 @@ function extractPerplexityData(payload) {
       .join('\n')
       .trim();
 
+    if (!structured) {
+      structured = extractEmbeddedJson(rawParts);
+    }
+
     if (!rawParts && structured) {
       return { rawContent: JSON.stringify(structured, null, 2), structured };
     }
@@ -539,6 +543,20 @@ function extractPerplexityData(payload) {
   }
 
   return { rawContent: '', structured: null };
+}
+
+function extractEmbeddedJson(text) {
+  if (!text || typeof text !== 'string') return null;
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  const candidate = text.slice(start, end + 1);
+  try {
+    return JSON.parse(candidate);
+  } catch (error) {
+    console.warn('Failed to parse embedded JSON', error);
+    return null;
+  }
 }
 
 function convertTextToFindings(text) {
