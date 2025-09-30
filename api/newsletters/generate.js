@@ -91,7 +91,7 @@ async function runNewsletterGeneration({ focus }) {
 
 async function runGeminiBriefing({ focus }) {
   const requestFocus = focus ? `Focus on ${focus}. ` : "";
-  const prompt = `You are "Risky Kristy", a cryptocurrency threat analyst summarizing this week's most pressing scams.
+  const prompt = `You are the lead analyst behind "AI Crypto Scam Search," a weekly briefing that surfaces the most pressing cryptocurrency scams and fraud cases.
 ${requestFocus}Use Google Search to identify the three most urgent and newsworthy crypto scam developments from the last 10 days.
 Return ONLY valid JSON with the following structure:
 {

@@ -85,7 +85,7 @@ function parseBody(body) {
 async function fetchNewsletter(id) {
   let query = supabase
     .from('newsletters')
-    .select('id, headline, summary, insights, sources, status, published_at, email_sent_at')
+    .select('id, headline, summary, insights, sources, status, published_at, email_sent_at, metadata')
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(1);
 
@@ -117,6 +117,8 @@ async function fetchRecipients() {
 function renderEmail(newsletter) {
   const subject = `Scam Watch: ${newsletter.headline}`;
   const preheader = newsletter.summary || '';
+  const metadata = newsletter.metadata || {};
+  const coinScan = normalizeCoinScanForEmail(metadata.coinScan || metadata.coin_scan);
 
   const htmlInsights = (newsletter.insights || [])
     .map((insight) => `
@@ -139,6 +141,47 @@ function renderEmail(newsletter) {
     `)
     .join('');
 
+  const htmlCoinSummary = coinScan?.summary
+    ? coinScan.summary
+        .split(/\n+/)
+        .map((line) => `<p style="margin:8px 0;color:#1f2937;line-height:1.5;">${escapeHtml(line)}</p>`)
+        .join('')
+    : '';
+
+  const htmlCoinFindings = (coinScan?.findings || [])
+    .map((finding) => `
+      <li style="margin-bottom:16px;">
+        <h3 style="margin:0;color:#b7791f;font-size:18px;">${escapeHtml(finding.title || finding.token || 'Coin finding')}</h3>
+        <p style="margin:8px 0;color:#1f2937;line-height:1.5;">${escapeHtml(finding.summary || '')}</p>
+        <p style="margin:8px 0;color:#111827;font-weight:600;">Risk Level: ${escapeHtml(finding.threatLevel || 'High')}</p>
+        <p style="margin:8px 0;color:#2563eb;">Defensive move: ${escapeHtml(finding.howToAvoid || '')}</p>
+        ${Array.isArray(finding.sources) && finding.sources.length
+          ? `<ul style="margin:8px 0 0;padding-left:18px;">${finding.sources
+              .map(
+                (src) => `
+                <li style="margin-bottom:4px;">
+                  <a href="${escapeAttribute(src.uri)}" style="color:#2563eb;text-decoration:none;">
+                    ${escapeHtml(src.title || src.uri || '')}
+                  </a>
+                </li>
+              `,
+              )
+              .join('')}</ul>`
+          : ''}
+      </li>
+    `)
+    .join('');
+
+  const htmlCoinSources = (coinScan?.sources || [])
+    .map((source) => `
+      <li style="margin-bottom:8px;">
+        <a href="${escapeAttribute(source.uri)}" style="color:#2563eb;text-decoration:none;">
+          ${escapeHtml(source.title || source.uri || '')}
+        </a>
+      </li>
+    `)
+    .join('');
+
   const html = `
     <div style="font-family:Arial, Helvetica, sans-serif;max-width:640px;margin:0 auto;padding:24px;background:#f7f5ef;color:#121417;">
       <p style="color:#6b7168;font-size:12px;margin:0 0 16px;letter-spacing:0.18em;text-transform:uppercase;">${escapeHtml(preheader)}</p>
@@ -147,6 +190,21 @@ function renderEmail(newsletter) {
       <ul style="list-style:none;padding:0;margin:0 0 24px;background:#ffffff;border-radius:16px;padding:24px;border:1px solid rgba(62,95,90,0.25);">
         ${htmlInsights}
       </ul>
+      ${coinScan ? `
+        <section style="margin:0 0 24px;background:#ffffff;border-radius:16px;padding:24px;border:1px solid rgba(62,95,90,0.25);">
+          <h2 style="margin:0 0 12px;font-size:18px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.15em;">Coin Watch — Perplexity Deep Research</h2>
+          ${htmlCoinSummary}
+          ${htmlCoinFindings ? `<ul style="list-style:none;padding:0;margin:24px 0 0;">${htmlCoinFindings}</ul>` : ''}
+          ${htmlCoinSources
+            ? `<div style="margin-top:16px;border-top:1px solid rgba(62,95,90,0.2);padding-top:12px;">
+                <h3 style="margin:0 0 8px;font-size:14px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.12em;">Additional URLs</h3>
+                <ul style="list-style:none;padding:0;margin:0;">
+                  ${htmlCoinSources}
+                </ul>
+              </div>`
+            : ''}
+        </section>
+      ` : ''}
       <div style="background:#ffffff;border-radius:16px;padding:20px;border:1px solid rgba(62,95,90,0.2);">
         <h2 style="margin:0 0 12px;font-size:18px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.15em;">Sources</h2>
         <ul style="list-style:none;padding:0;margin:0;">
@@ -164,13 +222,76 @@ function renderEmail(newsletter) {
     .map((insight) => `- ${insight.title}\n  ${insight.summary}\n  Threat Level: ${insight.threatLevel}\n  Avoid: ${insight.howToAvoid}`)
     .join('\n\n');
 
+  const textCoinSection = coinScan
+    ? [
+        'Coin Watch — Perplexity Deep Research',
+        coinScan.summary,
+        ...(coinScan.findings || []).map(
+          (finding) =>
+            `• ${finding.title || finding.token || 'Coin finding'}\n  ${finding.summary}\n  Risk Level: ${finding.threatLevel}\n  Defensive move: ${finding.howToAvoid}`,
+        ),
+        coinScan.sources?.length
+          ? `Additional URLs\n${coinScan.sources
+              .map((source) => `- ${source.title || source.uri}: ${source.uri}`)
+              .join('\n')}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n\n')
+    : '';
+
   const textSources = (newsletter.sources || [])
     .map((source) => `- ${source.title || source.uri}: ${source.uri}`)
     .join('\n');
 
-  const text = `Weekly Risk Brief — ${newsletter.headline}\n\n${newsletter.summary}\n\n${textInsights}\n\nSources\n${textSources}\n\nYou are receiving the Weekly Risk Brief as part of your MonteCrypto membership.`;
+  const text = `Weekly Scam Brief — ${newsletter.headline}\n\n${newsletter.summary}\n\n${textInsights}\n\n${textCoinSection ? `${textCoinSection}\n\n` : ''}Sources\n${textSources}\n\nYou are receiving the Weekly Scam Brief as part of your MonteCrypto membership.`;
 
   return { subject, html, text };
+}
+
+function normalizeCoinScanForEmail(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const summary = typeof raw.summary === 'string' ? raw.summary.trim() : '';
+  const findings = Array.isArray(raw.findings)
+    ? raw.findings
+        .map((finding) => ({
+          token: typeof finding.token === 'string' ? finding.token.trim() : '',
+          title: typeof finding.title === 'string' ? finding.title.trim() : '',
+          summary: typeof finding.summary === 'string' ? finding.summary.trim() : '',
+          howToAvoid:
+            typeof finding.howToAvoid === 'string' ? finding.howToAvoid.trim() : '',
+          threatLevel:
+            typeof finding.threatLevel === 'string' ? finding.threatLevel.trim() : '',
+          sources: Array.isArray(finding.sources)
+            ? finding.sources
+                .map((source) => ({
+                  uri: typeof source.uri === 'string' ? source.uri.trim() : '',
+                  title: typeof source.title === 'string' ? source.title.trim() : '',
+                }))
+                .filter((source) => source.uri)
+            : [],
+        }))
+        .filter((finding) => finding.summary)
+    : [];
+
+  const sources = Array.isArray(raw.sources)
+    ? raw.sources
+        .map((source) => ({
+          uri: typeof source.uri === 'string' ? source.uri.trim() : '',
+          title: typeof source.title === 'string' ? source.title.trim() : '',
+        }))
+        .filter((source) => source.uri)
+    : [];
+
+  if (!summary && !findings.length) {
+    return null;
+  }
+
+  return {
+    summary,
+    findings,
+    sources,
+  };
 }
 
 function escapeHtml(input) {
