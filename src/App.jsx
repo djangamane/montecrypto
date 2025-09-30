@@ -62,13 +62,13 @@ function App() {
 
         <AdPlaceholder label="Responsive in-content ad" />
 
+        <PremiumCourse onBookNowClick={openModal} />
+
         <section id="risk-meter" ref={riskSectionRef} className="px-6 py-16">
           <div className="mx-auto max-w-6xl rounded-3xl border border-brand-muted/30 bg-white/85 p-8 shadow-xl">
             <ScamLikelyGate onScrollToNewsletter={scrollToNewsletter} />
           </div>
         </section>
-
-        <PremiumCourse onBookNowClick={openModal} />
 
         <Pricing session={session} />
 

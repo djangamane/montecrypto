@@ -76,16 +76,6 @@ export function Pricing({ session }) {
         <div className="mt-8 max-w-md mx-auto">
           <PayPalSubscriptionButton session={session} />
         </div>
-        <div className="mt-10 text-center">
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSdfFpBCy2_f_l_f_l_f_l_f_l_f_l_f_l_f_l_f_l_f/viewform?usp=sf_link"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-brand-muted underline decoration-dotted"
-          >
-            Contact us for enterprise solutions
-          </a>
-        </div>
       </div>
     </section>
   );

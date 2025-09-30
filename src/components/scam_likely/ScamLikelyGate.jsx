@@ -65,7 +65,7 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
         <AuthPanel session={session} />
         <div className="rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-6 text-sm text-brand-muted">
           <h3 className="text-lg font-semibold text-brand-text">
-            Sign in for your free daily scan
+            AI- Crypto Risk Scan
           </h3>
           <p className="mt-3 leading-relaxed">
             Create a free account to get one complimentary token scan every day.
