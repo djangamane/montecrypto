@@ -146,6 +146,34 @@ function normalizeCoinScan(raw) {
   let summaryText = stripThink(
     textValue(raw.summary) || textValue(metadata.rawContent),
   );
+  const trimmedSummary = summaryText.trim();
+  if (trimmedSummary.startsWith('{') || trimmedSummary.startsWith('[')) {
+    try {
+      const parsedSummary = JSON.parse(trimmedSummary);
+      if (typeof parsedSummary?.summary === 'string') {
+        summaryText = stripThink(parsedSummary.summary);
+      }
+      if (Array.isArray(parsedSummary?.findings) && !findings.length) {
+        findings.push(
+          ...parsedSummary.findings
+            .map((item) => normalizeCoinScanFinding(item))
+            .filter((item) => item && item.summary && item.howToAvoid),
+        );
+      }
+      if (Array.isArray(parsedSummary?.sources) && !sources.length) {
+        sources.push(
+          ...parsedSummary.sources
+            .map((item, index) => ({
+              uri: textValue(item?.uri),
+              title: textValue(item?.title) || `Source ${index + 1}`,
+            }))
+            .filter((item) => item.uri),
+        );
+      }
+    } catch (error) {
+      summaryText = stripThink(summaryText);
+    }
+  }
   if (!summaryText && findings.length) {
     summaryText = findings
       .map((item) => {
