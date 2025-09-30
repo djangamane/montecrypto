@@ -1,4 +1,4 @@
--- MonteCrypto Supabase Schema for Scam Likely subscriptions
+-- AI Crypto Risk Supabase Schema for Scam Likely subscriptions
 
 -- Helper to update timestamps
 create or replace function public.touch_updated_at()

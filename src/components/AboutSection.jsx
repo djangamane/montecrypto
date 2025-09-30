@@ -4,18 +4,20 @@ export function AboutSection() {
       <div className="mx-auto grid max-w-6xl gap-10 rounded-3xl border border-brand-muted/30 bg-white/85 p-10 shadow-lg md:grid-cols-[0.9fr,1.1fr]">
         <div className="space-y-4">
           <h2 className="text-3xl font-heading uppercase text-brand-text">
-            Making risk visible since 2017
+            Making Crypto Risk Visible Since 2017
           </h2>
           <p className="text-base leading-relaxed text-brand-muted">
-            I taught my first crypto course in 2017, warned students early about
-            BitConnect, and ran an ETH/XMR mining setup with Houston partners.
-            After building AI systems for nonprofits, I returned to crypto with
-            one goal: make complex risk signals readable for everyone.
+            I taught my first crypto course in 2017 and warned students early
+            about BitConnect. After building AI systems for nonprofits, I
+            returned to crypto with one goal: use cutting-edge AI to make
+            complex risk signals readable, helping you avoid the pitfalls and
+            scams that plague the market.
           </p>
           <p className="text-base leading-relaxed text-brand-muted">
-            I do not sling smear campaigns. I surface evidence, explain the
-            signal, and help you decide what is worth your time. That promise
-            powers the course, the analyzers, and the Weekly Risk Brief.
+            We don't tell you what to buy. Instead, we surface evidence and
+            explain the signals to help you easily spot what <em>not</em> to
+            buy. That promise powers our analyzers and the Weekly Risk Brief,
+            saving you from costly mistakes.
           </p>
           <p className="text-base leading-relaxed text-brand-muted">
             <a

@@ -1,6 +1,6 @@
-import { X } from 'lucide-react';
-import { AuthPanel } from './auth/AuthPanel.jsx';
-import { useSupabaseSession } from '../hooks/useSupabaseSession.js';
+import { X } from "lucide-react";
+import { AuthPanel } from "./auth/AuthPanel.jsx";
+import { useSupabaseSession } from "../hooks/useSupabaseSession.js";
 
 export function AdminAccessModal({ isOpen, onClose }) {
   const { session, isLoading } = useSupabaseSession();
@@ -21,11 +21,16 @@ export function AdminAccessModal({ isOpen, onClose }) {
 
         <div className="space-y-4 text-sm text-brand-muted">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-link/70">MonteCrypto admin</p>
-            <h2 className="mt-2 text-3xl font-heading uppercase text-brand-text">Manage the risk platform</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-link/70">
+              AI Crypto Risk admin
+            </p>
+            <h2 className="mt-2 text-3xl font-heading uppercase text-brand-text">
+              Manage the risk platform
+            </h2>
             <p className="mt-2 text-sm leading-relaxed">
-              Use your internal credentials to access the AI Crypto Risk Assessment analyzer, Weekly Risk Brief
-              generation tools, and subscriber reports.
+              Use your internal credentials to access the AI Crypto Risk
+              Assessment analyzer, Weekly Risk Brief generation tools, and
+              subscriber reports.
             </p>
           </div>
 

@@ -1,6 +1,70 @@
-# MonteCrypto Platform
+# AI Crypto Risk Platform
 
-The MonteCrypto site is a Vite + React frontend deployed on Vercel. It now includes the Scam Likely detector prototype, weekly Scam Watch newsletter delivery, Supabase authentication, and PayPal subscription gating.
+The AI Crypto Risk site is a Vite + React frontend deployed on Vercel. It now includes the Scam Likely detector prototype, weekly Scam Watch newsletter delivery, Supabase authentication, and PayPal subscription gating.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18+ recommended)
+- npm
+- Supabase account (for database and auth)
+- PayPal Developer account (for subscription payments)
+- Stripe account (for credit card payments, optional)
+- Google Cloud account (for Gemini API, optional)
+
+### Installation
+
+1.  Clone the repository.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Create a `.env.local` file by copying `.env.example` and fill in the required API keys and environment variables:
+    - `VITE_SUPABASE_URL`: Your Supabase project URL.
+    - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key.
+    - `VITE_PAYPAL_CLIENT_ID`: Your PayPal app client ID.
+    - `VITE_PAYPAL_MONTHLY_PLAN_ID`: Your PayPal subscription plan ID for monthly billing.
+    - `VITE_PAYPAL_ANNUAL_PLAN_ID`: Your PayPal subscription plan ID for annual billing.
+    - `VITE_PAYPAL_LIFETIME_PLAN_ID`: Your PayPal subscription plan ID for lifetime billing.
+    - `VITE_STRIPE_PUBLISHABLE_KEY`: Your Stripe publishable key (optional).
+    - `VITE_GEMINI_API_KEY`: Your Google Cloud Gemini API key (optional).
+
+### Running the Development Server
+
+```bash
+npm run dev
+```
+
+This will start the Vite development server, typically on `http://localhost:5173`.
+
+## Backend Setup
+
+The backend consists of Vercel Serverless Functions located in the `api` directory.
+
+### Supabase
+
+1.  Run the SQL statements in `supabase_setup.sql` in your Supabase SQL editor to create the necessary tables (`entitlements`, `subscribers`) and policies.
+2.  Enable Row Level Security (RLS) on the tables.
+
+### PayPal Webhooks
+
+1.  Create a new webhook in your PayPal Developer dashboard.
+2.  Subscribe to the `PAYMENT.SALE.COMPLETED` and `BILLING.SUBSCRIPTION.CANCELLED` events.
+3.  Register the webhook at `https://aicryptorisk.com/api/paypal/webhook` (or your preview URL) for subscription events and copy the `webhook_id`.
+4.  Set the `PAYPAL_WEBHOOK_ID` environment variable in your Vercel project.
+
+## Deployment
+
+The site is configured for deployment on Vercel. Connect your GitHub repository to a new Vercel project. Vercel will automatically build and deploy the site upon pushes to the `main` branch.
+
+## Key Technologies
+
+- **Frontend**: React, Vite, Tailwind CSS
+- **Backend**: Vercel Serverless Functions (Node.js)
+- **Database & Auth**: Supabase
+- **Payments**: PayPal, Stripe
+- **AI**: Google Gemini
 
 ## Local Development
 

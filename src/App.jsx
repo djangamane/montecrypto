@@ -13,6 +13,9 @@ import { useSupabaseSession } from "./hooks/useSupabaseSession.js";
 import { AdminAccessModal } from "./components/AdminAccessModal.jsx";
 import { AboutSection } from "./components/AboutSection.jsx";
 import { Pricing } from "./components/Pricing.jsx";
+import { PhotoCarousel } from "./components/PhotoCarousel.jsx";
+import { Certificate } from "./components/Certificate.jsx";
+import { CallToAction } from "./components/CallToAction.jsx";
 
 import { ThankYou } from "./components/ThankYou.jsx";
 
@@ -69,6 +72,8 @@ function App() {
 
         <Pricing session={session} />
 
+        <CallToAction onClick={scrollToRisk} />
+
         <section
           id="newsletter"
           ref={newsletterSectionRef}
@@ -82,6 +87,9 @@ function App() {
         <Benefits />
 
         <AboutSection />
+        <PhotoCarousel />
+        <Certificate />
+        <CallToAction onClick={scrollToRisk} />
       </main>
 
       <Footer />

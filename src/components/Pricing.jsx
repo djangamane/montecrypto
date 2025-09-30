@@ -1,4 +1,11 @@
-import { CheckCircle2 } from "lucide-react";
+import {
+  ScanLine,
+  Newspaper,
+  LifeBuoy,
+  Download,
+  Infinity,
+  Users,
+} from "lucide-react";
 import { PayPalSubscriptionButton } from "./payments/PayPalSubscriptionButton";
 
 const tiers = [
@@ -6,7 +13,11 @@ const tiers = [
     name: "Monthly",
     price: "$10",
     description: "150 scans/month, plus weekly newsletter.",
-    features: ["150 scans per month", "Weekly newsletter", "Email support"],
+    features: [
+      { text: "150 scans per month", icon: ScanLine },
+      { text: "Weekly newsletter", icon: Newspaper },
+      { text: "Email support", icon: LifeBuoy },
+    ],
   },
   {
     name: "Yearly",
@@ -14,10 +25,10 @@ const tiers = [
     description:
       "300 scans/month, plus weekly newsletter and email export (coming soon).",
     features: [
-      "300 scans per month",
-      "Weekly newsletter",
-      "Email export (coming soon)",
-      "Priority support",
+      { text: "300 scans per month", icon: ScanLine },
+      { text: "Weekly newsletter", icon: Newspaper },
+      { text: "Email export (coming soon)", icon: Download },
+      { text: "Priority support", icon: LifeBuoy },
     ],
   },
   {
@@ -26,11 +37,11 @@ const tiers = [
     description:
       "400 scans/month, newsletter, and export (coming soon). Limited to 50 slots.",
     features: [
-      "400 scans per month",
-      "Weekly newsletter",
-      "Email export (coming soon)",
-      "Lifetime access",
-      "Limited to 50 slots",
+      { text: "400 scans per month", icon: ScanLine },
+      { text: "Weekly newsletter", icon: Newspaper },
+      { text: "Email export (coming soon)", icon: Download },
+      { text: "Lifetime access", icon: Infinity },
+      { text: "Limited to 50 slots", icon: Users },
     ],
   },
 ];
@@ -63,12 +74,15 @@ export function Pricing({ session }) {
                 {tier.description}
               </p>
               <ul className="mt-6 space-y-3 text-sm text-brand-muted/90 flex-grow">
-                {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-brand-link" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                {tier.features.map((feature) => {
+                  const Icon = feature.icon;
+                  return (
+                    <li key={feature.text} className="flex items-start gap-3">
+                      <Icon className="mt-0.5 h-5 w-5 text-brand-link" />
+                      <span>{feature.text}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

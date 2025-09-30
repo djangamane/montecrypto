@@ -1,17 +1,24 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from "lucide-react";
 
 export function Hero({ onRunRiskCheck, onStartCourse }) {
   return (
-    <section id="hero" className="border-b border-brand-muted/20 bg-gradient-to-br from-brand-bg to-brand-surface px-6 py-16">
+    <section
+      id="hero"
+      className="border-b border-brand-muted/20 bg-gradient-to-br from-brand-bg to-brand-surface px-6 py-16"
+    >
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1fr,0.9fr] md:items-center">
         <div className="space-y-6">
-          <p className="uppercase tracking-[0.35em] text-xs text-brand-link/70">Evidence over hype</p>
+          <p className="uppercase tracking-[0.35em] text-xs text-brand-link/70">
+            Evidence over hype
+          </p>
           <h1 className="text-5xl font-heading uppercase leading-none text-brand-text md:text-6xl">
             AI Crypto Risk Assessment
           </h1>
           <p className="text-lg leading-relaxed text-brand-muted">
-            Paste a token, contract, or URL. Our four-analyzer model pairs on-chain, off-chain, social, and
-            institutional signals to return a single, explainable risk score.
+            We use cutting-edge AI to evaluate risk and identify scams, helping
+            you spot what not to buy. Our four-analyzer model assesses on-chain,
+            off-chain, social, and institutional signals to save you from costly
+            mistakes.
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <button
@@ -19,7 +26,7 @@ export function Hero({ onRunRiskCheck, onStartCourse }) {
               onClick={onRunRiskCheck}
               className="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 text-base font-semibold text-brand-text shadow transition hover:opacity-90"
             >
-              <span>Run a free risk check</span>
+              <span>Get Your Risk Score</span>
               <ArrowRight className="ml-2 h-4 w-4" />
             </button>
             <button

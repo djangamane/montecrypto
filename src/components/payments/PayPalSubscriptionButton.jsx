@@ -144,12 +144,12 @@ export function PayPalSubscriptionButton({ session }) {
         />
       </PayPalScriptProvider>
 
-      <div className="text-center">
+      <div className="mt-4 rounded-xl border border-brand-muted/30 bg-white/70 p-4 text-center">
         <a
           href="https://docs.google.com/forms/d/e/1FAIpQLSdfFpBCy2_f_l_f_l_f_l_f_l_f_l_f_l_f_l_f/viewform?usp=sf_link"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-brand-muted underline decoration-dotted"
+          className="text-sm font-semibold text-brand-link underline decoration-dotted"
         >
           Contact us for enterprise solutions
         </a>

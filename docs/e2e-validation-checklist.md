@@ -1,4 +1,4 @@
-# MonteCrypto Membership E2E Validation Checklist
+# AI Crypto Risk Membership E2E Validation Checklist
 
 Use this script whenever you need to smoke-test the Scam Watch membership in production (Vercel) or staging.
 

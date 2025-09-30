@@ -82,7 +82,7 @@ export function AuthPanel({ session: initialSession }) {
           {mode === "signup" ? "Create an account" : "Sign in"}
         </h3>
         <p className="mt-1 text-brand-muted">
-          Use the same credentials across all MonteCrypto tools.
+          Use the same credentials across all AI Crypto Risk tools.{" "}
         </p>
       </div>
 
