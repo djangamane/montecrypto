@@ -171,6 +171,9 @@ function normalizeCoinScan(raw) {
         );
       }
     } catch (error) {
+      if (typeof window !== 'undefined') {
+        console.warn('Failed to parse coin summary JSON', error, trimmedSummary);
+      }
       summaryText = stripThink(summaryText);
     }
   }
