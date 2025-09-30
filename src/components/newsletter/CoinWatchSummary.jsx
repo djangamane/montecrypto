@@ -63,7 +63,11 @@ export function CoinWatchSummary({ coinScan }) {
           ) : null}
         </div>
         {summary ? (
-          <p className="text-sm leading-relaxed text-brand-muted">{summary}</p>
+          <div className="space-y-2 text-sm leading-relaxed text-brand-muted">
+            {summary.split(/\n+/).map((line, index) => (
+              <p key={`coin-summary-${index}`}>{line}</p>
+            ))}
+          </div>
         ) : null}
       </header>
 
