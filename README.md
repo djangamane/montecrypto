@@ -86,3 +86,6 @@ Refer to `docs/newsletter-operations.md` for end-to-end guidance on generating, 
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` stored in Vercel only.
 - [ ] Run `npm run build` locally to confirm the bundle succeeds.
 - [ ] Deploy to Vercel and test the full subscription lifecycle end-to-end.
+# Deployment Notes
+
+If Vercel stops picking up commits automatically, reconnect the GitHub repo in the project settings or run `npx vercel --prod` to trigger a manual deployment.
