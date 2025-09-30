@@ -3,9 +3,6 @@ export function AboutSection() {
     <section id="about" className="px-6 py-16">
       <div className="mx-auto grid max-w-6xl gap-10 rounded-3xl border border-brand-muted/30 bg-white/85 p-10 shadow-lg md:grid-cols-[0.9fr,1.1fr]">
         <div className="space-y-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-link/70">
-            Founder story
-          </p>
           <h2 className="text-3xl font-heading uppercase text-brand-text">
             Making risk visible since 2017
           </h2>
@@ -16,7 +13,7 @@ export function AboutSection() {
             one goal: make complex risk signals readable for everyone.
           </p>
           <p className="text-base leading-relaxed text-brand-muted">
-            We do not sling smear campaigns. We surface evidence, explain the
+            I do not sling smear campaigns. I surface evidence, explain the
             signal, and help you decide what is worth your time. That promise
             powers the course, the analyzers, and the Weekly Risk Brief.
           </p>
@@ -27,18 +24,9 @@ export function AboutSection() {
               rel="noopener noreferrer"
               className="text-brand-link hover:text-brand-text"
             >
-              Our founder's long-standing presence in the crypto community is
-              demonstrated by our original YouTube channel, which you can view
-              by clicking here.
-            </a>
-          </p>
-          <p className="text-sm text-brand-muted/80">
-            —{" "}
-            <a
-              href="mailto:jason@aicryptorisk.com"
-              className="text-brand-link hover:text-brand-text"
-            >
-              Jason Breckenridge
+              My long-standing presence in the crypto community is demonstrated
+              by my original YouTube channel, which you can view by clicking
+              here.
             </a>
           </p>
         </div>
