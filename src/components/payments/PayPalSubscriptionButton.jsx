@@ -146,7 +146,7 @@ export function PayPalSubscriptionButton({ session }) {
 
       <div className="mt-4 rounded-xl border border-brand-muted/30 bg-white/70 p-4 text-center">
         <a
-          href="https://docs.google.com/forms/d/e/1FAIpQLSdfFpBCy2_f_l_f_l_f_l_f_l_f_l_f_l_f_l_f/viewform?usp=sf_link"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSfOiL3BwknR3yfhCYHsHfkFzGD6dkT12vPCV_etOGdccHnE3Q/viewform?usp=header"
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm font-semibold text-brand-link underline decoration-dotted"
