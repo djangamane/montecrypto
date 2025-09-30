@@ -44,7 +44,7 @@ export function CoinWatchSummary({ coinScan }) {
     <section className="space-y-5 rounded-3xl border border-brand-muted/40 bg-white/85 p-6 shadow">
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-link/70">
-          Coin Watch — Gemini Surface Scan
+          Coin Watch — Perplexity Deep Research
         </p>
         <div className="flex flex-wrap items-center gap-3 text-xs text-brand-muted">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-muted/40 px-3 py-1">

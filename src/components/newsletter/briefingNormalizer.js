@@ -1,13 +1,9 @@
 function stripThink(text) {
   if (!text) return "";
-  let processedText = text;
-  if (
-    processedText.includes("<think>") &&
-    !processedText.includes("</think>")
-  ) {
-    processedText += "</think>";
+  if (text.includes("<think>") && text.includes("</think>")) {
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   }
-  return processedText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  return text;
 }
 
 function textValue(value) {

@@ -1,40 +1,46 @@
 /* eslint-env node */
-import { GoogleGenAI } from '@google/genai';
-import { supabase } from '../_lib/supabase.js';
-import { isNewsletterAdmin } from '../../config/newsletterAdminAllowlist.js';
+import { GoogleGenAI } from "@google/genai";
+import { supabase } from "../_lib/supabase.js";
+import { isNewsletterAdmin } from "../../config/newsletterAdminAllowlist.js";
 
-const PERPLEXITY_ENDPOINT = process.env.PERPLEXITY_API_URL || 'https://api.perplexity.ai/chat/completions';
-const PERPLEXITY_COIN_MODEL = process.env.PERPLEXITY_COIN_MODEL || process.env.PERPLEXITY_MODEL || 'pplx-7b-online';
-const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || '';
+const PERPLEXITY_ENDPOINT =
+  process.env.PERPLEXITY_API_URL ||
+  "https://api.perplexity.ai/chat/completions";
+const PERPLEXITY_COIN_MODEL =
+  process.env.PERPLEXITY_COIN_MODEL ||
+  process.env.PERPLEXITY_MODEL ||
+  "pplx-7b-online";
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || "";
 
 const client = initClient();
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ')
-    ? authHeader.substring('Bearer '.length)
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring("Bearer ".length)
     : null;
 
   if (!token) {
-    return res.status(401).json({ error: 'Missing Supabase access token' });
+    return res.status(401).json({ error: "Missing Supabase access token" });
   }
 
-  const { data: userResult, error: userError } = await supabase.auth.getUser(token);
+  const { data: userResult, error: userError } =
+    await supabase.auth.getUser(token);
   if (userError || !userResult?.user) {
-    return res.status(401).json({ error: 'Invalid Supabase session' });
+    return res.status(401).json({ error: "Invalid Supabase session" });
   }
 
   if (!isNewsletterAdmin(userResult.user.email)) {
-    return res.status(403).json({ error: 'Insufficient permissions' });
+    return res.status(403).json({ error: "Insufficient permissions" });
   }
 
   if (!client) {
-    return res.status(500).json({ error: 'Gemini API key not configured' });
+    return res.status(500).json({ error: "Gemini API key not configured" });
   }
 
   const { focus } = parseBody(req.body);
@@ -43,14 +49,16 @@ export default async function handler(req, res) {
     const result = await runNewsletterGeneration({ focus });
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Failed to generate newsletter briefing', error);
-    return res.status(500).json({ error: error.message || 'Failed to generate newsletter.' });
+    console.error("Failed to generate newsletter briefing", error);
+    return res
+      .status(500)
+      .json({ error: error.message || "Failed to generate newsletter." });
   }
 }
 
 function parseBody(body) {
   if (!body) return {};
-  if (typeof body === 'string') {
+  if (typeof body === "string") {
     try {
       return JSON.parse(body);
     } catch {
@@ -63,11 +71,11 @@ function parseBody(body) {
 async function runNewsletterGeneration({ focus }) {
   const [geminiRaw, coinScan] = await Promise.all([
     runGeminiBriefing({ focus }).catch((error) => {
-      console.error('Gemini workflow failed', error);
+      console.error("Gemini workflow failed", error);
       return buildGeminiFallback({ focus, error });
     }),
     runPerplexityCoinScan({ focus }).catch((error) => {
-      console.error('Perplexity coin scan failed', error);
+      console.error("Perplexity coin scan failed", error);
       return null;
     }),
   ]);
@@ -82,7 +90,7 @@ async function runNewsletterGeneration({ focus }) {
 }
 
 async function runGeminiBriefing({ focus }) {
-  const requestFocus = focus ? `Focus on ${focus}. ` : '';
+  const requestFocus = focus ? `Focus on ${focus}. ` : "";
   const prompt = `You are "Risky Kristy", a cryptocurrency threat analyst summarizing this week's most pressing scams.
 ${requestFocus}Use Google Search to identify the three most urgent and newsworthy crypto scam developments from the last 10 days.
 Return ONLY valid JSON with the following structure:
@@ -107,7 +115,7 @@ Return ONLY valid JSON with the following structure:
 The JSON must be parseable with no trailing prose. Threat levels must be consistent with risk severity.`;
 
   const response = await client.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: "gemini-2.5-flash",
     contents: prompt,
     config: {
       tools: [{ googleSearch: {} }],
@@ -124,84 +132,96 @@ async function runPerplexityCoinScan({ focus }) {
     return null;
   }
 
-  const windowDays = Math.max(Number.parseInt(process.env.PERPLEXITY_WINDOW_DAYS ?? '10', 10), 1);
+  const windowDays = Math.max(
+    Number.parseInt(process.env.PERPLEXITY_WINDOW_DAYS ?? "10", 10),
+    1,
+  );
   const now = new Date();
   const start = new Date(now.getTime() - windowDays * DAY_IN_MS);
 
   const prompt = buildPerplexityPrompt({ focus, start, now, windowDays });
   const response = await fetch(PERPLEXITY_ENDPOINT, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
+      Accept: "application/json",
+      "Content-Type": "application/json",
       Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
     },
     body: JSON.stringify({
       model: PERPLEXITY_COIN_MODEL,
-      max_tokens: Number.parseInt(process.env.PERPLEXITY_MAX_TOKENS ?? '1200', 10),
-      temperature: Number.parseFloat(process.env.PERPLEXITY_TEMPERATURE ?? '0.1'),
+      max_tokens: Number.parseInt(
+        process.env.PERPLEXITY_MAX_TOKENS ?? "1200",
+        10,
+      ),
+      temperature: Number.parseFloat(
+        process.env.PERPLEXITY_TEMPERATURE ?? "0.1",
+      ),
       frequency_penalty: 1,
       stream: false,
       response_format: {
-        type: 'json_schema',
+        type: "json_schema",
         json_schema: {
-          name: 'coin_watch_report',
+          name: "coin_watch_report",
           schema: {
-            type: 'object',
+            type: "object",
             additionalProperties: false,
             properties: {
-              summary: { type: 'string' },
+              summary: { type: "string" },
               findings: {
-                type: 'array',
+                type: "array",
                 items: {
-                  type: 'object',
+                  type: "object",
                   additionalProperties: false,
                   properties: {
-                    token: { type: 'string' },
-                    title: { type: 'string' },
-                    summary: { type: 'string' },
-                    howToAvoid: { type: 'string' },
-                    threatLevel: { type: 'string', enum: ['High', 'Medium', 'Low'] },
+                    token: { type: "string" },
+                    title: { type: "string" },
+                    summary: { type: "string" },
+                    howToAvoid: { type: "string" },
+                    threatLevel: {
+                      type: "string",
+                      enum: ["High", "Medium", "Low"],
+                    },
                     sources: {
-                      type: 'array',
+                      type: "array",
                       items: {
-                        type: 'object',
+                        type: "object",
                         additionalProperties: false,
                         properties: {
-                          uri: { type: 'string' },
-                          title: { type: 'string' },
+                          uri: { type: "string" },
+                          title: { type: "string" },
                         },
-                        required: ['uri'],
+                        required: ["uri"],
                       },
                     },
                   },
-                  required: ['summary'],
+                  required: ["summary"],
                 },
               },
               sources: {
-                type: 'array',
+                type: "array",
                 items: {
-                  type: 'object',
+                  type: "object",
                   additionalProperties: false,
                   properties: {
-                    uri: { type: 'string' },
-                    title: { type: 'string' },
+                    uri: { type: "string" },
+                    title: { type: "string" },
                   },
-                  required: ['uri'],
+                  required: ["uri"],
                 },
               },
             },
-            required: ['summary'],
+            required: ["summary"],
           },
         },
       },
       messages: [
         {
-          role: 'system',
-          content: 'Be precise and concise in your responses. Respond in English.',
+          role: "system",
+          content:
+            "Be precise and concise in your responses. Respond in English.",
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
@@ -215,23 +235,19 @@ async function runPerplexityCoinScan({ focus }) {
   }
 
   const payload = await response.json();
-  const { rawContent, structured } = extractPerplexityData(payload);
-  if (payload?.choices?.length) {
-    try {
-      const messagePreview = JSON.stringify(payload.choices[0].message).slice(0, 5000);
-      console.log('[perplexity] message preview', messagePreview);
-    } catch (error) {
-      console.log('[perplexity] message logging failed', error);
-    }
-  }
-
-  const parsed = structured || parsePerplexityJson(rawContent, payload) || {};
+  const rawContent = getPerplexityContent(payload);
+  const parsed = robustStripThinkAndParse(rawContent) || {};
 
   const findings = normalizeCoinFindings(parsed?.findings ?? []);
   const sources = normalizeCoinSources(parsed?.sources ?? []);
   const summaryText = textValue(parsed?.summary);
 
-  console.log('[perplexity] findings count', findings.length, 'sources count', sources.length);
+  console.log(
+    "[perplexity] findings count",
+    findings.length,
+    "sources count",
+    sources.length,
+  );
 
   return {
     findings,
@@ -241,13 +257,69 @@ async function runPerplexityCoinScan({ focus }) {
       timeframe: { start: start.toISOString(), end: now.toISOString() },
       generatedAt: now.toISOString(),
       model: PERPLEXITY_COIN_MODEL,
-      rawContent: structured ? '' : rawContent,
+      rawContent: robustStripThinkAndParse(rawContent) ? "" : rawContent,
     },
   };
 }
 
+function getPerplexityContent(payload) {
+  const choice = payload?.choices?.[0];
+  const message = choice?.message;
+  if (!message) return "";
+
+  const content = message.content;
+  if (typeof content === "string") return content;
+  if (typeof content === "object" && content !== null)
+    return JSON.stringify(content);
+  if (Array.isArray(content)) {
+    return content
+      .map((p) => {
+        if (typeof p === "string") return p;
+        if (p.text) return p.text;
+        if (p.output_json) return JSON.stringify(p.output_json);
+        return "";
+      })
+      .join("\n");
+  }
+  return "";
+}
+
+function robustStripThinkAndParse(text) {
+  if (!text) return null;
+
+  let contentToParse = text;
+  const thinkStart = text.indexOf("<think>");
+  if (thinkStart !== -1) {
+    const thinkEnd = text.indexOf("</think>", thinkStart);
+    if (thinkEnd !== -1) {
+      contentToParse =
+        text.substring(0, thinkStart) +
+        text.substring(thinkEnd + "</think>".length);
+    } else {
+      const jsonStart = text.indexOf("{", thinkStart);
+      if (jsonStart !== -1) {
+        contentToParse = text.substring(jsonStart);
+      } else {
+        return null; // No JSON found
+      }
+    }
+  }
+
+  try {
+    const jsonStart = contentToParse.indexOf("{");
+    const jsonEnd = contentToParse.lastIndexOf("}");
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      return null;
+    }
+    const jsonString = contentToParse.slice(jsonStart, jsonEnd + 1);
+    return JSON.parse(jsonString);
+  } catch (error) {
+    return null;
+  }
+}
+
 function buildPerplexityPrompt({ focus, start, now, windowDays }) {
-  const focusLine = focus ? `Focus on tokens related to: ${focus}.` : '';
+  const focusLine = focus ? `Focus on tokens related to: ${focus}.` : "";
   return `You are an on-chain fraud analyst cataloging cryptocurrency tokens or projects that
 have credible reports of investor losses (rug pulls, exit scams, phishing, Ponzi schemes, exploit drainers).
 
@@ -278,18 +350,18 @@ function buildGeminiFallback({ focus, error }) {
   const parsed = parseGeminiError(error);
   const summaryMessage = parsed
     ? `Gemini did not return a briefing. (${parsed}).`
-    : 'Gemini did not return a briefing. Manual review required.';
+    : "Gemini did not return a briefing. Manual review required.";
 
   return {
-    headline: 'Weekly Risk Brief — Manual Review Required',
+    headline: "Weekly Risk Brief — Manual Review Required",
     summary: summaryMessage,
     insights: [],
     sources: [],
-    status: 'draft',
+    status: "draft",
     metadata: {
       geminiError: parsed,
       geminiStatus: errorStatus(error) || null,
-      focus: typeof focus === 'string' ? focus : null,
+      focus: typeof focus === "string" ? focus : null,
     },
   };
 }
@@ -304,7 +376,10 @@ function mergeCoinScan(briefing, coinScan) {
     summary: summaryText || null,
   };
 
-  const mergedSources = mergeSourceLists(briefing.sources, normalizedCoinScan.sources);
+  const mergedSources = mergeSourceLists(
+    briefing.sources,
+    normalizedCoinScan.sources,
+  );
 
   return {
     ...briefing,
@@ -319,7 +394,9 @@ function mergeCoinScan(briefing, coinScan) {
 
 function mergeSourceLists(base = [], extras = []) {
   const merged = Array.isArray(base) ? [...base] : [];
-  const seen = new Set(merged.map((item) => textValue(item?.uri)).filter(Boolean));
+  const seen = new Set(
+    merged.map((item) => textValue(item?.uri)).filter(Boolean),
+  );
 
   for (const source of extras || []) {
     const uri = textValue(source?.uri);
@@ -335,9 +412,9 @@ function mergeSourceLists(base = [], extras = []) {
 }
 
 function normalizeBriefing(raw) {
-  const fallbackHeadline = 'Weekly Risk Brief';
+  const fallbackHeadline = "Weekly Risk Brief";
   const fallbackSummary =
-    'Summary not provided by Gemini. Review and update before publishing.';
+    "Summary not provided by Gemini. Review and update before publishing.";
 
   const normalizedInsights = Array.isArray(raw?.insights)
     ? raw.insights.map((insight, index) => normalizeInsight(insight, index))
@@ -356,7 +433,7 @@ function normalizeBriefing(raw) {
     publishedAt: raw?.publishedAt || new Date().toISOString(),
     insights: normalizedInsights,
     sources: normalizedSources,
-    status: raw?.status || 'draft',
+    status: raw?.status || "draft",
     metadata: raw?.metadata || {},
   };
 }
@@ -393,9 +470,9 @@ function normalizeCoinSources(items) {
 function normalizeInsight(insight, index) {
   const fallbackTitle = `Insight ${index + 1}`;
   const fallbackSummary =
-    'Gemini did not include a summary for this threat. Add context before publishing.';
+    "Gemini did not include a summary for this threat. Add context before publishing.";
   const fallbackAvoid =
-    'Gemini did not provide mitigation guidance. Insert manual recommendations.';
+    "Gemini did not provide mitigation guidance. Insert manual recommendations.";
 
   return {
     title: textValue(insight?.title) || fallbackTitle,
@@ -416,231 +493,23 @@ function normalizeSource(source, index) {
 }
 
 function textValue(value) {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value.trim();
   }
-  return '';
+  return "";
 }
 
 function normalizeThreatLevel(level) {
   const normalized = textValue(level).toLowerCase();
-  if (normalized === 'high') return 'High';
-  if (normalized === 'medium') return 'Medium';
-  if (normalized === 'low') return 'Low';
-  return 'Medium';
-}
-
-function extractPerplexityText(payload) {
-  const choice = payload?.choices?.[0];
-  if (!choice) throw new Error('Perplexity response missing choices array.');
-  const message = choice.message;
-  if (!message) throw new Error('Perplexity response missing message content.');
-
-  if (typeof message.content === 'string') {
-    return message.content;
-  }
-
-  if (Array.isArray(message.content)) {
-    return message.content
-      .map((part) => (typeof part === 'string' ? part : part?.text ?? ''))
-      .join('\n')
-      .trim();
-  }
-
-  throw new Error('Perplexity message content in unexpected format.');
-}
-
-function parsePerplexityJson(rawContent, payload) {
-  if (!rawContent || typeof rawContent !== 'string') {
-    console.warn('Perplexity response empty');
-    return null;
-  }
-
-  let trimmed = rawContent.trim();
-  trimmed = trimmed.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-
-  if (trimmed.startsWith('```')) {
-    trimmed = trimmed.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
-  }
-
-  try {
-    return JSON.parse(trimmed);
-  } catch (error) {
-    console.error('Failed to parse Perplexity JSON', { rawContent, error });
-    if (payload?.choices?.[0]?.message?.content?.related_questions) {
-      console.error('Perplexity related questions', payload.choices[0].message.content.related_questions);
-    }
-    const fallback = convertTextToFindings(trimmed);
-    if (fallback.findings.length || fallback.sources.length) {
-      return fallback;
-    }
-    return null;
-  }
-}
-
-function summarizeRawContent(rawContent) {
-  if (typeof rawContent !== 'string') return '';
-  const cleaned = rawContent
-    .replace(/<think>[\s\S]*?<\/think>/gi, '')
-    .replace(/```(json)?/gi, '')
-    .trim();
-  if (!cleaned) return '';
-  try {
-    const parsed = JSON.parse(cleaned);
-    if (Array.isArray(parsed?.findings) && parsed.findings.length) {
-      return parsed.findings
-        .map((item) => {
-          const token = textValue(item?.token);
-          const sum = textValue(item?.summary);
-          return token ? `${token}: ${sum}` : sum;
-        })
-        .filter(Boolean)
-        .join('\n');
-    }
-  } catch {}
-  const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '1600', 10);
-  return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
-}
-
-function extractPerplexityData(payload) {
-  const choice = payload?.choices?.[0];
-  const message = choice?.message;
-  if (!message) {
-    return { rawContent: '', structured: null };
-  }
-
-  const content = message.content;
-  if (typeof content === 'string') {
-    const cleaned = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-    return { rawContent: cleaned, structured: extractEmbeddedJson(cleaned) };
-  }
-
-  if (Array.isArray(content)) {
-    let structured = null;
-    const rawParts = content
-      .map((part) => {
-        if (!part) return '';
-        if (typeof part === 'string') return part;
-        if (part.output_json) {
-          structured = part.output_json;
-        }
-        if (typeof part.text === 'string') {
-          return part.text;
-        }
-        if (typeof part === 'object' && typeof part.data === 'string') {
-          return part.data;
-        }
-        return '';
-      })
-      .join('\n')
-      .trim();
-
-    const cleanedParts = rawParts.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-
-    if (!structured) {
-      structured = extractEmbeddedJson(cleanedParts);
-    }
-
-    if (!cleanedParts && structured) {
-      return { rawContent: JSON.stringify(structured, null, 2), structured };
-    }
-
-    return { rawContent: cleanedParts, structured };
-  }
-
-  if (content?.output_json) {
-    return { rawContent: JSON.stringify(content.output_json, null, 2), structured: content.output_json };
-  }
-
-  return { rawContent: '', structured: null };
-}
-
-function extractEmbeddedJson(text) {
-  if (!text || typeof text !== 'string') return null;
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) return null;
-  const candidate = text.slice(start, end + 1);
-  try {
-    return JSON.parse(candidate);
-  } catch (error) {
-    console.warn('Failed to parse embedded JSON', error);
-    return null;
-  }
-}
-
-function convertTextToFindings(text) {
-  if (!text) return { findings: [], sources: [], summary: '' };
-
-  const findings = [];
-  const sources = [];
-
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed?.findings)) {
-      findings.push(...parsed.findings);
-    }
-    if (Array.isArray(parsed?.sources)) {
-      sources.push(...parsed.sources);
-    }
-    if (parsed?.summary) {
-      return { findings, sources, summary: textValue(parsed.summary) };
-    }
-    if (findings.length || sources.length) {
-      return { findings, sources, summary: '' };
-    }
-  } catch {}
-
-  const findingRegex = /\n?\d+\.\s*\*\*(.+?)\*\*\s*-\s*([\s\S]*?)(?=\n\d+\.\s*\*\*|$)/g;
-  let match;
-  while ((match = findingRegex.exec(text)) !== null) {
-    const token = match[1]?.trim();
-    const bulletSummary = match[2]?.trim();
-    if (!bulletSummary) continue;
-    findings.push({
-      token,
-      title: token ? `${token} loss report` : '',
-      summary: bulletSummary,
-      howToAvoid: `Exercise extreme caution with ${token || 'this project'} and verify all claims with trusted sources before interacting or investing.`,
-      threatLevel: 'High',
-      sources: [],
-    });
-  }
-
-  if (!findings.length) {
-    const headingRegex = /###\s+(.+?)\n([\s\S]*?)(?=\n###|\n##|\n#|$)/g;
-    while ((match = headingRegex.exec(text)) !== null) {
-      const heading = match[1]?.trim();
-      const body = match[2]?.trim();
-      if (!body) continue;
-      const cleanedBody = body.replace(/\n+/g, ' ').trim();
-      const token = heading.split(':')[0]?.trim();
-      findings.push({
-        token,
-        title: heading,
-        summary: cleanedBody,
-        howToAvoid:
-          'Run enhanced due diligence on this project and verify all smart-contract permissions before interacting.',
-        threatLevel: 'High',
-        sources: [],
-      });
-    }
-  }
-
-  const sourceRegex = /\[(?:source\s*)?(\d+)\]\s*(https?:\/\/\S+)/gi;
-  let sourceMatch;
-  while ((sourceMatch = sourceRegex.exec(text)) !== null) {
-    const uri = sourceMatch[2]?.trim();
-    if (!uri) continue;
-    sources.push({ uri, title: `Source ${sourceMatch[1]}` });
-  }
-
-  return { findings, sources, summary: '' };
+  if (normalized === "high") return "High";
+  if (normalized === "medium") return "Medium";
+  if (normalized === "low") return "Low";
+  return "Medium";
 }
 
 function parseGeminiError(error) {
-  if (!error) return '';
-  if (typeof error === 'string') return error.slice(0, 500);
+  if (!error) return "";
+  if (typeof error === "string") return error.slice(0, 500);
 
   const dataMessage = error?.response?.data?.error?.message;
   const topMessage = error?.message;
@@ -649,10 +518,13 @@ function parseGeminiError(error) {
   if (message) return message.slice(0, 500);
 
   try {
-    return JSON.stringify(error, Object.getOwnPropertyNames(error)).slice(0, 500);
+    return JSON.stringify(error, Object.getOwnPropertyNames(error)).slice(
+      0,
+      500,
+    );
   } catch (jsonError) {
-    console.error('Failed to serialize Gemini error', jsonError);
-    return 'Unknown Gemini error';
+    console.error("Failed to serialize Gemini error", jsonError);
+    return "Unknown Gemini error";
   }
 }
 
@@ -661,31 +533,31 @@ function errorStatus(error) {
 }
 
 async function extractText(response) {
-  if (!response) return '';
-  if (typeof response.text === 'function') {
+  if (!response) return "";
+  if (typeof response.text === "function") {
     return response.text();
   }
-  if (typeof response.text === 'string') {
+  if (typeof response.text === "string") {
     return response.text;
   }
   const candidates = response.candidates || [];
   const parts = candidates[0]?.content?.parts;
   if (Array.isArray(parts)) {
     return parts
-      .map((part) => (typeof part.text === 'string' ? part.text : ''))
-      .join('');
+      .map((part) => (typeof part.text === "string" ? part.text : ""))
+      .join("");
   }
-  return '';
+  return "";
 }
 
 function sanitizeJson(raw) {
-  if (!raw || typeof raw !== 'string') {
-    throw new Error('Gemini response empty');
+  if (!raw || typeof raw !== "string") {
+    throw new Error("Gemini response empty");
   }
-  const firstBrace = raw.indexOf('{');
-  const lastBrace = raw.lastIndexOf('}');
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
   if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-    throw new Error('Gemini returned invalid JSON.');
+    throw new Error("Gemini returned invalid JSON.");
   }
   return raw.slice(firstBrace, lastBrace + 1);
 }
@@ -693,7 +565,9 @@ function sanitizeJson(raw) {
 function initClient() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.warn('GEMINI_API_KEY is not set. Newsletter generation endpoint disabled.');
+    console.warn(
+      "GEMINI_API_KEY is not set. Newsletter generation endpoint disabled.",
+    );
     return null;
   }
   return new GoogleGenAI({ apiKey });
@@ -708,7 +582,7 @@ async function safeReadJson(response) {
 }
 
 function formatDate(date) {
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 }
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
