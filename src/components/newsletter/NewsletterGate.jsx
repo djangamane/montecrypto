@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import { useSupabaseSession } from "../../hooks/useSupabaseSession.js";
 import { AuthPanel } from "../auth/AuthPanel.jsx";
-import { PayPalSubscriptionButton } from "../payments/PayPalSubscriptionButton.jsx";
 import { NewsletterHub, DEFAULT_BRIEFINGS } from "./NewsletterHub.jsx";
 import { normalizeBriefing } from "./briefingNormalizer.js";
 import { LoadingSpinner } from "./LoadingSpinner.jsx";
@@ -152,15 +151,13 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
         <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div>
             <h3 className="text-3xl font-heading uppercase text-brand-text">
-              Membership required for full brief access
+              Upgrade to unlock Scam Watch newsletter access
             </h3>
             <p className="mt-3 leading-relaxed">
-              Activate your membership to unlock archived issues,
-              subscriber-only signals, and the Friday dispatch.
+              Free members can still run daily scans. When you upgrade, the
+              Friday Scam Watch briefing, historical archive, and pro automations
+              become available immediately.
             </p>
-            <div className="mt-6 max-w-xs">
-              <PayPalSubscriptionButton session={session} />
-            </div>
           </div>
 
           <div className="rounded-2xl border border-brand-muted/30 bg-white/80 p-6">
@@ -168,15 +165,9 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
               Included with membership
             </h4>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm">
-              <li>AI Crypto Risk Assessment workspace with unlimited scans.</li>
-              <li>
-                Weekly Risk Brief with on-chain, off-chain, social, and
-                institutional highlights.
-              </li>
-              <li>
-                Evidence archive to revisit previous issues and share with your
-                team.
-              </li>
+              <li>Weekly Scam Watch dispatch with the five highest-risk moves.</li>
+              <li>Evidence archive with share-ready summaries and filters.</li>
+              <li>Automation, exports, and timeline tooling as they roll out.</li>
             </ul>
           </div>
         </div>

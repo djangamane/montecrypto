@@ -20,6 +20,13 @@ export function CallToAction({ onClick }) {
             <ArrowRight className="ml-2 h-4 w-4" />
           </button>
         </div>
+        <p className="mt-6 text-sm text-brand-muted">
+          Having technical trouble? Call support at{' '}
+          <a href="tel:16193946214" className="font-semibold text-brand-link">
+            619-394-6214
+          </a>
+          .
+        </p>
       </div>
     </section>
   );
