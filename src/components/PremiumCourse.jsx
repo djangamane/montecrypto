@@ -2,7 +2,7 @@ import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const features = [
   'Deep-dive token dissection with your own portfolio examples',
-  'Custom watchlist with on-chain, social, and institutional triggers',
+  'Automatic access to the AI Crypto Risk tool plus weekly Scam Watch briefings',
   '45 days of follow-up office hours for implementation questions',
 ];
 

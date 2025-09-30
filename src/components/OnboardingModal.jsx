@@ -24,7 +24,7 @@ const OnboardingModal = ({ user, onClose }) => {
     {
       id: "q4",
       text: "Which feature are you most excited about?",
-      choices: ["Token scanner", "Weekly newsletter", "Portfolio analysis"],
+      choices: ["Token scanner", "Weekly newsletter", "1-on-1 coaching"],
     },
   ];
 
@@ -37,16 +37,23 @@ const OnboardingModal = ({ user, onClose }) => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from("onboarding_responses")
-      .insert({ user_id: user.id, responses });
+    try {
+      const { error } = await supabase
+        .from("onboarding_responses")
+        .insert({ user_id: user.id, responses });
 
-    if (error) {
-      console.error("Error saving onboarding responses:", error);
-    } else {
+      if (error) {
+        console.error("Error saving onboarding responses:", error);
+      }
+    } catch (error) {
+      console.error("Unexpected onboarding error:", error);
+    } finally {
+      setIsSubmitting(false);
       onClose();
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
     }
-    setIsSubmitting(false);
   };
 
   return (
