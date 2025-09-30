@@ -128,3 +128,6 @@ export interface ScanResult {
 3. Hook `/api/scan` mock/demo response so the UI can render realistic content.
 4. Draft legal pages and footer links; add schema.org JSON-LD and `<link rel="canonical">` tags.
 5. Refresh assets in `public/` (favicon, og:image) and confirm metadata works in the Vite head.
+
+---
+*File updated to trigger deployment.*
