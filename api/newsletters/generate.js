@@ -367,9 +367,15 @@ function buildGeminiFallback({ focus, error }) {
 }
 
 function mergeCoinScan(briefing, coinScan) {
-  const summaryText = coinScan.findings.length
-    ? textValue(coinScan.summary)
-    : summarizeRawContent(coinScan.metadata?.rawContent);
+  let summaryText = textValue(coinScan.summary);
+  if (
+    !coinScan.findings.length &&
+    !summaryText &&
+    coinScan.metadata?.rawContent
+  ) {
+    const raw = coinScan.metadata.rawContent;
+    summaryText = raw.length > 1600 ? `${raw.slice(0, 1600)}…` : raw;
+  }
 
   const normalizedCoinScan = {
     ...coinScan,
