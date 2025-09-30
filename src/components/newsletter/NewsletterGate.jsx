@@ -135,7 +135,7 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
       <section className="rounded-3xl border border-brand-muted/30 bg-brand-bg/70 p-10 text-sm text-brand-muted">
         <div className="flex items-center justify-center gap-3">
           <LoadingSpinner className="h-5 w-5 text-brand-link" />
-          Checking Weekly Risk Brief access…
+          Checking Scam Watch Newsletter access…
         </div>
       </section>
     );
@@ -155,7 +155,7 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
             </h3>
             <p className="mt-3 leading-relaxed">
               Free members can still run daily scans. When you upgrade, the
-              Friday Scam Watch briefing, historical archive, and pro automations
+              Friday Scam Watch Newsletter edition, historical archive, and pro automations
               become available immediately.
             </p>
           </div>

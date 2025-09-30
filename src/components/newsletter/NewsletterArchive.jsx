@@ -40,11 +40,11 @@ export function NewsletterArchive({ briefings = [] }) {
         <header className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-heading uppercase text-brand-text">
-              Weekly risk briefings
+              Scam Watch Newsletter archive
             </h2>
             <p className="text-sm text-brand-muted">
-              Review the latest signals curated by the AI Crypto Risk research
-              desk.
+              Review the latest Scam Watch Newsletter issues curated by the AI
+              Crypto Risk research desk.
             </p>
           </div>
         </header>
@@ -133,7 +133,7 @@ export function NewsletterArchive({ briefings = [] }) {
         ) : (
           <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-brand-muted/30 bg-brand-bg/70">
             <p className="text-sm text-brand-muted">
-              Select a briefing from the archive to view details.
+              Select a newsletter issue from the archive to view details.
             </p>
           </div>
         )}

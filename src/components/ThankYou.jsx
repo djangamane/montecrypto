@@ -13,7 +13,7 @@ const MEMBERSHIP_COPY = {
   },
   active: {
     title: "Membership activated",
-    body: "Scam Likely and the Scam Watch newsletter are ready. Jump back into the workspace or browse the archive.",
+    body: "The AI-Crypto Risk Tool and the Scam Watch Newsletter are ready. Jump back into the workspace or browse the archive.",
   },
   pending: {
     title: "Payment is still processing",
@@ -87,8 +87,8 @@ export function ThankYou() {
       <div className="w-full max-w-3xl rounded-3xl border border-brand-muted/30 bg-white/90 p-10 text-center shadow-xl">
         <h1 className="text-3xl font-heading uppercase text-brand-text">Thank you for joining</h1>
         <p className="mt-4 text-sm text-brand-muted">
-          A receipt is on its way from PayPal. We use it to activate the Scam Likely workspace and
-          weekly Scam Watch briefing on your account automatically.
+          A receipt is on its way from PayPal. We use it to activate the AI-Crypto Risk Tool workspace and
+          weekly Scam Watch Newsletter on your account automatically.
         </p>
 
         <div className="mt-8 rounded-2xl border border-brand-muted/40 bg-brand-bg/30 p-6 text-left">
@@ -110,7 +110,7 @@ export function ThankYou() {
             href="/#risk-meter"
             className="inline-flex items-center justify-center rounded-xl border border-brand-link px-5 py-2 text-sm font-semibold uppercase tracking-[0.25em] text-brand-link transition hover:bg-brand-link hover:text-brand-bg"
           >
-            Open Scam Likely
+            Open AI-Crypto Risk Tool
           </a>
           <a
             href="/#newsletter"
@@ -121,7 +121,7 @@ export function ThankYou() {
         </div>
 
         <p className="mt-8 text-xs text-brand-muted">
-          Need help? Email <a href="mailto:support@aicryptorisk.com" className="underline decoration-dotted">support@aicryptorisk.com</a>
+          Need help? Email <a href="mailto:jason@aicryptorisk.com" className="underline decoration-dotted">jason@aicryptorisk.com</a>
           {" "}with your PayPal receipt and we’ll get you squared away.
         </p>
       </div>

@@ -139,15 +139,15 @@ export function NewsletterHub({
       <div className="flex flex-col gap-4 pb-6 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-link/70">
-            Weekly Risk Brief
+            Scam Watch Newsletter
           </p>
           <h2 className="text-4xl font-heading uppercase text-brand-text">
             Premium risk intelligence
           </h2>
           <p className="mt-2 max-w-2xl text-brand-muted">
-            Subscribers receive Friday dispatches covering the top risk
-            movements, five tokens to watch, and practical defensive moves
-            sourced from the AI Crypto Risk research desk.
+            Scam Watch Newsletter subscribers receive Friday dispatches covering the
+            top risk movements, five tokens to watch, and practical defensive
+            moves sourced from the AI Crypto Risk research desk.
           </p>
         </div>
 

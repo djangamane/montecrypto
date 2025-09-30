@@ -94,7 +94,7 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
           </h3>
           <p className="mt-4 text-sm leading-relaxed text-brand-muted">
             Free members can still run daily scans. Upgrade when you’re ready to
-            unlock weekly Scam Watch briefings, the full archive, and advanced
+            unlock weekly Scam Watch Newsletter issues, the full archive, and advanced
             risk tooling.
           </p>
 

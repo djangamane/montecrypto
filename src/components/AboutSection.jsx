@@ -16,7 +16,7 @@ export function AboutSection() {
           <p className="text-base leading-relaxed text-brand-muted">
             We don't tell you what to buy. Instead, we surface evidence and
             explain the signals to help you easily spot what <em>not</em> to
-            buy. That promise powers our analyzers and the Weekly Risk Brief,
+            buy. That promise powers our analyzers and the Scam Watch Newsletter,
             saving you from costly mistakes.
           </p>
           <p className="text-base leading-relaxed text-brand-muted">

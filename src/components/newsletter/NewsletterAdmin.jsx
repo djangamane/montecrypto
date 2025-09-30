@@ -182,7 +182,7 @@ export function NewsletterAdmin({ session, onBriefingCreated, latestBriefing, is
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-link/70">
             Admin
           </p>
-          <h2 className="text-3xl font-heading uppercase text-brand-text">Generate Weekly Risk Brief</h2>
+          <h2 className="text-3xl font-heading uppercase text-brand-text">Generate Scam Watch Newsletter</h2>
           <p className="text-sm text-brand-muted">
             Run the combined Gemini + deep research workflow to draft this week’s subscriber briefing.
           </p>

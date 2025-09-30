@@ -247,7 +247,7 @@ function renderEmail(newsletter) {
         </ul>
       </div>
       <p style="margin-top:32px;font-size:12px;color:#6b7168;">
-        You are receiving the Weekly Risk Brief as part of your MonteCrypto membership. This message is educational
+        You are receiving the Scam Watch Newsletter as part of your MonteCrypto membership. This message is educational
         and not financial advice.
       </p>
     </div>
@@ -282,7 +282,7 @@ function renderEmail(newsletter) {
     .map((source) => `- ${source.title || source.uri}: ${source.uri}`)
     .join("\n");
 
-  const text = `Weekly Scam Brief — ${newsletter.headline}\n\n${newsletter.summary}\n\n${textInsights}\n\n${textCoinSection ? `${textCoinSection}\n\n` : ""}Sources\n${textSources}\n\nYou are receiving the Weekly Scam Brief as part of your AI Crypto Risk membership.`;
+  const text = `Scam Watch Newsletter — ${newsletter.headline}\n\n${newsletter.summary}\n\n${textInsights}\n\n${textCoinSection ? `${textCoinSection}\n\n` : ""}Sources\n${textSources}\n\nYou are receiving the Scam Watch Newsletter as part of your AI Crypto Risk membership.`;
 
   return { subject, html, text };
 }

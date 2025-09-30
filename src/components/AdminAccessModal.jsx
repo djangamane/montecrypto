@@ -29,7 +29,7 @@ export function AdminAccessModal({ isOpen, onClose }) {
             </h2>
             <p className="mt-2 text-sm leading-relaxed">
               Use your internal credentials to access the AI Crypto Risk
-              Assessment analyzer, Weekly Risk Brief generation tools, and
+              Assessment analyzer, Scam Watch Newsletter generation tools, and
               subscriber reports.
             </p>
           </div>

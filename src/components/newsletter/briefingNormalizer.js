@@ -205,7 +205,7 @@ export function normalizeBriefing(raw) {
     return null;
   }
 
-  const fallbackHeadline = "Weekly Risk Brief";
+  const fallbackHeadline = "Scam Watch Newsletter";
   const fallbackSummary =
     "Summary not provided by Gemini. Review and update before publishing.";
 

@@ -367,7 +367,7 @@ function buildGeminiFallback({ focus, error }) {
     : "Gemini did not return a briefing. Manual review required.";
 
   return {
-    headline: "Weekly Risk Brief — Manual Review Required",
+    headline: "Scam Watch Newsletter — Manual Review Required",
     summary: summaryMessage,
     insights: [],
     sources: [],
@@ -432,7 +432,7 @@ function mergeSourceLists(base = [], extras = []) {
 }
 
 function normalizeBriefing(raw) {
-  const fallbackHeadline = "Weekly Risk Brief";
+  const fallbackHeadline = "Scam Watch Newsletter";
   const fallbackSummary =
     "Summary not provided by Gemini. Review and update before publishing.";
 
