@@ -142,6 +142,59 @@ async function runPerplexityCoinScan({ focus }) {
       temperature: Number.parseFloat(process.env.PERPLEXITY_TEMPERATURE ?? '0.1'),
       frequency_penalty: 1,
       stream: false,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'coin_watch_report',
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              summary: { type: 'string' },
+              findings: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    token: { type: 'string' },
+                    title: { type: 'string' },
+                    summary: { type: 'string' },
+                    howToAvoid: { type: 'string' },
+                    threatLevel: { type: 'string', enum: ['High', 'Medium', 'Low'] },
+                    sources: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        additionalProperties: false,
+                        properties: {
+                          uri: { type: 'string' },
+                          title: { type: 'string' },
+                        },
+                        required: ['uri'],
+                      },
+                    },
+                  },
+                  required: ['summary'],
+                },
+              },
+              sources: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    uri: { type: 'string' },
+                    title: { type: 'string' },
+                  },
+                  required: ['uri'],
+                },
+              },
+            },
+            required: ['summary'],
+          },
+        },
+      },
       messages: [
         {
           role: 'system',
@@ -162,30 +215,27 @@ async function runPerplexityCoinScan({ focus }) {
   }
 
   const payload = await response.json();
-  const rawContent = extractPerplexityText(payload);
-  const parsed = parsePerplexityJson(rawContent, payload);
+  const { rawContent, structured } = extractPerplexityData(payload);
+  const parsed = structured || parsePerplexityJson(rawContent, payload) || {};
 
   const findings = normalizeCoinFindings(parsed?.findings ?? []);
   const sources = normalizeCoinSources(parsed?.sources ?? []);
-  const parsedSummary = textValue(parsed?.summary);
+  const summaryText = textValue(parsed?.summary) || summarizeRawContent(rawContent);
 
   console.log('[perplexity] raw content length', rawContent?.length ?? 0);
   console.log('[perplexity] parsed keys', parsed ? Object.keys(parsed) : 'null');
   console.log('[perplexity] findings count', findings.length, 'sources count', sources.length);
 
-  const rawContentForMetadata = findings.length ? '' : rawContent;
-
   return {
     findings,
     sources,
+    summary: summaryText,
     metadata: {
       timeframe: { start: start.toISOString(), end: now.toISOString() },
       generatedAt: now.toISOString(),
       model: PERPLEXITY_COIN_MODEL,
-      rawContent: rawContentForMetadata,
-      parsed: findings.length ? null : parsed ?? null,
+      rawContent: findings.length ? '' : rawContent,
     },
-    summary: parsedSummary || '',
   };
 }
 
@@ -242,27 +292,15 @@ function mergeCoinScan(briefing, coinScan) {
     ? textValue(coinScan.summary)
     : summarizeRawContent(coinScan.metadata?.rawContent);
 
-  const prefixedFindings = coinScan.findings.map((finding) => ({
-    title: `Coin Watch — ${finding.title || finding.token || 'Scam finding'}`,
-    summary: finding.summary,
-    howToAvoid: finding.howToAvoid,
-    threatLevel: normalizeThreatLevel(finding.threatLevel),
-  }));
-
   const normalizedCoinScan = {
     ...coinScan,
     summary: summaryText || null,
   };
 
-  const mergedInsights = Array.isArray(briefing.insights)
-    ? [...briefing.insights, ...prefixedFindings]
-    : prefixedFindings;
-
   const mergedSources = mergeSourceLists(briefing.sources, normalizedCoinScan.sources);
 
   return {
     ...briefing,
-    insights: mergedInsights,
     sources: mergedSources,
     metadata: {
       ...(briefing.metadata || {}),
@@ -455,6 +493,52 @@ function summarizeRawContent(rawContent) {
   } catch {}
   const maxLength = Number.parseInt(process.env.PERPLEXITY_FALLBACK_MAX_CHARS ?? '1600', 10);
   return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
+}
+
+function extractPerplexityData(payload) {
+  const choice = payload?.choices?.[0];
+  const message = choice?.message;
+  if (!message) {
+    return { rawContent: '', structured: null };
+  }
+
+  const content = message.content;
+  if (typeof content === 'string') {
+    return { rawContent: content, structured: null };
+  }
+
+  if (Array.isArray(content)) {
+    let structured = null;
+    const rawParts = content
+      .map((part) => {
+        if (!part) return '';
+        if (typeof part === 'string') return part;
+        if (part.output_json) {
+          structured = part.output_json;
+        }
+        if (typeof part.text === 'string') {
+          return part.text;
+        }
+        if (typeof part === 'object' && typeof part.data === 'string') {
+          return part.data;
+        }
+        return '';
+      })
+      .join('\n')
+      .trim();
+
+    if (!rawParts && structured) {
+      return { rawContent: JSON.stringify(structured, null, 2), structured };
+    }
+
+    return { rawContent: rawParts, structured };
+  }
+
+  if (content?.output_json) {
+    return { rawContent: JSON.stringify(content.output_json, null, 2), structured: content.output_json };
+  }
+
+  return { rawContent: '', structured: null };
 }
 
 function convertTextToFindings(text) {
