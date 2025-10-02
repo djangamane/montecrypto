@@ -1,3 +1,4 @@
+'use client';
 import { useState, useRef } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { Header } from "./components/Header.jsx";
@@ -28,7 +29,7 @@ function App() {
   const newsletterSectionRef = useRef(null);
   const { session } = useSupabaseSession();
 
-  if (window.location.pathname === "/thankyou") {
+  if (typeof window !== 'undefined' && window.location.pathname === '/thankyou') {
     return <ThankYou />;
   }
 

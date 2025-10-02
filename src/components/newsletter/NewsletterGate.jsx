@@ -39,6 +39,12 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
       return;
     }
 
+    if (!supabase) {
+      setEntitlement(null);
+      setIsEntitlementLoading(false);
+      return;
+    }
+
     let isMounted = true;
     setIsEntitlementLoading(true);
 
@@ -79,6 +85,12 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
 
     setIsBriefingsLoading(true);
     setBriefingsError(null);
+
+    if (!supabase) {
+      setBriefingsError('Supabase is not configured.');
+      setIsBriefingsLoading(false);
+      return;
+    }
 
     const { data, error } = await supabase
       .from("newsletters")

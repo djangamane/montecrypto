@@ -34,5 +34,6 @@ const VideoSectionComponent = forwardRef((props, ref) => {
     </section>
   );
 });
+VideoSectionComponent.displayName = 'VideoSection';
 
 export { VideoSectionComponent as VideoSection };

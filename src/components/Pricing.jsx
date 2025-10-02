@@ -55,7 +55,7 @@ export function Pricing({ session }) {
             Pricing
           </h2>
           <p className="mt-2 text-base leading-relaxed text-brand-muted">
-            Choose the plan that's right for you.
+            Choose the plan that&apos;s right for you.
           </p>
         </div>
         <div className="mt-10 grid gap-8 lg:grid-cols-3">

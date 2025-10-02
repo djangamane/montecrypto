@@ -6,6 +6,11 @@ export function useSupabaseSession() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     supabase.auth.getSession().then(({ data }) => {

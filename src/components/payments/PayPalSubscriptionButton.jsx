@@ -3,10 +3,10 @@
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
-const monthlyPlanId = import.meta.env.VITE_PAYPAL_MONTHLY_PLAN_ID;
-const annualPlanId = import.meta.env.VITE_PAYPAL_ANNUAL_PLAN_ID;
-const lifetimePlanId = import.meta.env.VITE_PAYPAL_LIFETIME_PLAN_ID;
+const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+const monthlyPlanId = process.env.NEXT_PUBLIC_PAYPAL_MONTHLY_PLAN_ID;
+const annualPlanId = process.env.NEXT_PUBLIC_PAYPAL_ANNUAL_PLAN_ID;
+const lifetimePlanId = process.env.NEXT_PUBLIC_PAYPAL_LIFETIME_PLAN_ID;
 
 const PLAN_COPY = {
   monthly: {
@@ -117,9 +117,7 @@ export function PayPalSubscriptionButton({ session }) {
   if (!clientId || planOptions.length === 0 || !activePlan?.planId) {
     return (
       <p className="rounded-xl border border-risk-high/40 bg-risk-high/10 p-4 text-sm text-risk-high">
-        PayPal subscription details are not configured. Set
-        VITE_PAYPAL_CLIENT_ID along with VITE_PAYPAL_MONTHLY_PLAN_ID and/or
-        VITE_PAYPAL_ANNUAL_PLAN_ID.
+        PayPal subscription details are not configured. Set NEXT_PUBLIC_PAYPAL_CLIENT_ID along with NEXT_PUBLIC_PAYPAL_MONTHLY_PLAN_ID and/or NEXT_PUBLIC_PAYPAL_ANNUAL_PLAN_ID.
       </p>
     );
   }

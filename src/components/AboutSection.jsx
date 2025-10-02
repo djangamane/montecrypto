@@ -14,7 +14,7 @@ export function AboutSection() {
             scams that plague the market.
           </p>
           <p className="text-base leading-relaxed text-brand-muted">
-            We don't tell you what to buy. Instead, we surface evidence and
+            We don&apos;t tell you what to buy. Instead, we surface evidence and
             explain the signals to help you easily spot what <em>not</em> to
             buy. That promise powers our analyzers and the Scam Watch Newsletter,
             saving you from costly mistakes.

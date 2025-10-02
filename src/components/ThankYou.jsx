@@ -42,6 +42,12 @@ export function ThankYou() {
       return;
     }
 
+    if (!supabase) {
+      setStatus("missing");
+      setExpiresAt(null);
+      return;
+    }
+
     let isMounted = true;
     setStatus("checking");
 

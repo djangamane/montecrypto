@@ -1,21 +1,12 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import * as DeepResearch from '../tools/deep-research/src/deep-research.ts';
-import type { ResearchProgress as ResearchProgressType } from '../tools/deep-research/src/deep-research';
-
-const researchModule =
-  (DeepResearch as any).deepResearch !== undefined
-    ? (DeepResearch as any)
-    : DeepResearch.default;
-
-if (!researchModule) {
-  throw new Error('Failed to load deep-research module exports');
-}
-
-const deepResearch = researchModule.deepResearch as typeof DeepResearch.default.deepResearch;
-const writeFinalAnswer = researchModule.writeFinalAnswer as typeof DeepResearch.default.writeFinalAnswer;
-const writeFinalReport = researchModule.writeFinalReport as typeof DeepResearch.default.writeFinalReport;
+import {
+  deepResearch,
+  writeFinalAnswer,
+  writeFinalReport,
+  type ResearchProgress as ResearchProgressType,
+} from '../tools/deep-research/src/deep-research';
 
 type ResearchProgress = ResearchProgressType;
 

@@ -15,6 +15,15 @@ export function AuthPanel({ session: initialSession }) {
   useEffect(() => {
     setSession(initialSession);
   }, [initialSession]);
+  if (!supabase) {
+    return (
+      <div className="rounded-2xl border border-brand-muted/30 bg-white/85 p-6 text-sm text-brand-muted">
+        <p className="font-semibold text-brand-text">Sign in disabled</p>
+        <p className="mt-2 text-xs">Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable authentication.</p>
+      </div>
+    );
+  }
+
 
   const handleAuth = async (event) => {
     event.preventDefault();

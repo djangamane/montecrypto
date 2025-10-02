@@ -21,6 +21,12 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
       return;
     }
 
+    if (!supabase) {
+      setEntitlement(null);
+      setIsEntitlementLoading(false);
+      return;
+    }
+
     let isMounted = true;
     setIsEntitlementLoading(true);
 

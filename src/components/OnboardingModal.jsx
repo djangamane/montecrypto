@@ -36,6 +36,11 @@ const OnboardingModal = ({ user, onClose }) => {
   };
 
   const handleSubmit = async () => {
+    if (!supabase) {
+      onClose();
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { error } = await supabase
