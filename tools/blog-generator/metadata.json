@@ -1,0 +1,5 @@
+{
+  "name": "AI Crypto Risk Blog Generator",
+  "description": "An internal tool for the AI Crypto Risk editorial team to generate SEO-optimized blog posts from structured input data, using AI to research and write authoritative content on crypto and AI security topics.",
+  "requestFramePermissions": []
+}

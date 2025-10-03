@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "dev:blog-tool": "npm run dev --prefix tools/blog-generator",
+    "build": "npm run build:blog-tool && next build",
+    "build:blog-tool": "npm run build --prefix tools/blog-generator",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "npm install --prefix tools/blog-generator"
   },
   "dependencies": {
     "@ai-sdk/fireworks": "^0.1.14",

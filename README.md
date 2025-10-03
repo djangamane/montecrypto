@@ -136,6 +136,16 @@ Refer to `docs/newsletter-operations.md` for end-to-end guidance on generating, 
 - `/api/newsletters/send` delivers the latest published issue through Resend and records `email_sent_at` for auditing.
 - Automations (Make/Zapier/Cron) should call the generate → publish → send endpoints with an admin Supabase token to run fully hands-free.
 
+## Blog Content Workflow
+
+- Planning happens in Google Sheets; export the working sheet as CSV when seeding new posts.
+- The Gemini-powered blog generator lives in `tools/blog-generator/`. Run `npm run dev:blog-tool` for local tweaks, or `npm run build:blog-tool` to emit the static bundle into `public/tools/blog-generator/`.
+- A starter CSV template (`sample_posts.csv`) ships alongside the tool so teammates can duplicate the expected headers without sharing live drafts.
+- The Next.js admin surface at `/admin/tools/blog-generator` iframes the built bundle; run `npm run build:blog-tool` before visiting locally so the static assets exist.
+- POST the payload to Supabase (`posts` table via REST) or paste it into the SQL editor; drafts then appear at `/admin/blog` inside the Next.js admin surface.
+- Publishing from `/admin/blog` flips `status` to `published`, stamps `publish_at`, and triggers the live listing on `/blog`, `/blog/[slug]`, RSS, and sitemap.
+- Keep the Supabase service-role key and `INGEST_API_KEY` scoped to automation only; they should never ship to the browser.
+
 ## Testing the Flow
 
 1. Create a Supabase user via the in-app Auth panel.
