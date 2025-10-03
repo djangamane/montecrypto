@@ -11,7 +11,7 @@ interface OutputDisplayProps {
   error: string | null;
 }
 
-type ActiveTab = 'markdown' | 'json';
+type ActiveTab = 'markdown' | 'json' | 'sql';
 
 const SkeletonLoader: React.FC = () => (
   <div className="animate-pulse space-y-4">
@@ -41,7 +41,7 @@ const CopyButton: React.FC<{ onCopy: () => void; text: string; copiedText: strin
   };
 
   return (
-    <button 
+    <button
       onClick={handleClick}
       className="flex items-center gap-2 text-sm bg-brand-accent hover:bg-brand-light/20 text-brand-light font-semibold py-1.5 px-3 rounded-md transition-all"
     >
@@ -56,7 +56,7 @@ export const OutputDisplay: React.FC<OutputDisplayProps> = ({ markdownContent, s
 
   const formattedJson = supabasePayload ? JSON.stringify(supabasePayload, null, 2) : '';
 
-  const curlCommand = supabasePayload 
+  const curlCommand = supabasePayload
     ? `curl -X POST https://<PROJECT>.supabase.co/rest/v1/posts \\\n` +
       `  -H "apikey: <SUPABASE_SERVICE_ROLE>" \\\n` +
       `  -H "Authorization: Bearer <SUPABASE_SERVICE_ROLE>" \\\n` +
@@ -65,43 +65,60 @@ export const OutputDisplay: React.FC<OutputDisplayProps> = ({ markdownContent, s
       `  -d '${JSON.stringify(supabasePayload)}'`
     : '';
 
+  const supabaseSql = supabasePayload ? buildSupabaseSql(supabasePayload) : '';
+
   return (
     <div className="bg-brand-secondary rounded-lg shadow-2xl p-6 flex flex-col h-full min-h-[50vh] lg:min-h-0">
       <div className="flex justify-between items-start mb-4 border-b border-brand-accent/50">
         <div className="flex gap-1 -mb-px">
           <TabButton name="Markdown" id="markdown" activeTab={activeTab} setActiveTab={setActiveTab} />
           <TabButton name="Supabase JSON" id="json" activeTab={activeTab} setActiveTab={setActiveTab} disabled={!supabasePayload} />
+          <TabButton name="SQL" id="sql" activeTab={activeTab} setActiveTab={setActiveTab} disabled={!supabasePayload} />
         </div>
         <div className="flex gap-2">
-            {activeTab === 'markdown' && markdownContent && (
-                <CopyButton onCopy={() => navigator.clipboard.writeText(markdownContent)} text="Copy Markdown" copiedText="Copied!" Icon={CopyIcon}/>
-            )}
-            {activeTab === 'json' && supabasePayload && (
-                <>
-                    <CopyButton onCopy={() => navigator.clipboard.writeText(formattedJson)} text="Copy JSON" copiedText="Copied!" Icon={CopyIcon} />
-                    <CopyButton onCopy={() => navigator.clipboard.writeText(curlCommand)} text="Copy cURL" copiedText="Copied!" Icon={CodeIcon} />
-                </>
-            )}
+          {activeTab === 'markdown' && markdownContent && (
+            <CopyButton onCopy={() => navigator.clipboard.writeText(markdownContent)} text="Copy Markdown" copiedText="Copied!" Icon={CopyIcon} />
+          )}
+          {activeTab === 'json' && supabasePayload && (
+            <>
+              <CopyButton onCopy={() => navigator.clipboard.writeText(formattedJson)} text="Copy JSON" copiedText="Copied!" Icon={CopyIcon} />
+              <CopyButton onCopy={() => navigator.clipboard.writeText(curlCommand)} text="Copy cURL" copiedText="Copied!" Icon={CodeIcon} />
+            </>
+          )}
+          {activeTab === 'sql' && supabasePayload && (
+            <CopyButton onCopy={() => navigator.clipboard.writeText(supabaseSql)} text="Copy SQL" copiedText="Copied!" Icon={CodeIcon} />
+          )}
         </div>
       </div>
 
       <div className="prose prose-invert prose-p:text-brand-text prose-headings:text-brand-text prose-strong:text-brand-cyan prose-a:text-brand-cyan prose-blockquote:border-brand-accent bg-brand-primary p-4 rounded-md flex-grow overflow-auto">
         {isLoading && <SkeletonLoader />}
         {error && <div className="text-red-400"><strong className="font-bold">Error:</strong> {error}</div>}
-        
+
         {!isLoading && !error && (
           <>
             {activeTab === 'markdown' && !markdownContent && <Placeholder text="Your generated blog post will appear here." />}
             {activeTab === 'json' && !supabasePayload && <Placeholder text="Generate a post to see the Supabase JSON payload." />}
+            {activeTab === 'sql' && !supabasePayload && <Placeholder text="Generate a post to get the SQL statement." />}
 
-            {activeTab === 'markdown' && markdownContent && <pre className="whitespace-pre-wrap break-words font-sans text-base leading-relaxed">{markdownContent}</pre>}
+            {activeTab === 'markdown' && markdownContent && (
+              <pre className="whitespace-pre-wrap break-words font-sans text-base leading-relaxed">{markdownContent}</pre>
+            )}
             {activeTab === 'json' && supabasePayload && (
-                <div>
-                    <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-relaxed">{formattedJson}</pre>
-                    <p className="text-xs text-brand-light mt-4 p-2 bg-brand-secondary rounded-md">
-                        Paste this JSON into Supabase (or run the cURL command) to create the draft post.
-                    </p>
-                </div>
+              <div>
+                <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-relaxed">{formattedJson}</pre>
+                <p className="text-xs text-brand-light mt-4 p-2 bg-brand-secondary rounded-md">
+                  Paste this JSON into Supabase (or run the cURL command) to create the draft post.
+                </p>
+              </div>
+            )}
+            {activeTab === 'sql' && supabasePayload && (
+              <div>
+                <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed">{supabaseSql}</pre>
+                <p className="text-xs text-brand-light mt-4 p-2 bg-brand-secondary rounded-md">
+                  Run this statement in Supabase SQL to upsert the draft without leaving the dashboard.
+                </p>
+              </div>
             )}
           </>
         )}
@@ -127,3 +144,56 @@ const TabButton: React.FC<{ name: string; id: ActiveTab; activeTab: ActiveTab; s
 const Placeholder: React.FC<{ text: string }> = ({ text }) => (
   <div className="flex items-center justify-center h-full text-brand-light">{text}</div>
 );
+
+function buildSupabaseSql(payload: SupabasePayload): string {
+  const delimiter = '$payload$';
+  const jsonString = JSON.stringify(payload, null, 2);
+  return `with payload as (
+  select jsonb ${delimiter}
+${jsonString}
+  ${delimiter} as data
+)
+insert into posts (
+  idempotency_key,
+  title,
+  slug,
+  summary,
+  category,
+  keywords,
+  hero_image_url,
+  body_md,
+  status,
+  publish_at,
+  created_at,
+  updated_at
+)
+select
+  data->>'idempotency_key',
+  data->>'title',
+  data->>'slug',
+  data->>'summary',
+  data->>'category',
+  coalesce(
+    (select array_agg(value) from jsonb_array_elements_text(data->'keywords') as kw(value)),
+    array[]::text[]
+  ),
+  nullif(data->>'hero_image_url', ''),
+  data->>'body_md',
+  data->>'status',
+  (data->>'publish_at')::timestamptz,
+  (data->>'created_at')::timestamptz,
+  (data->>'updated_at')::timestamptz
+from payload
+on conflict (idempotency_key)
+do update
+  set title = excluded.title,
+      slug = excluded.slug,
+      summary = excluded.summary,
+      category = excluded.category,
+      keywords = excluded.keywords,
+      hero_image_url = excluded.hero_image_url,
+      body_md = excluded.body_md,
+      status = excluded.status,
+      publish_at = excluded.publish_at,
+      updated_at = excluded.updated_at;`;
+}
