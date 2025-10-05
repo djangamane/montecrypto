@@ -152,6 +152,38 @@ function buildSupabaseSql(payload: SupabasePayload): string {
   select jsonb ${delimiter}
 ${jsonString}
   ${delimiter} as data
+),
+prepared as (
+  select
+    data,
+    nullif(data->>'idempotency_key', '') as idempotency_key,
+    coalesce(
+      (select array_agg(value) from jsonb_array_elements_text(data->'keywords') as kw(value)),
+      array[]::text[]
+    ) as keywords,
+    nullif(data->>'hero_image_url', '') as hero_image_url,
+    (data->>'publish_at')::timestamptz as publish_at,
+    (data->>'created_at')::timestamptz as created_at,
+    (data->>'updated_at')::timestamptz as updated_at
+  from payload
+),
+updates as (
+  update posts p
+  set
+    title = prepared.data->>'title',
+    slug = prepared.data->>'slug',
+    summary = prepared.data->>'summary',
+    category = prepared.data->>'category',
+    keywords = prepared.keywords,
+    hero_image_url = prepared.hero_image_url,
+    body_md = prepared.data->>'body_md',
+    status = prepared.data->>'status',
+    publish_at = prepared.publish_at,
+    updated_at = prepared.updated_at
+  from prepared
+  where prepared.idempotency_key is not null
+    and p.idempotency_key = prepared.idempotency_key
+  returning p.id
 )
 insert into posts (
   idempotency_key,
@@ -168,32 +200,19 @@ insert into posts (
   updated_at
 )
 select
-  data->>'idempotency_key',
-  data->>'title',
-  data->>'slug',
-  data->>'summary',
-  data->>'category',
-  coalesce(
-    (select array_agg(value) from jsonb_array_elements_text(data->'keywords') as kw(value)),
-    array[]::text[]
-  ),
-  nullif(data->>'hero_image_url', ''),
-  data->>'body_md',
-  data->>'status',
-  (data->>'publish_at')::timestamptz,
-  (data->>'created_at')::timestamptz,
-  (data->>'updated_at')::timestamptz
-from payload
-on conflict (idempotency_key)
-do update
-  set title = excluded.title,
-      slug = excluded.slug,
-      summary = excluded.summary,
-      category = excluded.category,
-      keywords = excluded.keywords,
-      hero_image_url = excluded.hero_image_url,
-      body_md = excluded.body_md,
-      status = excluded.status,
-      publish_at = excluded.publish_at,
-      updated_at = excluded.updated_at;`;
+  prepared.idempotency_key,
+  prepared.data->>'title',
+  prepared.data->>'slug',
+  prepared.data->>'summary',
+  prepared.data->>'category',
+  prepared.keywords,
+  prepared.hero_image_url,
+  prepared.data->>'body_md',
+  prepared.data->>'status',
+  prepared.publish_at,
+  prepared.created_at,
+  prepared.updated_at
+from prepared
+where prepared.idempotency_key is null
+   or not exists (select 1 from updates);`;
 }
