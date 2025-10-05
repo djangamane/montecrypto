@@ -36,7 +36,8 @@ const App: React.FC = () => {
 
       if (content && !content.startsWith('MISSING DATA')) {
         const now = new Date().toISOString();
-        const finalSlug = blogInput.slug || generateSlug(blogInput.title);
+        const providedSlug = blogInput.slug?.trim();
+        const finalSlug = providedSlug && providedSlug.length > 0 ? generateSlug(providedSlug) : generateSlug(blogInput.title);
         const publishAt = blogInput.publishDate ? new Date(blogInput.publishDate).toISOString() : null;
         
         // Use publishDate for idempotency key if available, otherwise use today's date

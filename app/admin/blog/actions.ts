@@ -27,19 +27,21 @@ export async function publishPostAction(id: string) {
     .update({ status: "published", publish_at: nowIso, updated_at: nowIso })
     .eq("id", id)
     .select("slug")
-    .single();
+    .maybeSingle();
 
   if (error) {
     return { ok: false, error: error.message };
   }
 
   const slug = data?.slug ?? null;
-  if (slug) {
-    revalidatePath("/blog");
-    revalidatePath(`/blog/${slug}`);
-    revalidatePath("/blog/feed");
-    revalidatePath("/sitemap.xml");
+  if (!slug) {
+    return { ok: false, error: "Post not found or already published." };
   }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+  revalidatePath("/blog/feed");
+  revalidatePath("/sitemap.xml");
 
   return { ok: true, slug };
 }

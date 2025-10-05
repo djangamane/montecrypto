@@ -43,11 +43,15 @@ export async function POST(req: NextRequest) {
     .update({ status: "published", publish_at: nowIso, updated_at: nowIso })
     .eq("id", id)
     .select("slug")
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("Supabase publish error", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data?.slug) {
+    return NextResponse.json({ error: "Post not found or already published" }, { status: 404 });
   }
 
   // TODO: trigger revalidation if using cache tags.
