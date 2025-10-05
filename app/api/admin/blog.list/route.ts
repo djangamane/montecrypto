@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { listPreviewPosts } from "@/lib/preview-store";
 import { supabaseService } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   if (!supabaseService) {
     return NextResponse.json({ posts: listPreviewPosts() });
