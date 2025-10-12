@@ -281,7 +281,7 @@ as $$
   select distinct u.id, u.email
   from auth.users u
   join public.entitlements e on e.user_id = u.id
-  where e.product = 'scam_likely'
+  where e.product in ('scam_likely', 'scam_likely_monthly', 'scam_likely_yearly', 'lifetime_access')
     and e.status in ('active', 'past_due')
     and u.email is not null;
 $$;
