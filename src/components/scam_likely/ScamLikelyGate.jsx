@@ -65,14 +65,7 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
   }
 
   if (!session) {
-    return (
-      <div className="rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-center text-brand-muted">
-        <h3 className="text-xl font-semibold text-brand-text">Create a free account</h3>
-        <p className="mt-3 text-sm">
-          Use the sign-in bar at the top of the page to unlock daily scans and paid plans.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   const allowFreeAccess = entitlementStatus === "none";

@@ -17,6 +17,8 @@ export function HeaderAuthBar({ session, isLoading }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [newUser, setNewUser] = useState(null);
 
+  const canAuthenticate = Boolean(supabase);
+
   useEffect(() => {
     if (session) {
       setShowOnboarding(false);
@@ -24,16 +26,16 @@ export function HeaderAuthBar({ session, isLoading }) {
     }
   }, [session]);
 
-  if (!supabase) {
-    return null;
-  }
-
   if (showOnboarding && newUser) {
     return <OnboardingModal user={newUser} onClose={() => setShowOnboarding(false)} />;
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!canAuthenticate) {
+      setMessage("Sign in is unavailable right now.");
+      return;
+    }
     if (isSubmitting) return;
 
     setMessage(null);
@@ -42,7 +44,7 @@ export function HeaderAuthBar({ session, isLoading }) {
     try {
       if (mode === "signup") {
         const redirectTo = typeof window !== "undefined" ? window.location.origin : undefined;
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabase?.auth.signUp({
           email,
           password,
           options: redirectTo ? { emailRedirectTo: redirectTo } : undefined,
@@ -54,7 +56,7 @@ export function HeaderAuthBar({ session, isLoading }) {
           setMessage("Check your inbox to confirm your email.");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase?.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
       setEmail("");
@@ -67,6 +69,7 @@ export function HeaderAuthBar({ session, isLoading }) {
   };
 
   const handleSignOut = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
   };
 
@@ -111,7 +114,7 @@ export function HeaderAuthBar({ session, isLoading }) {
             <div className="flex items-center gap-2 md:gap-3">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !canAuthenticate}
                 className="rounded-lg bg-brand-link px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-brand-text disabled:cursor-not-allowed disabled:bg-brand-muted/40"
               >
                 {isSubmitting ? "Working…" : mode === "signup" ? "Sign up" : "Sign in"}
@@ -124,7 +127,13 @@ export function HeaderAuthBar({ session, isLoading }) {
                 {mode === "signup" ? "Sign in" : "Create account"}
               </button>
             </div>
-            {message ? <p className="text-xs text-brand-link md:ml-3">{message}</p> : null}
+            {!canAuthenticate ? (
+              <p className="text-xs text-brand-muted md:ml-3">
+                Authentication disabled while Supabase configuration is missing.
+              </p>
+            ) : message ? (
+              <p className="text-xs text-brand-link md:ml-3">{message}</p>
+            ) : null}
           </form>
         )}
       </div>
