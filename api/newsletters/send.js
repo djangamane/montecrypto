@@ -288,44 +288,71 @@ function renderEmail(newsletter) {
 }
 
 function normalizeCoinScanForEmail(raw) {
-  if (!raw || typeof raw !== "object") return null;
-  const summary = typeof raw.summary === "string" ? raw.summary.trim() : "";
-  const findings = Array.isArray(raw.findings)
-    ? raw.findings
-        .map((finding) => ({
-          token: typeof finding.token === "string" ? finding.token.trim() : "",
-          title: typeof finding.title === "string" ? finding.title.trim() : "",
-          summary:
-            typeof finding.summary === "string" ? finding.summary.trim() : "",
-          howToAvoid:
-            typeof finding.howToAvoid === "string"
-              ? finding.howToAvoid.trim()
-              : "",
-          threatLevel:
-            typeof finding.threatLevel === "string"
-              ? finding.threatLevel.trim()
-              : "",
-          sources: Array.isArray(finding.sources)
-            ? finding.sources
-                .map((source) => ({
-                  uri: typeof source.uri === "string" ? source.uri.trim() : "",
-                  title:
-                    typeof source.title === "string" ? source.title.trim() : "",
-                }))
-                .filter((source) => source.uri)
-            : [],
-        }))
-        .filter((finding) => finding.summary)
+  let working = raw;
+  if (!working) return null;
+
+  if (typeof working === "string") {
+    const parsed = safeJsonParse(working);
+    if (parsed) {
+      working = parsed;
+    } else {
+      return null;
+    }
+  }
+
+  if (!isPlainObject(working)) return null;
+
+  const metadata = isPlainObject(working.metadata)
+    ? { ...working.metadata }
+    : {};
+
+  let summary = stripThink(
+    textValue(working.summary) || textValue(metadata.rawContent),
+  );
+
+  const findings = Array.isArray(working.findings)
+    ? working.findings
+        .map((item) => normalizeCoinFinding(item))
+        .filter((item) => item && item.summary && item.howToAvoid)
     : [];
 
-  const sources = Array.isArray(raw.sources)
-    ? raw.sources
-        .map((source) => ({
-          uri: typeof source.uri === "string" ? source.uri.trim() : "",
-          title: typeof source.title === "string" ? source.title.trim() : "",
-        }))
-        .filter((source) => source.uri)
+  let sources = Array.isArray(working.sources)
+    ? working.sources
+        .map((item, index) => normalizeCoinSource(item, index))
+        .filter(Boolean)
     : [];
+
+  const trimmedSummary = summary.trim();
+  if (trimmedSummary.startsWith("{") || trimmedSummary.startsWith("[")) {
+    const parsedSummary = safeJsonParse(trimmedSummary);
+    if (parsedSummary && typeof parsedSummary === "object") {
+      if (!summary && typeof parsedSummary.summary === "string") {
+        summary = stripThink(parsedSummary.summary);
+      }
+      if (!findings.length && Array.isArray(parsedSummary.findings)) {
+        findings.push(
+          ...parsedSummary.findings
+            .map((item) => normalizeCoinFinding(item))
+            .filter((item) => item && item.summary && item.howToAvoid),
+        );
+      }
+      if (!sources.length && Array.isArray(parsedSummary.sources)) {
+        sources = parsedSummary.sources
+          .map((item, index) => normalizeCoinSource(item, index))
+          .filter(Boolean);
+      }
+    }
+  }
+
+  if (!summary && findings.length) {
+    summary = findings
+      .map((item) => {
+        const label = item.token || item.title || "Finding";
+        return `${label}: ${item.summary}`;
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
 
   if (!summary && !findings.length) {
     return null;
@@ -336,6 +363,70 @@ function normalizeCoinScanForEmail(raw) {
     findings,
     sources,
   };
+}
+
+function normalizeCoinFinding(raw) {
+  if (!isPlainObject(raw)) return null;
+  const sources = Array.isArray(raw.sources)
+    ? raw.sources
+        .map((item, index) => normalizeCoinSource(item, index))
+        .filter(Boolean)
+    : [];
+
+  return {
+    token: textValue(raw.token),
+    title: textValue(raw.title),
+    summary: stripThink(textValue(raw.summary)),
+    howToAvoid: textValue(raw.howToAvoid),
+    threatLevel: normalizeThreatLevel(raw.threatLevel),
+    sources,
+  };
+}
+
+function normalizeCoinSource(raw, index = 0) {
+  if (!raw || typeof raw !== "object") return null;
+  const uri = textValue(raw.uri || raw.url);
+  if (!uri) return null;
+  return {
+    uri,
+    title: textValue(raw.title) || `Source ${index + 1}`,
+  };
+}
+
+function normalizeThreatLevel(level) {
+  const normalized = textValue(level).toLowerCase();
+  if (normalized === "high") return "High";
+  if (normalized === "medium") return "Medium";
+  if (normalized === "low") return "Low";
+  return "Medium";
+}
+
+function textValue(value) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  return "";
+}
+
+function stripThink(text) {
+  if (!text) return "";
+  if (text.includes("<think>") && text.includes("</think>")) {
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  }
+  return text;
+}
+
+function isPlainObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function safeJsonParse(input) {
+  if (typeof input !== "string") return null;
+  try {
+    return JSON.parse(input);
+  } catch (error) {
+    return null;
+  }
 }
 
 function escapeHtml(input) {
