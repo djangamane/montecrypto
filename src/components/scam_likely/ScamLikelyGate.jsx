@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import { useSupabaseSession } from "../../hooks/useSupabaseSession.js";
-import { AuthPanel } from "../auth/AuthPanel.jsx";
 import { PayPalSubscriptionButton } from "../payments/PayPalSubscriptionButton.jsx";
 import { RiskyChristieApp } from "../risky_christie/RiskyChristieApp.jsx";
 import {
@@ -67,10 +66,11 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
 
   if (!session) {
     return (
-      <div className="flex min-h-[160px] items-center justify-center rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-center">
-        <h3 className="text-2xl font-heading uppercase tracking-wide text-brand-text">
-          Create a free account
-        </h3>
+      <div className="rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-center text-brand-muted">
+        <h3 className="text-xl font-semibold text-brand-text">Create a free account</h3>
+        <p className="mt-3 text-sm">
+          Use the sign-in bar at the top of the page to unlock daily scans and paid plans.
+        </p>
       </div>
     );
   }
@@ -96,8 +96,6 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
             <li>Automation and export features as they roll out.</li>
           </ul>
         </div>
-
-        <AuthPanel session={session} />
       </div>
     );
   }

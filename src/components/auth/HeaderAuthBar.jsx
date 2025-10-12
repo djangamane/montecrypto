@@ -1,3 +1,5 @@
+ "use client";
+
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../lib/supabaseClient.js";
@@ -9,7 +11,7 @@ const INPUT_CLASSES =
 export function HeaderAuthBar({ session, isLoading }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState("signin");
+  const [mode, setMode] = useState("signup");
   const [message, setMessage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
