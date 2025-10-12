@@ -1,6 +1,8 @@
 import { Shield, ArrowRight } from "lucide-react";
 
-export function Header({ onBookNowClick }) {
+import { HeaderAuthBar } from "./auth/HeaderAuthBar.jsx";
+
+export function Header({ onBookNowClick, session, isSessionLoading }) {
   return (
     <header className="sticky top-0 z-40 border-b border-brand-muted/20 bg-brand-bg/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -41,6 +43,7 @@ export function Header({ onBookNowClick }) {
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
+      <HeaderAuthBar session={session} isLoading={isSessionLoading} />
     </header>
   );
 }

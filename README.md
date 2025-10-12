@@ -1,6 +1,6 @@
 # AI Crypto Risk Platform
 
-The AI Crypto Risk site is a Vite + React frontend deployed on Vercel. It now includes the Scam Likely detector prototype, weekly Scam Watch newsletter delivery, Supabase authentication, and PayPal subscription gating.
+The AI Crypto Risk site is a Vite + React frontend deployed on Vercel. It now includes the Scam Likely detector prototype, weekly Scam Watch newsletter delivery, Supabase authentication, and PayPal subscription gating. A sticky header with a lightweight auth bar keeps sign-in/sign-up within easy reach on every page.
 
 ## Getting Started
 

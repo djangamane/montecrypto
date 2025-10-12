@@ -67,24 +67,10 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
 
   if (!session) {
     return (
-      <div className="grid gap-6 lg:grid-cols-[1fr,0.85fr]">
-        <AuthPanel session={session} />
-        <div className="rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-6 text-sm text-brand-muted">
-          <h3 className="text-lg font-semibold text-brand-text">
-            AI- Crypto Risk Scan
-          </h3>
-          <p className="mt-3 leading-relaxed">
-            Create a free account to get one complimentary token scan every day.
-            Upgrade to a premium plan for more scans and exclusive features.
-          </p>
-          <button
-            type="button"
-            onClick={onScrollToNewsletter}
-            className="mt-4 inline-flex items-center justify-center rounded-xl border border-brand-link px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-brand-link transition hover:bg-brand-link hover:text-brand-bg"
-          >
-            View membership details
-          </button>
-        </div>
+      <div className="flex min-h-[160px] items-center justify-center rounded-2xl border border-brand-muted/30 bg-brand-bg/70 p-8 text-center">
+        <h3 className="text-2xl font-heading uppercase tracking-wide text-brand-text">
+          Create a free account
+        </h3>
       </div>
     );
   }

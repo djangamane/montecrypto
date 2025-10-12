@@ -27,7 +27,7 @@ function App() {
   const riskSectionRef = useRef(null);
   const courseSectionRef = useRef(null);
   const newsletterSectionRef = useRef(null);
-  const { session } = useSupabaseSession();
+  const { session, isLoading: isSessionLoading } = useSupabaseSession();
 
   if (typeof window !== 'undefined' && window.location.pathname === '/thankyou') {
     return <ThankYou />;
@@ -56,7 +56,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text font-sans">
-      <Header onBookNowClick={openModal} />
+      <Header onBookNowClick={openModal} session={session} isSessionLoading={isSessionLoading} />
 
       <main>
         <Hero onRunRiskCheck={scrollToRisk} onStartCourse={scrollToCourse} />
