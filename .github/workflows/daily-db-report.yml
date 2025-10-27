@@ -1,0 +1,15 @@
+name: Daily DB Report
+on:
+  schedule:
+    - cron: "0 9 * * *"   # runs daily at 09:00 UTC
+  workflow_dispatch:      # optional: lets you trigger it manually from the Actions tab
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        run: |
+          curl -X POST "https://bkmvnvixlgatbajfvawi.supabase.co/functions/v1/daily-db-report" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'
