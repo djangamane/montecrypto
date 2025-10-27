@@ -51,7 +51,13 @@ begin
     create type public.entitlement_status as enum ('active', 'pending', 'revoked', 'past_due');
   end if;
   if not exists (select 1 from pg_type where typname='payment_provider') then
-    create type public.payment_provider as enum ('paypal', 'coinbase');
+    create type public.payment_provider as enum ('paypal', 'coinbase', 'stripe');
+  else
+    begin
+      execute 'alter type public.payment_provider add value if not exists ''stripe''';
+    exception
+      when duplicate_object then null;
+    end;
   end if;
 end $$;
 

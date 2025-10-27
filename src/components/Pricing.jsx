@@ -6,13 +6,13 @@ import {
   Infinity,
   Users,
 } from "lucide-react";
-import { PayPalSubscriptionButton } from "./payments/PayPalSubscriptionButton";
+import { StripePaymentLinks } from "./payments/StripePaymentLinks.jsx";
 
 const tiers = [
   {
     name: "Monthly",
-    price: "$10",
-    description: "150 scans/month, plus weekly newsletter.",
+    price: "$5",
+    description: "150 scans/month plus weekly Scam Watch newsletter.",
     features: [
       { text: "150 scans per month", icon: ScanLine },
       { text: "Weekly newsletter", icon: Newspaper },
@@ -21,9 +21,9 @@ const tiers = [
   },
   {
     name: "Yearly",
-    price: "$100",
+    price: "$50",
     description:
-      "300 scans/month, plus weekly newsletter and email export (coming soon).",
+      "Save two months with annual billing. Includes advanced reporting.",
     features: [
       { text: "300 scans per month", icon: ScanLine },
       { text: "Weekly newsletter", icon: Newspaper },
@@ -33,9 +33,9 @@ const tiers = [
   },
   {
     name: "Lifetime",
-    price: "$275",
+    price: "$150",
     description:
-      "400 scans/month, newsletter, and export (coming soon). Limited to 50 slots.",
+      "One-time payment for lifetime Scam Likely access and updates.",
     features: [
       { text: "400 scans per month", icon: ScanLine },
       { text: "Weekly newsletter", icon: Newspaper },
@@ -88,7 +88,7 @@ export function Pricing({ session }) {
           ))}
         </div>
         <div className="mt-8 max-w-md mx-auto">
-          <PayPalSubscriptionButton session={session} />
+          <StripePaymentLinks session={session} />
         </div>
       </div>
     </section>

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import { useSupabaseSession } from "../../hooks/useSupabaseSession.js";
-import { PayPalSubscriptionButton } from "../payments/PayPalSubscriptionButton.jsx";
 import { RiskyChristieApp } from "../risky_christie/RiskyChristieApp.jsx";
 import {
   getEntitlementStatus,

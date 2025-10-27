@@ -12,7 +12,7 @@ Keep this list handy as traction grows. Mark items off once they are fully handl
 ## Security & Compliance
 - [ ] Google Workspace admin controls locked down (MFA enforced, shared inbox policy).
 - [ ] Supabase RLS rules peer-reviewed; audit logs enabled.
-- [ ] Secrets inventory updated (Vercel envs, Supabase, Gemini, PayPal, Resend, Perplexity).
+- [ ] Secrets inventory updated (Vercel envs, Supabase, Gemini, Stripe, Resend, Perplexity).
 - [ ] Incident-response runbook drafted with on-call contact tree.
 - [ ] Data retention policy written (scans, newsletters, billing artifacts).
 
@@ -38,7 +38,7 @@ Keep this list handy as traction grows. Mark items off once they are fully handl
 
 ## Finance & Expenses
 - [ ] Monthly expense tracker started (Vercel, Supabase, Google Workspace, APIs, domains).
-- [ ] Forecast spreadsheet includes scaling tiers + buffer for Gemini/PayPal fees.
+- [ ] Forecast spreadsheet includes scaling tiers + buffer for Gemini/Stripe fees.
 - [ ] Business bank + accounting software connected (QuickBooks, Wave, etc.).
 - [ ] Tax considerations noted (sales tax, VAT for digital goods, 1099-K thresholds).
 - [ ] Reserve fund target defined (months of runway/operating expense).
@@ -58,7 +58,7 @@ Keep this list handy as traction grows. Mark items off once they are fully handl
 ## Automation & Tooling
 - [ ] Zapier/Make/cron jobs inventory compiled with owners + rollback plan.
 - [ ] GitHub/Vercel CI status checks locked down (required reviews).
-- [ ] Monitoring alerts wired to Slack/Email/SMS (uptime, Supabase errors, PayPal webhook failures).
+- [ ] Monitoring alerts wired to Slack/Email/SMS (uptime, Supabase errors, Stripe webhook failures).
 - [ ] Load test script or plan ready (k6/Artillery) for key endpoints.
 
 Update this checklist whenever new systems or expenses get introduced.

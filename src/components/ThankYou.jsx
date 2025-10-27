@@ -9,7 +9,7 @@ import {
 const MEMBERSHIP_COPY = {
   checking: {
     title: "Confirming your membership…",
-    body: "We’re syncing with PayPal and Supabase to unlock your access. Hang tight for a moment.",
+    body: "We’re syncing Stripe and Supabase to unlock your access. Hang tight for a moment.",
   },
   active: {
     title: "Membership activated",
@@ -17,11 +17,11 @@ const MEMBERSHIP_COPY = {
   },
   pending: {
     title: "Payment is still processing",
-    body: "PayPal is finishing the hand-off. Refresh this page in a few seconds — the upgrade usually finalizes quickly.",
+    body: "Stripe is finishing the hand-off. Refresh this page in a few seconds — the upgrade usually finalizes quickly.",
   },
   missing: {
     title: "We didn’t detect your membership",
-    body: "If the page still shows this after a refresh, forward your PayPal receipt to support@aicryptorisk.com so we can help right away.",
+    body: "If the page still shows this after a refresh, forward your Stripe receipt to support@aicryptorisk.com so we can help right away.",
   },
   "no-session": {
     title: "Sign in to finish",
@@ -93,7 +93,7 @@ export function ThankYou() {
       <div className="w-full max-w-3xl rounded-3xl border border-brand-muted/30 bg-white/90 p-10 text-center shadow-xl">
         <h1 className="text-3xl font-heading uppercase text-brand-text">Thank you for joining</h1>
         <p className="mt-4 text-sm text-brand-muted">
-          A receipt is on its way from PayPal. We use it to activate the AI-Crypto Risk Tool workspace and
+          A receipt is on its way from Stripe. We use it to activate the AI-Crypto Risk Tool workspace and
           weekly Scam Watch Newsletter on your account automatically.
         </p>
 
@@ -128,7 +128,7 @@ export function ThankYou() {
 
         <p className="mt-8 text-xs text-brand-muted">
           Need help? Email <a href="mailto:jason@aicryptorisk.com" className="underline decoration-dotted">jason@aicryptorisk.com</a>
-          {" "}with your PayPal receipt and we’ll get you squared away.
+          {" "}with your Stripe receipt and we’ll get you squared away.
         </p>
       </div>
     </div>
