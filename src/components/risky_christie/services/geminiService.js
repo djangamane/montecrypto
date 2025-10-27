@@ -41,6 +41,7 @@ function normalizeResult(raw) {
   return {
     tokenName: typeof raw.tokenName === 'string' ? raw.tokenName : 'Unknown Token',
     overallScore: Number(raw.overallScore) || 0,
+    originalScore: Number(raw.originalScore ?? raw.overallScore) || 0,
     summary: typeof raw.summary === 'string' ? raw.summary : '',
     onChainAnalysis: sanitizeFindings(raw.onChainAnalysis),
     offChainIntelligence: sanitizeFindings(raw.offChainIntelligence),
@@ -54,5 +55,16 @@ function normalizeResult(raw) {
           }))
           .filter((source) => source.url && source.url !== '#')
       : [],
+    scoreAdjustments: Array.isArray(raw.scoreAdjustments)
+      ? raw.scoreAdjustments
+          .map(({ id, label, impact, description }) => ({
+            id: typeof id === 'string' ? id : 'adjustment',
+            label: typeof label === 'string' ? label : 'Adjustment',
+            impact: typeof impact === 'string' ? impact : '',
+            description: typeof description === 'string' ? description : '',
+          }))
+          .filter((item) => item.label)
+      : [],
+    top50Coin: Boolean(raw.top50Coin),
   };
 }

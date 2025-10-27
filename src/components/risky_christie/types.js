@@ -9,11 +9,14 @@ export function createDefaultResult() {
   return {
     tokenName: '',
     overallScore: 0,
+    originalScore: 0,
     summary: '',
     onChainAnalysis: [],
     offChainIntelligence: [],
     socialSentiment: [],
     institutionalInterest: [],
     sources: [],
+    scoreAdjustments: [],
+    top50Coin: false,
   };
 }
