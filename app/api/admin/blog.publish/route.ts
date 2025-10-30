@@ -2,10 +2,14 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { publishPreviewPost } from "@/lib/preview-store";
 import { supabaseService } from "@/lib/supabase";
+import { guardAdminApi } from "@/lib/admin-guard";
 
 const API_KEY = process.env.INGEST_API_KEY;
 
 export async function POST(req: NextRequest) {
+  const guard = guardAdminApi();
+  if (guard) return guard;
+
   if (!API_KEY) {
     console.error("INGEST_API_KEY is not configured.");
     return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });

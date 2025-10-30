@@ -98,6 +98,7 @@ Configure these values for the production deployment. Client-side variables shou
 | `SUPABASE_URL` | Supabase URL used by server actions and route handlers |
 | `SUPABASE_SERVICE_ROLE` | Service role key for server-side writes (never expose client-side) |
 | `INGEST_API_KEY` | Bearer key required by the Make ingest and admin publish endpoints |
+| `ENABLE_ADMIN_ROUTES` | Set to `true` only in secure environments to expose the `/admin` UI |
 | `STRIPE_SECRET_KEY` | Stripe secret key used for API calls from serverless functions |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret used to verify incoming Stripe webhooks |
 | `STRIPE_SUCCESS_URL` | (Optional) Success URL for Checkout sessions or payment links |

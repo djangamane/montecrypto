@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 
 import { listPreviewPosts } from "@/lib/preview-store";
 import { supabaseService } from "@/lib/supabase";
+import { guardAdminApi } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const guard = guardAdminApi();
+  if (guard) return guard;
+
   if (!supabaseService) {
     return NextResponse.json({ posts: listPreviewPosts() });
   }
