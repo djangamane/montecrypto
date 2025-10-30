@@ -11,7 +11,6 @@ import { BookingModal } from "./components/BookingModal.jsx";
 import { ScamLikelyGate } from "./components/scam_likely/ScamLikelyGate.jsx";
 import { NewsletterGate } from "./components/newsletter/NewsletterGate.jsx";
 import { useSupabaseSession } from "./hooks/useSupabaseSession.js";
-import { AdminAccessModal } from "./components/AdminAccessModal.jsx";
 import { AboutSection } from "./components/AboutSection.jsx";
 import { Pricing } from "./components/Pricing.jsx";
 import { PhotoCarousel } from "./components/PhotoCarousel.jsx";
@@ -23,7 +22,6 @@ import { ThankYou } from "./components/ThankYou.jsx";
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const riskSectionRef = useRef(null);
   const courseSectionRef = useRef(null);
   const newsletterSectionRef = useRef(null);
@@ -50,9 +48,6 @@ function App() {
   const scrollToNewsletter = () => {
     newsletterSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  const openAdminModal = () => setIsAdminModalOpen(true);
-  const closeAdminModal = () => setIsAdminModalOpen(false);
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text font-sans">
@@ -101,15 +96,6 @@ function App() {
         hasPaid={hasPaid}
         onSetHasPaid={setHasPaid}
       />
-      <AdminAccessModal isOpen={isAdminModalOpen} onClose={closeAdminModal} />
-
-      <button
-        type="button"
-        onClick={openAdminModal}
-        className="fixed bottom-4 right-4 z-40 rounded-full border border-brand-muted/40 bg-white/80 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-brand-muted shadow backdrop-blur transition hover:border-brand-link hover:text-brand-text"
-      >
-        Admin
-      </button>
       <Analytics />
     </div>
   );
