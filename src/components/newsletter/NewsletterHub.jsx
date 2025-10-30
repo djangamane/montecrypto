@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { NewsletterArchive } from "./NewsletterArchive.jsx";
-import { NewsletterAdmin } from "./NewsletterAdmin.jsx";
 
 export const DEFAULT_BRIEFINGS = [
   {
@@ -107,15 +106,11 @@ export const DEFAULT_BRIEFINGS = [
 ];
 
 export function NewsletterHub({
-  isAdmin = false,
   initialBriefings = DEFAULT_BRIEFINGS,
   onBriefingCreated,
-  session,
   isMockData = false,
 }) {
   const [briefings, setBriefings] = useState(initialBriefings);
-  const [view, setView] = useState(isAdmin ? "admin" : "archive");
-
   const hasBriefings = useMemo(
     () => briefings && briefings.length > 0,
     [briefings],
@@ -126,7 +121,6 @@ export function NewsletterHub({
       const next = [newBriefing, ...(prev ?? [])];
       return next;
     });
-    setView("archive");
     onBriefingCreated?.(newBriefing);
   };
 
@@ -151,44 +145,9 @@ export function NewsletterHub({
           </p>
         </div>
 
-        {isAdmin ? (
-          <div className="flex gap-2 rounded-full border border-brand-muted/40 bg-brand-bg/80 p-1 text-xs font-semibold uppercase tracking-[0.25em] text-brand-muted">
-            <button
-              type="button"
-              onClick={() => setView("archive")}
-              className={`rounded-full px-4 py-1.5 transition ${
-                view === "archive"
-                  ? "bg-brand-text text-brand-bg"
-                  : "text-brand-muted hover:text-brand-text"
-              }`}
-            >
-              Archive
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("admin")}
-              className={`rounded-full px-4 py-1.5 transition ${
-                view === "admin"
-                  ? "bg-brand-text text-brand-bg"
-                  : "text-brand-muted hover:text-brand-text"
-              }`}
-            >
-              Admin Tools
-            </button>
-          </div>
-        ) : null}
       </div>
 
-      {view === "admin" && isAdmin ? (
-        <NewsletterAdmin
-          session={session}
-          onBriefingCreated={handleBriefingCreated}
-          latestBriefing={isMockData ? null : briefings[0]}
-          isMockData={isMockData}
-        />
-      ) : (
-        <NewsletterArchive briefings={hasBriefings ? briefings : []} />
-      )}
+      <NewsletterArchive briefings={hasBriefings ? briefings : []} />
     </section>
   );
 }

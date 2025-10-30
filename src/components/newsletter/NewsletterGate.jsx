@@ -9,7 +9,6 @@ import {
   getEntitlementStatus,
   SCAM_LIKELY_PRODUCT_ID,
 } from "../../lib/entitlements.js";
-import { isNewsletterAdmin } from "../../../config/newsletterAdminAllowlist.js";
 
 export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
   const { session, isLoading: isSessionLoading } = useSupabaseSession();
@@ -74,11 +73,6 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
     () => getEntitlementStatus(entitlement),
     [entitlement],
   );
-
-  const isAdmin = useMemo(() => {
-    const email = session?.user?.email;
-    return isNewsletterAdmin(email);
-  }, [session?.user?.email]);
 
   const fetchBriefings = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -206,10 +200,8 @@ export function NewsletterGate({ initialBriefings = DEFAULT_BRIEFINGS }) {
         </section>
       ) : null}
       <NewsletterHub
-        isAdmin={isAdmin}
         initialBriefings={briefings.length ? briefings : DEFAULT_BRIEFINGS}
         onBriefingCreated={handleBriefingCreated}
-        session={session}
         isMockData={briefings.length === 0}
       />
     </>

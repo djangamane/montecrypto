@@ -97,8 +97,7 @@ Configure these values for the production deployment. Client-side variables shou
 | `NEXT_PUBLIC_STRIPE_LIFETIME_LINK` | Stripe payment link URL for the lifetime plan |
 | `SUPABASE_URL` | Supabase URL used by server actions and route handlers |
 | `SUPABASE_SERVICE_ROLE` | Service role key for server-side writes (never expose client-side) |
-| `INGEST_API_KEY` | Bearer key required by the Make ingest and admin publish endpoints |
-| `ENABLE_ADMIN_ROUTES` | Set to `true` only in secure environments to expose the `/admin` UI |
+| `INGEST_API_KEY` | (Legacy) Previous Make ingest key; not required for the CLI workflow |
 | `STRIPE_SECRET_KEY` | Stripe secret key used for API calls from serverless functions |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret used to verify incoming Stripe webhooks |
 | `STRIPE_SUCCESS_URL` | (Optional) Success URL for Checkout sessions or payment links |
@@ -133,20 +132,21 @@ When the webhook fires, Stripe events are verified and mapped to Supabase entitl
 
 Refer to `docs/newsletter-operations.md` for end-to-end guidance on generating, publishing, and emailing Scam Watch briefings. The short version:
 
-- Admins can generate and publish issues from the Scam Likely section once their email is allowlisted.
-- `/api/newsletters/send` delivers the latest published issue through Resend and records `email_sent_at` for auditing.
-- Automations (Make/Zapier/Cron) should call the generate → publish → send endpoints with an admin Supabase token to run fully hands-free.
+- Use `node scripts/admin-cli.mjs newsletter generate` to produce a JSON draft locally (optionally pipe it into a file).
+- Publish the JSON with `node scripts/admin-cli.mjs newsletter publish ./briefing.json` (requires Supabase service-role and Resend env vars).
+- Send the latest edition with `node scripts/admin-cli.mjs newsletter send [newsletterId]`, which records `email_sent_at` for auditing.
+- Automations (Make/Zapier/Cron) can call the same CLI or invoke Supabase directly; no hosted admin endpoints remain.
 
 ## Blog Content Workflow
 
 - Planning happens in Google Sheets; export the working sheet as CSV when seeding new posts.
 - The Gemini-powered blog generator lives in `tools/blog-generator/`. Run `npm run dev:blog-tool` for local tweaks, or `npm run build:blog-tool` to emit the static bundle into `public/tools/blog-generator/`.
 - A starter CSV template (`sample_posts.csv`) ships alongside the tool so teammates can duplicate the expected headers without sharing live drafts.
-- The Next.js admin surface at `/admin/tools/blog-generator` iframes the built bundle; run `npm run build:blog-tool` before visiting locally so the static assets exist.
+- The static blog generator now lives entirely offline. Run `npm run build:blog-tool` to emit the bundle into `public/tools/blog-generator/`, then open the HTML file locally.
 - When generating drafts you can copy Markdown, JSON, cURL, or an upsert-ready SQL statement—paste the SQL straight into Supabase if you prefer working in the dashboard.
-- POST the payload to Supabase (`posts` table via REST) or paste it into the SQL editor; drafts then appear at `/admin/blog` inside the Next.js admin surface.
-- Publishing from `/admin/blog` flips `status` to `published`, stamps `publish_at`, and triggers the live listing on `/blog`, `/blog/[slug]`, RSS, and sitemap.
-- Keep the Supabase service-role key and `INGEST_API_KEY` scoped to automation only; they should never ship to the browser.
+- Feed the generator’s JSON output into `node scripts/admin-cli.mjs blog ingest ./draft.json` (or paste into Supabase SQL) to stage a draft.
+- Publish via `node scripts/admin-cli.mjs blog publish <post-id>` so RSS, sitemap, and the public blog update immediately.
+- Keep the Supabase service-role key confined to the CLI environment; never expose it to the browser.
 
 ## Testing the Flow
 

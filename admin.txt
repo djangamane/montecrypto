@@ -1,4 +1,0 @@
-/admin/blog → manage drafts and publish posts from the SWR-powered dashboard (app/admin/blog/page.tsx:1).
-/admin/tools/blog-generator → load the iframe wrapper around the static blog-generator build (app/admin/tools/blog-generator/page.tsx:1).
-Supporting admin APIs live under /api/admin/blog.ingest, /api/admin/blog.list, and /api/admin/blog.publish for ingesting, listing, 
-and publishing posts (app/api/admin/blog.ingest/route.ts:1, app/api/admin/blog.list/route.ts:1, app/api/admin/blog.publish/route.ts:1).

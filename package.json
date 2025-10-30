@@ -10,7 +10,8 @@
     "build:blog-tool": "npm run build --prefix tools/blog-generator",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npm install --prefix tools/blog-generator"
+    "postinstall": "npm install --prefix tools/blog-generator",
+    "admin:cli": "node scripts/admin-cli.mjs"
   },
   "dependencies": {
     "@ai-sdk/fireworks": "^0.1.14",

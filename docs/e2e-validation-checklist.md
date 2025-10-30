@@ -2,15 +2,14 @@
 
 Use this script whenever you need to smoke-test the Scam Watch membership in production (Vercel) or staging.
 
-## 1. Admin workflow
-1. Sign in with an allowlisted admin email (see `config/newsletterAdminAllowlist.js`).
-2. Scroll to **Scam Watch** → run **Generate Briefing**.
-   - Confirm a draft appears with insights and sources populated by Gemini.
-3. Click **Publish Draft**.
-   - Verify the briefing shows in the archive and `email_sent_at` is still empty in Supabase.
-4. Trigger **Send Newsletter Email**.
-   - Confirm the UI reports the recipient count and Supabase row records `email_sent_at`.
-   - Spot-check inbox delivery (Resend activity log or real mailbox).
+## 1. Admin workflow (local CLI)
+1. Run `node scripts/admin-cli.mjs newsletter generate > briefing.json`.
+   - Confirm the JSON file contains three insights and credible sources.
+2. Publish the draft with `node scripts/admin-cli.mjs newsletter publish briefing.json`.
+   - Verify the briefing appears in Supabase `newsletters` with `status = published` and `email_sent_at` still empty.
+3. Trigger `node scripts/admin-cli.mjs newsletter send`.
+   - Confirm the script reports the recipient count and Supabase updates `email_sent_at`.
+   - Spot-check delivery via Resend activity log or a real mailbox.
 
 ## 2. Subscriber experience (monthly plan)
 1. Sign out, visit the live site, and create a new Supabase user via the Auth panel.
@@ -24,8 +23,8 @@ Use this script whenever you need to smoke-test the Scam Watch membership in pro
 2. Confirm the entitlement metadata stores the new subscription ID and remains active after webhook callbacks.
 
 ## 4. Newsletter delivery (non-admin subscriber)
-1. Stay signed in as the annual-plan user and confirm Scam Watch archive loads but admin controls are hidden.
-2. Trigger a new newsletter (admin steps 1–4) and confirm the non-admin subscriber receives the emailed briefing, without access errors.
+1. Stay signed in as the annual-plan user and confirm Scam Watch archive loads.
+2. Trigger the CLI workflow again and confirm the non-admin subscriber receives the emailed briefing without access errors.
 
 ## 5. Stripe + Webhook regression checks
 - Cancel a Stripe subscription from the dashboard; send a test webhook (or wait for the real event) to ensure entitlements flip to `revoked`.
@@ -33,6 +32,6 @@ Use this script whenever you need to smoke-test the Scam Watch membership in pro
 
 ## 6. Resend + automation sanity
 - In Resend, verify the message history and delivery metrics match expectations.
-- If using Make/Zapier, run the scenario in test mode to ensure all API calls return `200` with the admin Bearer token.
+- If using Make/Zapier, run the job that wraps the CLI (or equivalent RPC calls) in test mode to ensure all commands exit successfully.
 
 Document results and any anomalies directly in `docs/risky-kristy-newsletter-plan.md` under Step 7.
