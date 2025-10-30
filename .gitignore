@@ -24,3 +24,4 @@ public/tools/blog-generator/
 *.sln
 *.sw?
 .next
+flow.txt
