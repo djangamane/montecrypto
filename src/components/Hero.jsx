@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export function Hero({ onRunRiskCheck, onStartCourse }) {
   return (
@@ -8,6 +8,18 @@ export function Hero({ onRunRiskCheck, onStartCourse }) {
     >
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1fr,0.9fr] md:items-center">
         <div className="space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-link/30 bg-brand-surface/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-brand-link shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-brand-accent" aria-hidden="true" />
+            <span>As seen on</span>
+            <a
+              href="https://aijourn.com/from-hype-to-hedge-how-ai-risk-engines-are-redefining-trust-in-cryptos-wild-world/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="normal-case tracking-normal text-sm font-semibold underline underline-offset-4 transition hover:text-brand-text hover:decoration-brand-accent"
+            >
+              AI Journal
+            </a>
+          </div>
           <p className="uppercase tracking-[0.35em] text-xs text-brand-link/70">
             Evidence over hype
           </p>
