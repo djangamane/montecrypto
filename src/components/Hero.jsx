@@ -10,7 +10,7 @@ export function Hero({ onRunRiskCheck, onStartCourse }) {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand-link/30 bg-brand-surface/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-brand-link shadow-sm">
             <Sparkles className="h-3.5 w-3.5 text-brand-accent" aria-hidden="true" />
-            <span>As seen on</span>
+            <span>As seen in</span>
             <a
               href="https://aijourn.com/from-hype-to-hedge-how-ai-risk-engines-are-redefining-trust-in-cryptos-wild-world/"
               target="_blank"
