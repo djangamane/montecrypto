@@ -33,7 +33,7 @@ const tiers = [
   },
   {
     name: "Lifetime",
-    price: "$150",
+    price: "$200",
     description:
       "One-time payment for lifetime Scam Likely access and updates.",
     features: [

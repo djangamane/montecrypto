@@ -17,7 +17,7 @@ const PLAN_CONFIG = [
   },
   {
     id: "lifetime",
-    label: "$150 lifetime",
+    label: "$200 lifetime",
     description: "One-time payment for lifetime access to the workspace.",
     link: process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK,
   },
