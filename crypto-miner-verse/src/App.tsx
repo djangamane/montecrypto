@@ -1,0 +1,269 @@
+import React, { useState, useEffect } from 'react';
+import type { UserProgress, Level, Lesson } from './types';
+import { LevelStatus } from './types';
+import { LEVELS } from './constants';
+import LevelMap from './components/LevelMap';
+import RiskAnalyzer from './components/RiskAnalyzer';
+import CryptoCrashCoder from './components/CryptoCrashCoder';
+import MinerVerse from './components/MinerVerse';
+import Button from './components/ui/Button';
+import { Flame, Star, Terminal, ArrowRight } from 'lucide-react';
+
+const App: React.FC = () => {
+  // --- STATE ---
+  const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL'>('WELCOME');
+  const [activeLevel, setActiveLevel] = useState<Level | null>(null);
+  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+
+  // User Progress with localStorage persistence
+  const [user, setUser] = useState<UserProgress>(() => {
+    const saved = localStorage.getItem('minerverse_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved user data', e);
+      }
+    }
+    return {
+      currentLevel: 1,
+      completedLessonIds: [],
+      streakDays: 3,
+      xp: 1250,
+      badges: [],
+      isPro: false
+    };
+  });
+
+  // Save user progress to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('minerverse_user', JSON.stringify(user));
+  }, [user]);
+
+  // --- WELCOME SCREEN ---
+  const renderWelcome = () => (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="arcade-scanline"></div>
+
+      <div className="z-10 text-center space-y-8 max-w-4xl">
+        <div className="mb-12 relative group">
+          <h1 className="text-8xl md:text-9xl font-retro text-transparent bg-clip-text bg-gradient-to-b from-arcade-neon to-green-900 animate-pulse tracking-widest filter drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
+            MINER<br />VERSE
+          </h1>
+          <div className="absolute -inset-10 bg-arcade-neon/10 blur-3xl rounded-full opacity-50 group-hover:opacity-75 transition-opacity"></div>
+        </div>
+
+        <div className="space-y-4 font-retro text-2xl text-gray-400 tracking-wide">
+          <p>/// INITIATE CRYPTO SURVIVAL PROTOCOL ///</p>
+          <p className="text-arcade-cyan">LEARN. MINE. SURVIVE.</p>
+        </div>
+
+        <div className="pt-8">
+          <Button variant="arcade" size="lg" onClick={() => setView('MAP')} className="animate-bounce-slow">
+            PRESS START
+          </Button>
+        </div>
+      </div>
+
+      {/* Background Decor */}
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-arcade-neon/20 to-transparent"></div>
+      <div className="absolute top-10 left-10 text-gray-800 font-retro text-9xl opacity-10 select-none">BTC</div>
+      <div className="absolute bottom-10 right-10 text-gray-800 font-retro text-9xl opacity-10 select-none">HODL</div>
+    </div>
+  );
+
+  // --- ACTIONS ---
+
+  const handleLevelSelect = (level: Level) => {
+    // Pro/Risk Tool Check
+    if (level.id === 4 && !user.isPro) {
+      setView('RISK_TOOL'); // Or a modal to upsell
+      return;
+    }
+
+    // Find lesson content to show as "Briefing"
+    // For this game loop, we assume 1 main lesson per level for simplicity, 
+    // or we chain them. Let's pick the first uncompleted or just the first one.
+    const lesson = level.lessons[0];
+
+    if (lesson) {
+      setActiveLevel(level);
+      setActiveLesson(lesson);
+      setView('BRIEFING');
+    }
+  };
+
+  const handleStartMission = () => {
+    setView('MINER_GAME');
+  };
+
+  const handleMinerComplete = (success: boolean, score: number) => {
+    if (success) {
+      // Add score to XP
+      setUser(prev => ({ ...prev, xp: prev.xp + score }));
+      // Proceed to Bonus Round
+      setView('ARCADE_BONUS');
+    } else {
+      // Failed mission, back to map
+      setView('MAP');
+    }
+  };
+
+  const handleArcadeComplete = (score: number) => {
+    // Bonus XP
+    setUser(prev => ({ ...prev, xp: prev.xp + score }));
+
+    // Unlock Next Level logic
+    if (activeLevel && activeLevel.id === user.currentLevel) {
+      setUser(prev => ({
+        ...prev,
+        currentLevel: prev.currentLevel + 1
+      }));
+    }
+
+    setView('MAP');
+    setActiveLesson(null);
+    setActiveLevel(null);
+  };
+
+  const handleRiskScanComplete = () => {
+    setUser(prev => ({
+      ...prev,
+      badges: [...prev.badges, 'b3'],
+      xp: prev.xp + 50
+    }));
+    setTimeout(() => setView('MAP'), 1000);
+  };
+
+  // --- DERIVED STATE ---
+  const visibleLevels = LEVELS.map(lvl => ({
+    ...lvl,
+    status: lvl.id < user.currentLevel
+      ? LevelStatus.COMPLETED
+      : lvl.id === user.currentLevel
+        ? LevelStatus.UNLOCKED
+        : LevelStatus.LOCKED
+  }));
+
+  // --- RENDER ---
+  if (view === 'WELCOME') return renderWelcome();
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-gray-100 font-sans selection:bg-brand-500 selection:text-white flex flex-col">
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 shadow-md">
+        <div className="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-orange-400">
+              <Flame className="w-5 h-5 fill-orange-400 animate-pulse" />
+              <span className="font-bold text-lg">{user.streakDays}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-yellow-400">
+              <Star className="w-5 h-5 fill-yellow-400" />
+              <span className="font-bold">{user.xp} XP</span>
+            </div>
+          </div>
+          <div className="font-retro text-xl text-arcade-cyan tracking-widest cursor-pointer" onClick={() => setView('WELCOME')}>
+            MINER_VERSE
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN */}
+      <main className="flex-grow relative overflow-hidden">
+
+        {view === 'MAP' && (
+          <div className="max-w-md mx-auto h-full pb-20 pt-8">
+            <div className="text-center mb-8">
+              <h2 className="text-gray-500 font-retro text-lg">CURRENT OBJECTIVE</h2>
+              <div className="text-2xl text-white font-bold uppercase tracking-wider">
+                {visibleLevels.find(l => l.id === user.currentLevel)?.name || "MASTERED"}
+              </div>
+            </div>
+
+            <LevelMap
+              levels={visibleLevels}
+              currentLevelId={user.currentLevel}
+              onSelectLevel={handleLevelSelect}
+            />
+          </div>
+        )}
+
+        {view === 'BRIEFING' && activeLesson && (
+          <div className="h-full p-4 md:p-8 flex flex-col items-center justify-center relative">
+            <div className="arcade-scanline"></div>
+            <div className="max-w-3xl w-full border-4 border-arcade-cyan bg-gray-900/95 p-1 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
+              <div className="border border-arcade-cyan/30 p-6 md:p-10 flex flex-col gap-6">
+                <div className="flex items-center gap-4 border-b-2 border-dashed border-gray-700 pb-4">
+                  <Terminal className="text-arcade-pink w-10 h-10" />
+                  <div>
+                    <h2 className="text-arcade-pink font-retro text-xl">MISSION BRIEFING // LEVEL {activeLevel?.id}</h2>
+                    <h1 className="text-4xl text-white font-retro uppercase">{activeLesson.title}</h1>
+                  </div>
+                </div>
+
+                <div className="font-mono text-green-400 text-lg leading-relaxed bg-black p-6 border-l-4 border-arcade-cyan h-64 overflow-y-auto custom-scrollbar">
+                  {activeLesson.content}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="bg-gray-800 p-4 border border-gray-700">
+                    <h3 className="text-gray-400 text-xs font-bold uppercase mb-1">OBJECTIVE</h3>
+                    <p className="text-white font-retro text-xl">COLLECT 1000 SATS</p>
+                  </div>
+                  <div className="bg-gray-800 p-4 border border-gray-700">
+                    <h3 className="text-gray-400 text-xs font-bold uppercase mb-1">INTEL</h3>
+                    <p className="text-white font-retro text-xl">AVOID SCAM CLOUDS</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  <Button fullWidth variant="arcade" onClick={handleStartMission}>
+                    DEPLOY MINER <ArrowRight className="ml-2" />
+                  </Button>
+                  <button onClick={() => setView('MAP')} className="w-full text-center text-gray-500 hover:text-white font-retro text-lg uppercase">
+                    Cancel Mission
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {view === 'MINER_GAME' && activeLevel && (
+          <MinerVerse
+            levelId={activeLevel.id}
+            targetScore={1000 + (activeLevel.id * 200)} // Harder targets for higher levels
+            onExit={handleMinerComplete}
+          />
+        )}
+
+        {view === 'ARCADE_BONUS' && (
+          <div className="relative h-full">
+            {/* Overlay to explain bonus round */}
+            <CryptoCrashCoder
+              unlockedLevelId={user.currentLevel}
+              onExit={handleArcadeComplete}
+            />
+          </div>
+        )}
+
+        {view === 'RISK_TOOL' && (
+          <div className="h-full bg-gray-900 absolute inset-0 z-40 overflow-y-auto p-4">
+            <button onClick={() => setView('MAP')} className="mb-4 text-gray-400 hover:text-white flex items-center gap-2">
+              ← Back to Map
+            </button>
+            <RiskAnalyzer
+              onComplete={handleRiskScanComplete}
+              scansRemaining={5}
+            />
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
+};
+
+export default App;
