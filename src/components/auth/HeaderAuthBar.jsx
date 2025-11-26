@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../lib/supabaseClient.js";
 import OnboardingModal from "../OnboardingModal.jsx";
+import { signUpWithRedemption } from "../../../app/actions/auth";
 
 const INPUT_CLASSES =
   "w-full rounded-lg border border-brand-muted/40 bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30";
@@ -11,6 +12,7 @@ const INPUT_CLASSES =
 export function HeaderAuthBar({ session, isLoading }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [redemptionCode, setRedemptionCode] = useState("");
   const [mode, setMode] = useState("signup");
   const [message, setMessage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,15 +45,21 @@ export function HeaderAuthBar({ session, isLoading }) {
 
     try {
       if (mode === "signup") {
-        const redirectTo = typeof window !== "undefined" ? window.location.origin : undefined;
-        const { data, error } = await supabase?.auth.signUp({
-          email,
-          password,
-          options: redirectTo ? { emailRedirectTo: redirectTo } : undefined,
-        });
-        if (error) throw error;
-        if (data.user) {
-          setNewUser(data.user);
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("password", password);
+        if (redemptionCode) {
+          formData.append("redemptionCode", redemptionCode);
+        }
+
+        const result = await signUpWithRedemption(formData);
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        if (result.user) {
+          setNewUser(result.user);
           setShowOnboarding(true);
           setMessage("Check your inbox to confirm your email.");
         }
@@ -61,6 +69,7 @@ export function HeaderAuthBar({ session, isLoading }) {
       }
       setEmail("");
       setPassword("");
+      setRedemptionCode("");
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -111,6 +120,15 @@ export function HeaderAuthBar({ session, isLoading }) {
               required
               className={`${INPUT_CLASSES} md:max-w-xs`}
             />
+            {mode === "signup" && (
+              <input
+                type="text"
+                placeholder="Deal Code (Optional)"
+                value={redemptionCode}
+                onChange={(event) => setRedemptionCode(event.target.value)}
+                className={`${INPUT_CLASSES} md:max-w-[150px]`}
+              />
+            )}
             <div className="flex items-center gap-2 md:gap-3">
               <button
                 type="submit"

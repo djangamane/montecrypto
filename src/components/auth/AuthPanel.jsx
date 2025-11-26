@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import OnboardingModal from "../OnboardingModal.jsx";
+import { signUpWithRedemption } from "../../../app/actions/auth";
 
 export function AuthPanel({ session: initialSession }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [redemptionCode, setRedemptionCode] = useState("");
   const [mode, setMode] = useState("signin");
   const [message, setMessage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,22 +34,27 @@ export function AuthPanel({ session: initialSession }) {
 
     try {
       if (mode === "signup") {
-        const redirectTo =
-          typeof window !== "undefined" ? window.location.origin : undefined;
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: redirectTo
-            ? {
-                emailRedirectTo: redirectTo,
-              }
-            : undefined,
-        });
-        if (error) throw error;
-        if (data.user) {
-          setNewUser(data.user);
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("password", password);
+        if (redemptionCode) {
+          formData.append("redemptionCode", redemptionCode);
+        }
+
+        const result = await signUpWithRedemption(formData);
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        if (result.user) {
+          setNewUser(result.user);
           setShowOnboarding(true);
-          setMessage("Check your inbox to confirm your email.");
+          if (result.session) {
+            // If we got a session (e.g. auto-confirmed), we might want to set it or reload
+            // But for now, let's stick to the message flow
+          }
+          setMessage("Account created! Check your inbox to confirm your email.");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -127,6 +134,19 @@ export function AuthPanel({ session: initialSession }) {
             className="mt-1 w-full rounded-xl border border-brand-muted/40 bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30"
           />
         </label>
+
+        {mode === "signup" && (
+          <label className="block text-sm text-brand-text">
+            Redemption Code (Optional)
+            <input
+              type="text"
+              value={redemptionCode}
+              onChange={(event) => setRedemptionCode(event.target.value)}
+              placeholder="DEALIFY-XXXX"
+              className="mt-1 w-full rounded-xl border border-brand-muted/40 bg-white px-3 py-2 text-sm text-brand-text shadow-sm focus:border-brand-link focus:outline-none focus:ring-2 focus:ring-brand-link/30"
+            />
+          </label>
+        )}
       </div>
 
       {message ? <p className="text-xs text-brand-link">{message}</p> : null}
