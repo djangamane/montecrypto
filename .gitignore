@@ -25,3 +25,4 @@ public/tools/blog-generator/
 *.sw?
 .next
 flow.txt
+dealify_codes.csv
