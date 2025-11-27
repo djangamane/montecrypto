@@ -3,9 +3,8 @@ import { LEVELS } from '../constants';
 import type { Question } from '../types';
 import { QuestionType } from '../types';
 import Button from './ui/Button';
-import { Trophy, Heart, Zap, RefreshCw, XCircle } from 'lucide-react';
+import { Trophy, Heart, Zap, RefreshCw } from 'lucide-react';
 import cyberSpaceBg from '../assets/cyber_space_bg.png';
-import pixelSprites from '../assets/pixel_sprites.png';
 
 interface CryptoCrashCoderProps {
   unlockedLevelId: number;
@@ -23,6 +22,12 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
 
   // Audio Refs (Mocking sound for now, purely visual in this implementation)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('🎯 CryptoCrashCoder mounted!', { unlockedLevelId, gameState });
+    return () => console.log('🎯 CryptoCrashCoder unmounting');
+  }, []);
 
   // Initialize Game
   const startGame = () => {
@@ -104,62 +109,66 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
   };
 
   const renderStartScreen = () => (
-    <div className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-fade-in p-6 relative z-10">
-      <div className="relative">
-        <h1 className="text-6xl font-retro text-arcade-neon animate-pulse leading-tight text-shadow-retro">
-          CRYPTO<br />CRASH<br />CODER
-        </h1>
-        <div className="text-arcade-pink font-retro text-2xl mt-2 tracking-widest text-shadow-retro">
-          THE HALVING DEFENDER
+    <div className="absolute inset-0 flex items-center justify-center p-6 z-10">
+      <div className="flex flex-col items-center justify-center text-center space-y-8 animate-fade-in">
+        <div className="relative">
+          <h1 className="text-6xl font-retro text-arcade-neon animate-pulse leading-tight text-shadow-retro">
+            CRYPTO<br />CRASH<br />CODER
+          </h1>
+          <div className="text-arcade-pink font-retro text-2xl mt-2 tracking-widest text-shadow-retro">
+            THE HALVING DEFENDER
+          </div>
         </div>
+
+        <div className="bg-gray-900/90 pixel-border p-6 max-w-sm w-full">
+          <p className="font-retro text-xl text-gray-300 mb-4">MISSION OBJECTIVE</p>
+          <ul className="text-left space-y-2 font-mono text-sm text-arcade-yellow">
+            <li>► DEFEND against FUD & Scams</li>
+            <li>► SURVIVE 10 Waves of Questions</li>
+            <li>► SPEED multiplies your Score</li>
+          </ul>
+        </div>
+
+        <button
+          onClick={startGame}
+          className="group relative px-8 py-4 bg-arcade-neon text-black font-retro text-2xl font-bold uppercase tracking-widest hover:scale-105 transition-transform pixel-border-sm"
+        >
+          Insert Coin
+        </button>
+
+        <button onClick={() => onExit(0)} className="text-gray-500 font-retro text-lg hover:text-white mt-4 underline">
+          Return to Map
+        </button>
       </div>
-
-      <div className="bg-gray-900/90 pixel-border p-6 max-w-sm w-full">
-        <p className="font-retro text-xl text-gray-300 mb-4">MISSION OBJECTIVE</p>
-        <ul className="text-left space-y-2 font-mono text-sm text-arcade-yellow">
-          <li>► DEFEND against FUD & Scams</li>
-          <li>► SURVIVE 10 Waves of Questions</li>
-          <li>► SPEED multiplies your Score</li>
-        </ul>
-      </div>
-
-      <button
-        onClick={startGame}
-        className="group relative px-8 py-4 bg-arcade-neon text-black font-retro text-2xl font-bold uppercase tracking-widest hover:scale-105 transition-transform pixel-border-sm"
-      >
-        Insert Coin
-      </button>
-
-      <button onClick={() => onExit(0)} className="text-gray-500 font-retro text-lg hover:text-white mt-4 underline">
-        Return to Map
-      </button>
     </div>
   );
 
   const renderGameOver = (victory: boolean) => (
-    <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-fade-in p-6 relative z-10">
-      <div className={`text-6xl font-retro ${victory ? 'text-arcade-neon' : 'text-danger'} mb-4 text-shadow-retro`}>
-        {victory ? 'VICTORY!' : 'GAME OVER'}
-      </div>
-
-      <div className="flex flex-col items-center gap-2">
-        <span className="text-gray-400 font-retro text-xl">FINAL SCORE</span>
-        <span className="text-arcade-yellow font-retro text-5xl text-shadow-retro">{score}</span>
-      </div>
-
-      {victory && (
-        <div className="flex items-center gap-2 text-arcade-pink font-retro text-xl border border-arcade-pink p-2 rounded">
-          <Trophy className="w-6 h-6" /> BADGE UNLOCKED: 8-BIT HERO
+    <div className="absolute inset-0 flex items-center justify-center p-6 z-10">
+      <div className="flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
+        <div className={`text-6xl font-retro ${victory ? 'text-arcade-neon' : 'text-danger'} mb-4 text-shadow-retro`}>
+          {victory ? 'VICTORY!' : 'GAME OVER'}
         </div>
-      )}
 
-      <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
-        <Button onClick={startGame} fullWidth className="font-retro text-xl pixel-border-sm">
-          <RefreshCw className="mr-2 w-5 h-5" /> TRY AGAIN
-        </Button>
-        <Button onClick={() => onExit(score)} variant="secondary" fullWidth className="font-retro text-xl pixel-border-sm">
-          EXIT GAME
-        </Button>
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-gray-400 font-retro text-xl">FINAL SCORE</span>
+          <span className="text-arcade-yellow font-retro text-5xl text-shadow-retro">{score}</span>
+        </div>
+
+        {victory && (
+          <div className="flex items-center gap-2 text-arcade-pink font-retro text-xl border border-arcade-pink p-2 rounded">
+            <Trophy className="w-6 h-6" /> BADGE UNLOCKED: 8-BIT HERO
+          </div>
+        )}
+
+        <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
+          <Button onClick={startGame} fullWidth className="font-retro text-xl pixel-border-sm">
+            <RefreshCw className="mr-2 w-5 h-5" /> TRY AGAIN
+          </Button>
+          <Button onClick={() => onExit(score)} variant="secondary" fullWidth className="font-retro text-xl pixel-border-sm">
+            EXIT GAME
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -252,11 +261,13 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
     );
   };
 
+  console.log('🎨 Rendering CryptoCrashCoder, gameState:', gameState);
+
   return (
-    <div 
-      className="fixed inset-0 bg-arcade-dark z-50 overflow-hidden font-sans arcade-crt"
+    <div
+      className="fixed inset-0 z-[100] overflow-hidden font-sans"
       style={{
-        backgroundImage: `url(${cyberSpaceBg})`,
+        background: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${cyberSpaceBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         imageRendering: 'pixelated'

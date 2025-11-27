@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import type { UserProgress, Level, Lesson } from './types';
 import { LevelStatus } from './types';
 import { LEVELS } from './constants';
@@ -98,13 +99,16 @@ const App: React.FC = () => {
   };
 
   const handleMinerComplete = (success: boolean, score: number) => {
+    console.log('🎮 handleMinerComplete called:', { success, score, currentView: view });
     if (success) {
       // Add score to XP
       setUser(prev => ({ ...prev, xp: prev.xp + score }));
       // Proceed to Bonus Round
+      console.log('✅ Setting view to ARCADE_BONUS');
       setView('ARCADE_BONUS');
     } else {
       // Failed mission, back to map
+      console.log('❌ Setting view to MAP');
       setView('MAP');
     }
   };
@@ -130,7 +134,9 @@ const App: React.FC = () => {
     setUser(prev => ({
       ...prev,
       badges: [...prev.badges, 'b3'],
-      xp: prev.xp + 50
+      xp: prev.xp + 50,
+      // Unlock next level if Risk Tool was the current level
+      currentLevel: prev.currentLevel === 4 ? 5 : prev.currentLevel
     }));
     setTimeout(() => setView('MAP'), 1000);
   };
@@ -174,7 +180,7 @@ const App: React.FC = () => {
       <main className="flex-grow relative overflow-hidden">
 
         {view === 'MAP' && (
-          <div className="max-w-md mx-auto h-full pb-20 pt-8">
+          <div className="max-w-md mx-auto h-full pb-32 pt-8">
             <div className="text-center mb-8">
               <h2 className="text-gray-500 font-retro text-lg">CURRENT OBJECTIVE</h2>
               <div className="text-2xl text-white font-bold uppercase tracking-wider">
@@ -239,16 +245,6 @@ const App: React.FC = () => {
           />
         )}
 
-        {view === 'ARCADE_BONUS' && (
-          <div className="relative h-full">
-            {/* Overlay to explain bonus round */}
-            <CryptoCrashCoder
-              unlockedLevelId={user.currentLevel}
-              onExit={handleArcadeComplete}
-            />
-          </div>
-        )}
-
         {view === 'RISK_TOOL' && (
           <div className="h-full bg-gray-900 absolute inset-0 z-40 overflow-y-auto p-4">
             <button onClick={() => setView('MAP')} className="mb-4 text-gray-400 hover:text-white flex items-center gap-2">
@@ -262,6 +258,15 @@ const App: React.FC = () => {
         )}
 
       </main>
+
+      {/* ARCADE BONUS - Use portal to render directly to body */}
+      {view === 'ARCADE_BONUS' && ReactDOM.createPortal(
+        <CryptoCrashCoder
+          unlockedLevelId={user.currentLevel}
+          onExit={handleArcadeComplete}
+        />,
+        document.body
+      )}
     </div>
   );
 };

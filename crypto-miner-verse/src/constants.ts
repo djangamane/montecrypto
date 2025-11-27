@@ -1,4 +1,4 @@
-import type { Level, Lesson } from './types';
+import type { Level } from './types';
 import { LevelStatus, QuestionType } from './types';
 
 export const LEVELS: Level[] = [

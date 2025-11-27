@@ -27,7 +27,7 @@ const LevelMap: React.FC<LevelMapProps> = ({ levels, currentLevelId, onSelectLev
     svg.attr("width", width).attr("height", height);
 
     // Draw Path
-    const pathData = levels.map((level, i) => {
+    const pathData = levels.map((_, i) => {
       const x = i % 2 === 0 ? width * 0.3 : width * 0.7; // Zigzag
       const y = i * nodeHeight + 80;
       return { x, y };

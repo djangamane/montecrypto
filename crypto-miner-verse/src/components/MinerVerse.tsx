@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { LEVELS } from '../constants';
-import type { Question, QuestionType } from '../types';
+import { type Question, QuestionType } from '../types';
 import Button from './ui/Button';
 import { Brain, DollarSign, AlertTriangle } from 'lucide-react';
+import cyberSpaceBg from '../assets/cyber_space_bg.png';
 
 interface MinerVerseProps {
    levelId: number;
@@ -11,8 +12,6 @@ interface MinerVerseProps {
 }
 
 // Game Constants
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 600;
 const PLAYER_SPEED = 4;
 const BASE_ENEMY_SPEED = 1.2;
 const PROJECTILE_SPEED = 8;
@@ -27,14 +26,57 @@ type Enemy = Entity & { id: number; hp: number; speed: number };
 type Projectile = Entity & { vx: number; vy: number; id: number };
 type Node = Entity & { id: number; value: number; depleted: boolean };
 
+// --- PIXEL ART PATTERNS (1 = Primary Color, 2 = Secondary/Accent, 0 = Transparent) ---
+const SPRITE_SCALE = 4; // 8x8 grid * 4 = 32x32 pixels
+
+const PLAYER_SPRITE = [
+   [0, 0, 1, 1, 1, 1, 0, 0],
+   [0, 1, 1, 2, 2, 1, 1, 0],
+   [1, 1, 2, 2, 2, 2, 1, 1],
+   [1, 1, 1, 1, 1, 1, 1, 1],
+   [1, 2, 1, 1, 1, 1, 2, 1],
+   [1, 2, 1, 1, 1, 1, 2, 1],
+   [0, 1, 0, 0, 0, 0, 1, 0],
+   [0, 1, 1, 0, 0, 1, 1, 0]
+];
+
+const ENEMY_SPRITE = [
+   [0, 0, 1, 0, 0, 1, 0, 0],
+   [0, 1, 1, 1, 1, 1, 1, 0],
+   [1, 1, 2, 1, 1, 2, 1, 1],
+   [1, 1, 1, 1, 1, 1, 1, 1],
+   [0, 1, 2, 1, 1, 2, 1, 0],
+   [0, 0, 1, 0, 0, 1, 0, 0],
+   [0, 1, 0, 1, 1, 0, 1, 0],
+   [1, 0, 0, 0, 0, 0, 0, 1]
+];
+
+const COIN_SPRITE = [
+   [0, 0, 1, 1, 1, 0, 0, 0],
+   [0, 1, 2, 2, 2, 1, 0, 0],
+   [1, 2, 1, 1, 2, 2, 1, 0],
+   [1, 2, 1, 1, 2, 2, 1, 0],
+   [1, 2, 2, 2, 2, 2, 1, 0],
+   [0, 1, 2, 2, 2, 1, 0, 0],
+   [0, 0, 1, 1, 1, 0, 0, 0],
+   [0, 0, 0, 0, 0, 0, 0, 0]
+];
+
 const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit }) => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+   // Dynamic canvas dimensions
+   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth);
+   const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
 
    // Game State
    const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'QUIZ' | 'SHOP' | 'GAME_OVER' | 'VICTORY'>('START');
    const [activeQuiz, setActiveQuiz] = useState<Question | null>(null);
    const [quizFeedback, setQuizFeedback] = useState<boolean | null>(null);
    const [riskLevel, setRiskLevel] = useState(1); // Difficulty Multiplier
+
+   // Assets
+   const bgImageRef = useRef<HTMLImageElement | null>(null);
 
    // Mutable Game State
    const player = useRef<Player>({ x: 400, y: 300, width: 32, height: 32, angle: 0, ammo: AMMO_MAX, score: 0 });
@@ -46,8 +88,26 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
    const animationFrameId = useRef<number>(0);
 
    // --- INITIALIZATION ---
+   useEffect(() => {
+      console.log('Initializing Game Assets...');
+
+      const bg = new Image();
+      bg.src = cyberSpaceBg;
+      bg.onload = () => console.log('Background loaded');
+      bgImageRef.current = bg;
+
+      // Handle window resize
+      const handleResize = () => {
+         setCanvasWidth(window.innerWidth);
+         setCanvasHeight(window.innerHeight);
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+   }, []);
+
    const initGame = () => {
-      player.current = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2, width: 32, height: 32, angle: 0, ammo: AMMO_MAX, score: 0 };
+      player.current = { x: canvasWidth / 2, y: canvasHeight / 2, width: 32, height: 32, angle: 0, ammo: AMMO_MAX, score: 0 };
       enemies.current = [];
       projectiles.current = [];
       setRiskLevel(1);
@@ -55,8 +115,8 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       // Generate Random Gold Nodes
       nodes.current = Array.from({ length: 6 }).map((_, i) => ({
          id: i,
-         x: Math.random() * (CANVAS_WIDTH - 60) + 30,
-         y: Math.random() * (CANVAS_HEIGHT - 60) + 30,
+         x: Math.random() * (canvasWidth - 60) + 30,
+         y: Math.random() * (canvasHeight - 60) + 30,
          width: 40,
          height: 40,
          value: 800,
@@ -74,6 +134,9 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
+      // Disable smoothing for pixel art look
+      ctx.imageSmoothingEnabled = false;
+
       const update = () => {
          if (gameState !== 'PLAYING') return;
 
@@ -87,9 +150,9 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
          // 1. Player Movement
          if (keys.current['ArrowUp'] || keys.current['w']) player.current.y = Math.max(0, player.current.y - PLAYER_SPEED);
-         if (keys.current['ArrowDown'] || keys.current['s']) player.current.y = Math.min(CANVAS_HEIGHT - 32, player.current.y + PLAYER_SPEED);
+         if (keys.current['ArrowDown'] || keys.current['s']) player.current.y = Math.min(canvasHeight - 32, player.current.y + PLAYER_SPEED);
          if (keys.current['ArrowLeft'] || keys.current['a']) player.current.x = Math.max(0, player.current.x - PLAYER_SPEED);
-         if (keys.current['ArrowRight'] || keys.current['d']) player.current.x = Math.min(CANVAS_WIDTH - 32, player.current.x + PLAYER_SPEED);
+         if (keys.current['ArrowRight'] || keys.current['d']) player.current.x = Math.min(canvasWidth - 32, player.current.x + PLAYER_SPEED);
 
          // 2. Mining Logic
          let isMining = false;
@@ -104,8 +167,8 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                   node.depleted = true;
                   // Spawn new node elsewhere
                   setTimeout(() => {
-                     node.x = Math.random() * (CANVAS_WIDTH - 60) + 30;
-                     node.y = Math.random() * (CANVAS_HEIGHT - 60) + 30;
+                     node.x = Math.random() * (canvasWidth - 60) + 30;
+                     node.y = Math.random() * (canvasHeight - 60) + 30;
                      node.value = 800;
                      node.depleted = false;
                   }, 4000);
@@ -118,10 +181,10 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          if (gameTime.current % spawnRate === 0) {
             const side = Math.floor(Math.random() * 4);
             let ex = 0, ey = 0;
-            if (side === 0) { ex = Math.random() * CANVAS_WIDTH; ey = -30; } // Top
-            if (side === 1) { ex = CANVAS_WIDTH + 30; ey = Math.random() * CANVAS_HEIGHT; } // Right
-            if (side === 2) { ex = Math.random() * CANVAS_WIDTH; ey = CANVAS_HEIGHT + 30; } // Bottom
-            if (side === 3) { ex = -30; ey = Math.random() * CANVAS_HEIGHT; } // Left
+            if (side === 0) { ex = Math.random() * canvasWidth; ey = -30; } // Top
+            if (side === 1) { ex = canvasWidth + 30; ey = Math.random() * canvasHeight; } // Right
+            if (side === 2) { ex = Math.random() * canvasWidth; ey = canvasHeight + 30; } // Bottom
+            if (side === 3) { ex = -30; ey = Math.random() * canvasHeight; } // Left
 
             // Enemy speed scales with Risk Level
             const currentEnemySpeed = BASE_ENEMY_SPEED * riskLevel;
@@ -147,7 +210,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
             proj.y += proj.vy;
 
             // Bounds Check
-            if (proj.x < 0 || proj.x > CANVAS_WIDTH || proj.y < 0 || proj.y > CANVAS_HEIGHT) {
+            if (proj.x < 0 || proj.x > canvasWidth || proj.y < 0 || proj.y > canvasHeight) {
                projectiles.current.splice(pIdx, 1);
                return;
             }
@@ -171,34 +234,51 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          animationFrameId.current = requestAnimationFrame(update);
       };
 
+      const drawPixelSprite = (ctx: CanvasRenderingContext2D, pattern: number[][], x: number, y: number, color1: string, color2: string) => {
+         pattern.forEach((row, r) => {
+            row.forEach((pixel, c) => {
+               if (pixel === 0) return;
+               ctx.fillStyle = pixel === 1 ? color1 : color2;
+               ctx.fillRect(x + (c * SPRITE_SCALE), y + (r * SPRITE_SCALE), SPRITE_SCALE, SPRITE_SCALE);
+            });
+         });
+      };
+
       const draw = (ctx: CanvasRenderingContext2D, isMining: boolean) => {
-         // Clear
-         ctx.fillStyle = '#050505';
-         ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+         // Clear / Background
+         if (bgImageRef.current) {
+            ctx.drawImage(bgImageRef.current, 0, 0, canvasWidth, canvasHeight);
+            // Dark overlay for readability
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+         } else {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+         }
 
          // Risk Level Background Tint
          if (riskLevel > 1) {
             ctx.fillStyle = `rgba(239, 68, 68, ${0.05 * (riskLevel - 1)})`; // Red tint increases with risk
-            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
          }
 
-         // Grid
-         ctx.strokeStyle = '#1f2937';
+         // Grid (Subtler now)
+         ctx.strokeStyle = 'rgba(31, 41, 55, 0.5)';
          ctx.lineWidth = 1;
-         for (let i = 0; i < CANVAS_WIDTH; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, CANVAS_HEIGHT); ctx.stroke(); }
-         for (let i = 0; i < CANVAS_HEIGHT; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(CANVAS_WIDTH, i); ctx.stroke(); }
+         for (let i = 0; i < canvasWidth; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvasHeight); ctx.stroke(); }
+         for (let i = 0; i < canvasHeight; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvasWidth, i); ctx.stroke(); }
 
          // Nodes
          nodes.current.forEach(node => {
             if (node.depleted) return;
-            ctx.fillStyle = '#facc15';
-            ctx.shadowColor = '#facc15';
-            ctx.shadowBlur = 10;
-            ctx.fillRect(node.x, node.y, node.width, node.height);
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = 'black';
-            ctx.font = '10px monospace';
-            ctx.fillText('BTC', node.x + 8, node.y + 24);
+
+            // Draw Coin Sprite
+            drawPixelSprite(ctx, COIN_SPRITE, node.x, node.y, '#facc15', '#b45309');
+
+            // Label
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px "VT323", monospace';
+            ctx.fillText('BTC', node.x + 8, node.y + 40);
          });
 
          // Player
@@ -207,7 +287,8 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          if (isMining) {
             ctx.beginPath();
             ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]); // Beam effect
             ctx.moveTo(0, 0);
             const target = nodes.current.find(n => !n.depleted && Math.hypot(player.current.x - n.x, player.current.y - n.y) < MINING_RANGE);
             if (target) {
@@ -215,26 +296,32 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                ctx.stroke();
             }
          }
-         ctx.fillStyle = '#3b82f6';
-         ctx.fillRect(-16, -16, 32, 32);
+
+         // Draw Player Sprite (Centered)
+         // Undo translate to draw sprite at absolute position relative to player center
+         ctx.translate(-16, -16);
+         drawPixelSprite(ctx, PLAYER_SPRITE, 0, 0, '#3b82f6', '#60a5fa');
+
          ctx.restore();
 
          // Enemies
          enemies.current.forEach(enemy => {
+            // Draw Enemy Sprite
+            drawPixelSprite(ctx, ENEMY_SPRITE, enemy.x, enemy.y, '#ef4444', '#7f1d1d');
+
             ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(enemy.x + 16, enemy.y + 16, 16, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = '12px monospace';
-            ctx.fillText('SCAM', enemy.x + 2, enemy.y + 20);
+            ctx.font = 'bold 10px monospace';
+            ctx.fillText('SCAM', enemy.x + 4, enemy.y + 42);
          });
 
          // Projectiles
          ctx.fillStyle = '#00ffff';
+         ctx.shadowColor = '#00ffff';
+         ctx.shadowBlur = 5;
          projectiles.current.forEach(proj => {
             ctx.fillRect(proj.x, proj.y, 8, 8);
          });
+         ctx.shadowBlur = 0;
 
          // HUD
          ctx.fillStyle = 'white';
@@ -250,7 +337,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
          // Risk HUD
          ctx.fillStyle = riskLevel > 1 ? '#ef4444' : '#10b981';
-         ctx.fillText(`RISK LEVEL: ${riskLevel.toFixed(1)}x`, CANVAS_WIDTH - 180, 30);
+         ctx.fillText(`RISK LEVEL: ${riskLevel.toFixed(1)}x`, canvasWidth - 180, 30);
       };
 
       if (gameState === 'PLAYING') {
@@ -260,7 +347,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       return () => {
          cancelAnimationFrame(animationFrameId.current);
       };
-   }, [gameState, riskLevel]);
+   }, [gameState, riskLevel, canvasWidth, canvasHeight]);
 
    // --- CONTROLS ---
    useEffect(() => {
@@ -355,48 +442,54 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
    // --- RENDER ---
    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50 overflow-hidden font-retro">
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50 overflow-hidden font-retro arcade-crt">
 
          {gameState === 'START' && (
-            <div className="text-center space-y-6 z-10 animate-fade-in border-4 border-arcade-yellow p-10 bg-gray-900 max-w-2xl">
-               <h1 className="text-6xl text-arcade-yellow mb-2">MISSION: LEVEL {levelId}</h1>
-               <div className="text-left bg-black p-4 border border-gray-700 font-mono text-sm text-green-400 mb-4">
-                  <p>{'> TARGET: ' + targetScore + ' SATS'}</p>
-                  <p>{'> THREAT: SCAM CLOUDS DETECTED'}</p>
-                  <p>{'> PROTOCOL: MINE NODES. DEFEND INTEGRITY.'}</p>
-                  <p>{'> WARNING: INCORRECT ANSWERS INCREASE RISK LEVEL.'}</p>
+            <div className="absolute inset-0 flex items-center justify-center z-10 p-4">
+               <div className="text-center space-y-6 animate-fade-in border-4 border-arcade-yellow p-10 bg-gray-900/90 max-w-2xl pixel-border">
+                  <h1 className="text-6xl text-arcade-yellow mb-2 text-shadow-retro">MISSION: LEVEL {levelId}</h1>
+                  <div className="text-left bg-black/80 p-4 border border-gray-700 font-mono text-sm text-green-400 mb-4">
+                     <p>{'> TARGET: ' + targetScore + ' SATS'}</p>
+                     <p>{'> THREAT: SCAM CLOUDS DETECTED'}</p>
+                     <p>{'> PROTOCOL: MINE NODES. DEFEND INTEGRITY.'}</p>
+                     <p>{'> WARNING: INCORRECT ANSWERS INCREASE RISK LEVEL.'}</p>
+                  </div>
+                  <Button variant="arcade" onClick={initGame} size="lg">START MISSION</Button>
+                  <button onClick={() => onExit(false, 0)} className="block w-full mt-4 text-gray-500 hover:text-white">ABORT MISSION</button>
                </div>
-               <Button variant="arcade" onClick={initGame} size="lg">START MISSION</Button>
-               <button onClick={() => onExit(false, 0)} className="block w-full mt-4 text-gray-500 hover:text-white">ABORT MISSION</button>
             </div>
          )}
 
          {gameState === 'VICTORY' && (
-            <div className="text-center space-y-6 z-10 animate-fade-in border-4 border-green-500 p-10 bg-gray-900">
-               <h1 className="text-6xl text-green-500">MISSION COMPLETE</h1>
-               <p className="text-2xl text-white">TARGET ACQUIRED: {player.current.score} SATS</p>
-               <div className="text-yellow-400 animate-pulse text-xl">
-                  {'>>> BONUS ROUND UNLOCKED <<<'}
+            <div className="absolute inset-0 flex items-center justify-center z-10 p-4">
+               <div className="text-center space-y-6 animate-fade-in border-4 border-green-500 p-10 bg-gray-900/90 pixel-border">
+                  <h1 className="text-6xl text-green-500 text-shadow-retro">MISSION COMPLETE</h1>
+                  <p className="text-2xl text-white">TARGET ACQUIRED: {player.current.score} SATS</p>
+                  <div className="text-yellow-400 animate-pulse text-xl">
+                     {'>>> BONUS ROUND UNLOCKED <<<'}
+                  </div>
+                  <Button variant="arcade" onClick={() => onExit(true, player.current.score)}>PROCEED TO ARCADE</Button>
                </div>
-               <Button variant="arcade" onClick={() => onExit(true, player.current.score)}>PROCEED TO ARCADE</Button>
             </div>
          )}
 
          {gameState === 'GAME_OVER' && (
-            <div className="text-center space-y-6 z-10 animate-shake border-4 border-red-600 p-10 bg-gray-900">
-               <h1 className="text-6xl text-red-500">RUG PULLED!</h1>
-               <p className="text-xl text-gray-400">Risk Level reached: {riskLevel}x</p>
-               <Button variant="arcade" onClick={initGame}>RETRY LEVEL</Button>
-               <Button variant="ghost" onClick={() => onExit(false, 0)}>EXIT TO MAP</Button>
+            <div className="absolute inset-0 flex items-center justify-center z-10 p-4">
+               <div className="text-center space-y-6 animate-shake border-4 border-red-600 p-10 bg-gray-900/90 pixel-border">
+                  <h1 className="text-6xl text-red-500 text-shadow-retro">RUG PULLED!</h1>
+                  <p className="text-xl text-gray-400">Risk Level reached: {riskLevel}x</p>
+                  <Button variant="arcade" onClick={initGame}>RETRY LEVEL</Button>
+                  <Button variant="ghost" onClick={() => onExit(false, 0)}>EXIT TO MAP</Button>
+               </div>
             </div>
          )}
 
          {gameState === 'QUIZ' && activeQuiz && (
             <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-20">
-               <div className={`max-w-xl w-full border-4 p-8 bg-gray-900 ${quizFeedback === true ? 'border-green-500' : quizFeedback === false ? 'border-red-500' : 'border-arcade-neon'}`}>
+               <div className={`max-w-xl w-full border-4 p-8 bg-gray-900/95 pixel-border ${quizFeedback === true ? 'border-green-500' : quizFeedback === false ? 'border-red-500' : 'border-arcade-neon'}`}>
                   <div className="flex items-center gap-2 mb-4 text-arcade-neon">
                      <Brain className="w-8 h-8 animate-pulse" />
-                     <h2 className="text-3xl">PROOF OF WORK REQUIRED</h2>
+                     <h2 className="text-3xl text-shadow-retro">PROOF OF WORK REQUIRED</h2>
                   </div>
 
                   <p className="text-2xl text-white mb-8 font-sans leading-relaxed">{activeQuiz.prompt}</p>
@@ -407,7 +500,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                            key={opt}
                            onClick={() => !quizFeedback && handleQuizAnswer(opt)}
                            disabled={quizFeedback !== null}
-                           className={`p-4 border-2 text-left text-xl hover:bg-gray-800 transition-colors
+                           className={`p-4 border-2 text-left text-xl hover:bg-gray-800 transition-colors pixel-border-sm
                            ${quizFeedback === null ? 'border-white text-white' : ''}
                            ${quizFeedback === true && opt === activeQuiz.correctAnswer ? 'border-green-500 bg-green-900/50 text-green-400' : ''}
                            ${quizFeedback === false && opt !== activeQuiz.correctAnswer ? 'opacity-30 border-gray-700' : ''}
@@ -430,18 +523,18 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
          {gameState === 'SHOP' && (
             <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-20">
-               <div className="max-w-lg w-full border-4 border-arcade-pink p-8 bg-gray-900 text-center">
+               <div className="max-w-lg w-full border-4 border-arcade-pink p-8 bg-gray-900/90 text-center pixel-border">
                   <div className="flex justify-center mb-4 text-arcade-pink">
                      <DollarSign className="w-16 h-16" />
                   </div>
-                  <h2 className="text-4xl text-white mb-2">VENTURE CAPITALIST</h2>
+                  <h2 className="text-4xl text-white mb-2 text-shadow-retro">VENTURE CAPITALIST</h2>
                   <p className="text-gray-400 mb-8 font-sans">"Market volatility detected. Want to leverage your position?"</p>
 
                   <div className="flex gap-4 justify-center">
-                     <Button variant="arcade" onClick={() => handleInvestment(true)} className="text-green-400 border-green-400 hover:bg-green-400 hover:text-black">
+                     <Button variant="arcade" onClick={() => handleInvestment(true)} className="text-green-400 border-green-400 hover:bg-green-400 hover:text-black pixel-border-sm">
                         LEVERAGE LONG (RISKY)
                      </Button>
-                     <Button variant="arcade" onClick={() => handleInvestment(false)} className="text-red-400 border-red-400 hover:bg-red-400 hover:text-black">
+                     <Button variant="arcade" onClick={() => handleInvestment(false)} className="text-red-400 border-red-400 hover:bg-red-400 hover:text-black pixel-border-sm">
                         IGNORE
                      </Button>
                   </div>
@@ -451,9 +544,9 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
          <canvas
             ref={canvasRef}
-            width={CANVAS_WIDTH}
-            height={CANVAS_HEIGHT}
-            className="border-2 border-gray-800 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-gray-900"
+            width={canvasWidth}
+            height={canvasHeight}
+            className="bg-gray-900"
          />
 
       </div>
