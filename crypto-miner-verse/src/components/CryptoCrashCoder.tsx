@@ -4,6 +4,8 @@ import type { Question } from '../types';
 import { QuestionType } from '../types';
 import Button from './ui/Button';
 import { Trophy, Heart, Zap, RefreshCw, XCircle } from 'lucide-react';
+import cyberSpaceBg from '../assets/cyber_space_bg.png';
+import pixelSprites from '../assets/pixel_sprites.png';
 
 interface CryptoCrashCoderProps {
   unlockedLevelId: number;
@@ -102,17 +104,17 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
   };
 
   const renderStartScreen = () => (
-    <div className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-fade-in p-6">
+    <div className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-fade-in p-6 relative z-10">
       <div className="relative">
-        <h1 className="text-6xl font-retro text-arcade-neon animate-pulse leading-tight">
+        <h1 className="text-6xl font-retro text-arcade-neon animate-pulse leading-tight text-shadow-retro">
           CRYPTO<br />CRASH<br />CODER
         </h1>
-        <div className="text-arcade-pink font-retro text-2xl mt-2 tracking-widest">
+        <div className="text-arcade-pink font-retro text-2xl mt-2 tracking-widest text-shadow-retro">
           THE HALVING DEFENDER
         </div>
       </div>
 
-      <div className="bg-gray-900 border-4 border-arcade-cyan p-6 rounded-lg max-w-sm w-full shadow-[0_0_20px_rgba(0,255,255,0.3)]">
+      <div className="bg-gray-900/90 pixel-border p-6 max-w-sm w-full">
         <p className="font-retro text-xl text-gray-300 mb-4">MISSION OBJECTIVE</p>
         <ul className="text-left space-y-2 font-mono text-sm text-arcade-yellow">
           <li>► DEFEND against FUD & Scams</li>
@@ -123,9 +125,8 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
 
       <button
         onClick={startGame}
-        className="group relative px-8 py-4 bg-arcade-neon text-black font-retro text-2xl font-bold uppercase tracking-widest hover:scale-105 transition-transform"
+        className="group relative px-8 py-4 bg-arcade-neon text-black font-retro text-2xl font-bold uppercase tracking-widest hover:scale-105 transition-transform pixel-border-sm"
       >
-        <span className="absolute inset-0 border-b-4 border-r-4 border-black group-active:border-0 group-active:translate-x-1 group-active:translate-y-1"></span>
         Insert Coin
       </button>
 
@@ -136,14 +137,14 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
   );
 
   const renderGameOver = (victory: boolean) => (
-    <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-fade-in p-6">
-      <div className={`text-6xl font-retro ${victory ? 'text-arcade-neon' : 'text-danger'} mb-4`}>
+    <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-fade-in p-6 relative z-10">
+      <div className={`text-6xl font-retro ${victory ? 'text-arcade-neon' : 'text-danger'} mb-4 text-shadow-retro`}>
         {victory ? 'VICTORY!' : 'GAME OVER'}
       </div>
 
       <div className="flex flex-col items-center gap-2">
         <span className="text-gray-400 font-retro text-xl">FINAL SCORE</span>
-        <span className="text-arcade-yellow font-retro text-5xl">{score}</span>
+        <span className="text-arcade-yellow font-retro text-5xl text-shadow-retro">{score}</span>
       </div>
 
       {victory && (
@@ -153,10 +154,10 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
       )}
 
       <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
-        <Button onClick={startGame} fullWidth className="font-retro text-xl">
+        <Button onClick={startGame} fullWidth className="font-retro text-xl pixel-border-sm">
           <RefreshCw className="mr-2 w-5 h-5" /> TRY AGAIN
         </Button>
-        <Button onClick={() => onExit(score)} variant="secondary" fullWidth className="font-retro text-xl">
+        <Button onClick={() => onExit(score)} variant="secondary" fullWidth className="font-retro text-xl pixel-border-sm">
           EXIT GAME
         </Button>
       </div>
@@ -172,12 +173,9 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
     const hitClass = feedback === 'HIT' ? 'bg-green-900/20' : '';
 
     return (
-      <div className={`relative flex flex-col h-full p-4 overflow-hidden ${shakeClass} ${hitClass} transition-colors duration-100`}>
-        {/* CRT Scanline Effect */}
-        <div className="arcade-scanline"></div>
-
+      <div className={`relative flex flex-col h-full p-4 overflow-hidden ${shakeClass} ${hitClass} transition-colors duration-100 z-10`}>
         {/* HUD */}
-        <div className="flex justify-between items-end border-b-4 border-gray-800 pb-2 mb-4 font-retro text-xl">
+        <div className="flex justify-between items-end border-b-4 border-gray-800 pb-2 mb-4 font-retro text-xl bg-black/50 p-2 rounded">
           <div className="flex flex-col">
             <span className="text-gray-500 text-sm">SCORE</span>
             <span className="text-arcade-yellow">{score.toString().padStart(6, '0')}</span>
@@ -203,15 +201,15 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
           </div>
 
           {/* Retro Question Box */}
-          <div className="mt-8 bg-black border-4 border-arcade-cyan p-6 shadow-[8px_8px_0_0_#059669] w-full max-w-lg text-center relative z-10">
+          <div className="mt-8 bg-black/90 pixel-border p-6 w-full max-w-lg text-center relative z-10">
             {feedback === 'HIT' && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20">
-                <span className="text-arcade-neon font-retro text-6xl rotate-12">HIT!</span>
+                <span className="text-arcade-neon font-retro text-6xl rotate-12 text-shadow-retro">HIT!</span>
               </div>
             )}
             {feedback === 'MISS' && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20">
-                <span className="text-danger font-retro text-6xl -rotate-12">MISS!</span>
+                <span className="text-danger font-retro text-6xl -rotate-12 text-shadow-retro">MISS!</span>
               </div>
             )}
 
@@ -221,8 +219,8 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
             </h2>
           </div>
 
-          {/* Decorative 8-bit Icons */}
-          <div className="absolute bottom-0 w-full flex justify-between px-8 opacity-20 pointer-events-none">
+          {/* Decorative 8-bit Icons (Placeholder for now, using Lucide but styled) */}
+          <div className="absolute bottom-0 w-full flex justify-between px-8 opacity-50 pointer-events-none">
             <Zap className="w-12 h-12 text-arcade-yellow animate-bounce" />
             <Zap className="w-12 h-12 text-arcade-yellow animate-bounce" style={{ animationDelay: '0.5s' }} />
           </div>
@@ -236,13 +234,13 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
               disabled={!!feedback}
               onClick={() => handleAnswer(opt)}
               className={`
-                 font-retro text-xl p-4 border-2 rounded active:translate-y-1 transition-all text-left uppercase
-                 ${feedback ? 'opacity-50' : 'hover:bg-gray-800 hover:border-white'}
-                 ${idx === 0 ? 'border-arcade-neon text-arcade-neon' : ''}
-                 ${idx === 1 ? 'border-arcade-pink text-arcade-pink' : ''}
-                 ${idx === 2 ? 'border-arcade-cyan text-arcade-cyan' : ''}
-                 ${idx === 3 ? 'border-arcade-yellow text-arcade-yellow' : ''}
-                 ${(idx > 3) ? 'border-white text-white' : ''}
+                 font-retro text-xl p-4 pixel-border-sm active:translate-y-1 transition-all text-left uppercase bg-black/80
+                 ${feedback ? 'opacity-50' : 'hover:bg-gray-800'}
+                 ${idx === 0 ? 'text-arcade-neon' : ''}
+                 ${idx === 1 ? 'text-arcade-pink' : ''}
+                 ${idx === 2 ? 'text-arcade-cyan' : ''}
+                 ${idx === 3 ? 'text-arcade-yellow' : ''}
+                 ${(idx > 3) ? 'text-white' : ''}
                `}
             >
               <span className="mr-3 opacity-50">{['A', 'B', 'C', 'D'][idx] || idx + 1}.</span>
@@ -255,7 +253,15 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
   };
 
   return (
-    <div className="fixed inset-0 bg-arcade-dark z-50 overflow-hidden font-sans">
+    <div 
+      className="fixed inset-0 bg-arcade-dark z-50 overflow-hidden font-sans arcade-crt"
+      style={{
+        backgroundImage: `url(${cyberSpaceBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        imageRendering: 'pixelated'
+      }}
+    >
       {gameState === 'START' && renderStartScreen()}
       {gameState === 'PLAYING' && renderGameplay()}
       {(gameState === 'GAME_OVER' || gameState === 'VICTORY') && renderGameOver(gameState === 'VICTORY')}
