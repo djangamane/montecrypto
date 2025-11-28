@@ -45,6 +45,7 @@
     "node_modules",
     "tools",
     "tools/**/*",
-    "scripts"
+    "scripts",
+    "app/game/cryptoguard_-gamified-risk-academy/vite.config.ts"
   ]
 }
