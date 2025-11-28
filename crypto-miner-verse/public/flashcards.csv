@@ -1,0 +1,58 @@
+"According to the course, before the invention of currency, what methods did people use for trade?","People traded goods, tools, cattle, grain, and even shells."
+What is the final stage in the historical evolution of money mentioned in the Grayscale commercial?,"Digital currency, represented by ones and zeros."
+"In the described currency system, what does the government create in step one that increases the national debt?",Glorified IOUs in the form of bonds.
+"In step two of the currency system, who buys bonds from the Treasury and then sells them at a profit to the Federal Reserve?",The banks.
+How does the Federal Reserve pay for the bonds it buys from banks?,"It writes checks from a checking account that has a zero balance, creating currency from nothing."
+"In step four of the currency system, the process where banks lend out a portion of everyone's deposit, which gets redeposited and lent out again, is called _____.",fractional reserve lending
+"In step five, taxes paid to the IRS are turned over to the Treasury for what purpose?",To pay the principal and interest on the bonds purchased by the Federal Reserve.
+"What is the term used for the system's requirement for ever-increasing levels of debt, which will eventually cause it to collapse?",The debt ceiling delusion.
+"According to the course, who are the secret owners of the Federal Reserve that take a cut from the system?",The world's largest banks.
+Who is the anonymous creator of Bitcoin?,Satoshi Nakamoto.
+In what year was Bitcoin created?,"2009, following the housing crisis of 2008."
+What was the stated primary purpose for creating Bitcoin?,To separate state from finance globally.
+What technology allows for a decentralized currency system in Bitcoin by having computers perform work to verify transactions?,Mining.
+"What is the discipline that underpins Bitcoin's security, used in applications like military communications and ATM cards?",Cryptography.
+"On the Bitcoin network, what role do miners play?",They own computers that perform work to verify transactions and secure the network.
+What does every computer on the Bitcoin network act as to create a trustless system?,A public ledger.
+How does a miner 'win the block' and get rewarded in Bitcoin?,Their computer must be the first to solve a complicated math problem.
+"The first internet, Internet 1.0, was known as the internet of _____.",information
+Bitcoin and the new era of crypto represent the internet of _____.,value
+"A key characteristic of blockchains like Bitcoin is that the code is _____, allowing anyone to build upon the technology.",open source
+What does it mean for a blockchain to be 'public'?,Every transaction and wallet is visible on the network; nothing is hidden.
+"The property that a blockchain does not care about a user's identity, location, religion, or sex is known as being _____.",neutral
+What property of blockchains like Bitcoin means that no single person or government can shut them down?,Censorship resistance.
+What property of Bitcoin means that it exists globally without any geographical impediments to its transactions?,Borderless.
+What innovation did Ethereum add upon the Bitcoin philosophy?,"Smart contracts, which allow code to protect both sides of an agreement without a middleman."
+Why is it suggested that Ethereum might one day overtake Bitcoin?,Because many more applications are being built on the Ethereum network compared to Bitcoin.
+What is the primary use case for Bitcoin described in the course?,"As a store of value, similar to digital gold."
+"What type of crypto exchange is run by computer code, eliminating the human factor and the ability to halt trading, unlike Robinhood?",A decentralized exchange (DEX).
+What is the latest big thing in crypto that aims to replace traditional finance by rebuilding its services on the blockchain?,Decentralized Finance (DeFi).
+What is the number one reference source recommended for researching cryptocurrencies?,CoinMarketCap.com.
+What is arguably the most important number related to Bitcoin because it creates a finite supply?,The max supply of 21 million bitcoins.
+The economic principle where a capped supply and high demand lead to high returns is used to explain Bitcoin's price.,The laws of supply and demand.
+What is the name for the event that occurs every four years where the supply of new Bitcoin created is decreased by 50%?,The Bitcoin Halving.
+"According to the S-curve chart of technology adoption, investors want to get in before which group?",The laggards.
+"In the course's investment strategy, what is any coin that is not Bitcoin called?",An altcoin.
+"What is the term for the strategy of selling altcoins that have risen in value for Bitcoin, rather than for dollars?",Bitcoining out.
+What is the smallest unit of Bitcoin called?,A satoshi.
+How many decimal places does Bitcoin's system go out to?,Eight decimal places.
+What is the name of the centralized exchange recommended as an easy on-ramp for beginners to buy their first crypto?,Coinbase.
+"What simple investment strategy is mentioned, involving buying a fixed dollar amount of a crypto on a regular schedule?","Dollar-cost averaging (e.g., buying five dollars every day)."
+"The Master Crypto course is designed to teach users how to work on centralized exchanges like Bittrex, Binance, and _____.",KuCoin
+What does the offered NFT course teach students how to do?,"How to mint, create, and sell their own NFTs."
+"To receive a discount on the advanced courses, payment must be made in which specific cryptocurrency?",Bitcoin Cash.
+"In the context of the Gamified AI Crypto Risk Learning App, what is the primary goal?",To clone the Duolingo-style gamification model and apply it to crypto risk education.
+What is the primary demographic for the Gamified AI Crypto Risk Learning App?,"Crypto investors/beginners who are overwhelmed, unsure where to start, and want convenience."
+"The marketing for the learning app should focus on selling the _____, such as avoiding costly mistakes and gaining confidence.",transformation
+What visual look is proposed for the lesson progression in the gamified app?,A 'Super Mario type' gamified visual look.
+What gamification element tracks consecutive days of learning and is displayed on the app's homepage?,Streaks.
+Why does the PRD suggest including easily shareable certificates upon course completion?,Because the target demographic (referred to as 'Boomers') is perceived to value them.
+"What is the 'Bitcoining Out' strategy, which would be taught in the Strategy & Philosophy module of the app?","Selling altcoins for Bitcoin, not for fiat currency like dollars."
+What is the core technology stack for the proposed gamified learning app?,"Next.js 14, Tailwind CSS, Node.js, Supabase, and Vercel."
+What is the purpose of implementing a dual-funnel (web and mobile) strategy for monetization?,To direct paid traffic to the web app to bypass the 30% App Store tax.
+What action should be taken in the onboarding funnel before presenting the user with a hard paywall?,Collect the user's email address.
+What pricing tactic makes a subscription feel small in comparison to daily expenses?,"Displaying the price in terms of daily cost (e.g., 99 cents/day)."
+What is a high-value item presented to a user immediately after they purchase a subscription called?,A One-Time Offer (O.T.O.).
+"Instead of relying on viral organic growth, the app's marketing strategy should focus on what?",Omnipresent paid advertising using an automated creative factory.
+What is the core principle of the ad messaging for the learning app?,To focus on a problem/solution framework and use benefit-driven language.
+The app's messaging should position it as an authority that helps users easily spot what _____ to buy.,not

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LEVELS } from '../constants';
 import type { Question } from '../types';
 import { QuestionType } from '../types';
@@ -19,15 +19,37 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(100);
   const [feedback, setFeedback] = useState<'HIT' | 'MISS' | null>(null);
+  const [muted, setMuted] = useState(false);
 
   // Audio Refs (Mocking sound for now, purely visual in this implementation)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Debug: Log when component mounts
   useEffect(() => {
     console.log('🎯 CryptoCrashCoder mounted!');
     return () => console.log('🎯 CryptoCrashCoder unmounting');
   }, []);
+
+  const playTone = useCallback((frequency: number, duration = 0.15, volume = 0.06) => {
+    if (muted) return;
+    const Ctor = (window.AudioContext || (window as any).webkitAudioContext);
+    if (!Ctor) return;
+    let ctx = audioCtxRef.current;
+    if (!ctx) {
+      ctx = new Ctor();
+      audioCtxRef.current = ctx;
+    }
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = frequency;
+    gain.gain.value = volume;
+    osc.connect(gain).connect(ctx.destination);
+    const now = ctx.currentTime;
+    osc.start(now);
+    osc.stop(now + duration);
+  }, [muted]);
 
   // Initialize Game
   const startGame = () => {
@@ -56,6 +78,7 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
     setScore(0);
     setTimeLeft(100);
     setGameState('PLAYING');
+    playTone(520, 0.12);
   };
 
   const handleAnswer = (answer: string | null) => {
@@ -66,6 +89,7 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
       setFeedback('HIT');
       setScore(s => s + (Math.ceil(timeLeft) * 10)); // Score based on speed
       setTimeout(nextQuestion, 800);
+      playTone(880, 0.1);
     } else {
       setFeedback('MISS');
       setLives(l => {
@@ -77,6 +101,7 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
         }
         return newLives;
       });
+      playTone(180, 0.18, 0.08);
     }
   };
 
@@ -269,7 +294,7 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
 
   return (
     <div
-      className="fixed inset-0 z-[100] overflow-hidden font-sans"
+      className="fixed inset-0 z-[100] overflow-hidden font-sans relative"
       style={{
         background: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${cyberSpaceBg})`,
         backgroundSize: 'cover',
@@ -277,6 +302,28 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
         imageRendering: 'pixelated'
       }}
     >
+      {/* Visual overlays */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 15% 20%, rgba(0,255,255,0.12), transparent 25%), radial-gradient(circle at 85% 15%, rgba(255,0,128,0.12), transparent 22%)'
+        }}
+      ></div>
+      <div
+        className="pointer-events-none absolute inset-0 opacity-15 mix-blend-screen"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+          backgroundSize: '32px 32px'
+        }}
+      ></div>
+      <div className="absolute top-4 right-4 z-20">
+        <button
+          onClick={() => setMuted(m => !m)}
+          className="px-3 py-1 text-sm font-mono uppercase border border-arcade-cyan bg-black/70 text-white hover:bg-arcade-cyan/20 transition-all duration-150"
+        >
+          {muted ? '🔇 Mute' : '🔊 Sound'}
+        </button>
+      </div>
       {gameState === 'START' && renderStartScreen()}
       {gameState === 'PLAYING' && renderGameplay()}
       {(gameState === 'GAME_OVER' || gameState === 'VICTORY') && renderGameOver(gameState === 'VICTORY')}

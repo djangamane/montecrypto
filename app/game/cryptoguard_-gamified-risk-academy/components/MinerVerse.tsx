@@ -64,6 +64,7 @@ const COIN_SPRITE = [
 
 const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit }) => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
+   const audioCtxRef = useRef<AudioContext | null>(null);
 
    // Dynamic canvas dimensions
    const [canvasWidth, setCanvasWidth] = useState(window.innerWidth);
@@ -74,6 +75,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
    const [activeQuiz, setActiveQuiz] = useState<Question | null>(null);
    const [quizFeedback, setQuizFeedback] = useState<boolean | null>(null);
    const [riskLevel, setRiskLevel] = useState(1); // Difficulty Multiplier
+   const [muted, setMuted] = useState(false);
 
    // Power-Up State
    const [freezeCharges, setFreezeCharges] = useState(0);
@@ -110,11 +112,32 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       return () => window.removeEventListener('resize', handleResize);
    }, []);
 
+   const playTone = useCallback((frequency: number, duration = 0.15, volume = 0.08) => {
+      if (muted) return;
+      const Ctor = (window.AudioContext || (window as any).webkitAudioContext);
+      if (!Ctor) return;
+      let ctx = audioCtxRef.current;
+      if (!ctx) {
+         ctx = new Ctor();
+         audioCtxRef.current = ctx;
+      }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = frequency;
+      gain.gain.value = volume;
+      osc.connect(gain).connect(ctx.destination);
+      const now = ctx.currentTime;
+      osc.start(now);
+      osc.stop(now + duration);
+   }, [muted]);
+
    const initGame = () => {
       player.current = { x: canvasWidth / 2, y: canvasHeight / 2, width: 32, height: 32, angle: 0, ammo: AMMO_MAX, score: 0 };
       enemies.current = [];
       projectiles.current = [];
       setRiskLevel(1);
+      playTone(520, 0.12);
 
       // Freeze Gun: 3 Charges for Level 3+
       setFreezeCharges(levelId >= 3 ? 3 : 0);
@@ -471,11 +494,13 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          if (correct) {
             player.current.ammo = AMMO_MAX;
             player.current.score += 200; // Small bonus
+            playTone(880, 0.12);
          } else {
             // PUNISHMENT: Increase Risk Level (Enemy Speed)
             setRiskLevel(prev => Math.min(prev + 0.5, 3.0)); // Cap at 3x speed
             player.current.score = Math.max(0, player.current.score - 50);
             player.current.ammo = 0; // STRICT: No pity ammo!
+            playTone(160, 0.18);
          }
          setQuizFeedback(null);
          setActiveQuiz(null);
@@ -496,7 +521,29 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
    // --- RENDER ---
    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50 overflow-hidden font-retro arcade-crt">
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50 overflow-hidden font-retro arcade-crt relative">
+         {/* Visual overlays */}
+         <div
+            className="pointer-events-none absolute inset-0 opacity-20"
+            style={{
+               backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(0,255,255,0.12), transparent 25%), radial-gradient(circle at 80% 10%, rgba(255,0,128,0.12), transparent 22%)'
+            }}
+         ></div>
+         <div
+            className="pointer-events-none absolute inset-0 opacity-15 mix-blend-screen"
+            style={{
+               backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+               backgroundSize: '32px 32px'
+            }}
+         ></div>
+         <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+            <button
+               onClick={() => setMuted(m => !m)}
+               className="px-3 py-1 text-sm font-mono uppercase border border-arcade-cyan bg-black/70 text-white hover:bg-arcade-cyan/20 transition-all duration-150"
+            >
+               {muted ? '🔇 Mute' : '🔊 Sound'}
+            </button>
+         </div>
 
          {gameState === 'START' && (
             <div className="absolute inset-0 flex items-center justify-center z-10 p-4">
