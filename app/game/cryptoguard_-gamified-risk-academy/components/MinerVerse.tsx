@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { LEVELS } from '../constants';
 import { type Question, QuestionType } from '../types';
 import Button from './ui/Button';
@@ -385,7 +385,27 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       return () => {
          cancelAnimationFrame(animationFrameId.current);
       };
-   }, [gameState, riskLevel, canvasWidth, canvasHeight, isFrozen, freezeCharges]);
+   }, [gameState, riskLevel, canvasWidth, canvasHeight, isFrozen, freezeCharges, levelId]);
+
+   // --- LOGIC ---
+   const triggerQuiz = useCallback(() => {
+      // Filter questions by Current Level
+      const levelQuestions: Question[] = [];
+      LEVELS.forEach(l => {
+         if (l.id === levelId) {
+            l.lessons.forEach(ls => ls.questions.forEach(q => {
+               if (q.type !== QuestionType.SORTING) levelQuestions.push(q);
+            }));
+         }
+      });
+
+      // Fallback to any question if level has none valid
+      const pool = levelQuestions.length > 0 ? levelQuestions : LEVELS[0].lessons[0].questions;
+      const randomQ = pool[Math.floor(Math.random() * pool.length)];
+
+      setActiveQuiz(randomQ);
+      setGameState('QUIZ');
+   }, [levelId]);
 
    // --- CONTROLS ---
    useEffect(() => {
@@ -440,27 +460,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          window.removeEventListener('keydown', handleKeyDown);
          window.removeEventListener('keyup', handleKeyUp);
       };
-   }, [gameState]);
-
-   // --- LOGIC ---
-   const triggerQuiz = () => {
-      // Filter questions by Current Level
-      const levelQuestions: Question[] = [];
-      LEVELS.forEach(l => {
-         if (l.id === levelId) {
-            l.lessons.forEach(ls => ls.questions.forEach(q => {
-               if (q.type !== QuestionType.SORTING) levelQuestions.push(q);
-            }));
-         }
-      });
-
-      // Fallback to any question if level has none valid
-      const pool = levelQuestions.length > 0 ? levelQuestions : LEVELS[0].lessons[0].questions;
-      const randomQ = pool[Math.floor(Math.random() * pool.length)];
-
-      setActiveQuiz(randomQ);
-      setGameState('QUIZ');
-   };
+   }, [gameState, freezeCharges, isFrozen, levelId, triggerQuiz]);
 
    const handleQuizAnswer = (answer: string) => {
       if (!activeQuiz) return;

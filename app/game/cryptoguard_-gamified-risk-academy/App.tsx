@@ -72,7 +72,7 @@ const App: React.FC = () => {
         </Button>
 
         <div className="text-xs text-gray-600 font-mono mt-8">
-          v1.0.4 // SYSTEM READY
+          v1.0.4 - SYSTEM READY
         </div>
       </div>
     </div>
@@ -301,12 +301,14 @@ const App: React.FC = () => {
         )}
 
         {view === 'MINER_GAME' && activeLevel && (
-          <MinerVerse
-            levelId={activeLevel.id}
-            targetScore={1000 + (activeLevel.id * 200)}
-            // Harder targets for higher levels
-            onExit={handleMinerComplete}
-          />
+          <>
+            {/* Harder targets for higher levels */}
+            <MinerVerse
+              levelId={activeLevel.id}
+              targetScore={1000 + (activeLevel.id * 200)}
+              onExit={handleMinerComplete}
+            />
+          </>
         )}
 
         {view === 'TRADING_SIM' && activeLevel && (

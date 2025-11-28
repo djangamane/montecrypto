@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     ComposedChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -96,25 +96,29 @@ const App: React.FC<TradingSimProps> = ({ initialBTC, mode, onComplete }) => {
     const timerRef = useRef<any>(null);
 
     // Notification System
-    const notify = (message: string, type: 'info' | 'success' | 'danger' = 'info') => {
+    const notify = useCallback((message: string, type: 'info' | 'success' | 'danger' = 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
-    };
-    const removeToast = (id: number) => {
+    }, []);
+    const removeToast = useCallback((id: number) => {
         setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    }, []);
 
     // XP System
-    const addXp = (amount: number) => {
+    const addXp = useCallback((amount: number) => {
         setXp(prev => {
             const newXp = prev + amount;
-            if (newXp >= level * XP_PER_LEVEL) {
-                setLevel(l => l + 1);
-                notify(`LEVEL UP! WELCOME TO LEVEL ${level + 1}`, 'success');
-            }
+            setLevel(currLevel => {
+                const threshold = currLevel * XP_PER_LEVEL;
+                if (newXp >= threshold) {
+                    notify(`LEVEL UP! WELCOME TO LEVEL ${currLevel + 1}`, 'success');
+                    return currLevel + 1;
+                }
+                return currLevel;
+            });
             return newXp;
         });
-    };
+    }, [notify]);
 
     // Initialize Data
     useEffect(() => {
@@ -213,7 +217,7 @@ const App: React.FC<TradingSimProps> = ({ initialBTC, mode, onComplete }) => {
             clearInterval(intervalRef.current);
             clearInterval(timerRef.current);
         };
-    }, [gameStarted, gameOver]);
+    }, [gameStarted, gameOver, addXp, notify]);
 
     // Update Portfolio Valuation
     useEffect(() => {

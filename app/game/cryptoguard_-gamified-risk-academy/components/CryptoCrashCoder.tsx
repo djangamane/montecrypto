@@ -25,7 +25,7 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
 
   // Debug: Log when component mounts
   useEffect(() => {
-    console.log('🎯 CryptoCrashCoder mounted!', { unlockedLevelId, gameState });
+    console.log('🎯 CryptoCrashCoder mounted!');
     return () => console.log('🎯 CryptoCrashCoder unmounting');
   }, []);
 
