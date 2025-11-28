@@ -96,7 +96,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       console.log('Initializing Game Assets...');
 
       const bg = new Image();
-      bg.src = cyberSpaceBg;
+      bg.src = typeof cyberSpaceBg === 'string' ? cyberSpaceBg : cyberSpaceBg.src;
       bg.onload = () => console.log('Background loaded');
       bgImageRef.current = bg;
 
