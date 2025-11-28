@@ -53,26 +53,55 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
 
   // Initialize Game
   const startGame = () => {
-    // 1. Gather pool of questions from unlocked levels
-    // For Arcade mode, we flatten questions and filter out complex SORTING ones to keep it fast
-    // or convert them if possible. Here we stick to Choice/Blank for speed.
-    const pool: Question[] = [];
-    LEVELS.forEach(level => {
-      // Allow questions from current level + previous
-      if (level.id <= unlockedLevelId) {
-        level.lessons.forEach(lesson => {
-          lesson.questions.forEach(q => {
-            if (q.type !== QuestionType.SORTING) {
-              pool.push(q);
-            }
-          });
-        });
+    // 1. Gather pool of questions from unlocked levels, excluding SORTING
+    const allowedLevels = LEVELS.filter(level => level.id <= unlockedLevelId).sort((a, b) => b.id - a.id); // prioritize newest
+    const selected: Question[] = [];
+    const seen = new Set<string>();
+
+    const shuffle = (arr: Question[]) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
       }
+      return copy;
+    };
+
+    const takeFromLevel = (qs: Question[], count: number) => {
+      const choices = shuffle(qs).filter(q => {
+        const key = q.prompt.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      return choices.slice(0, count);
+    };
+
+    // Aim for 10 total, biasing towards newer levels but pulling some from each
+    let remaining = 10;
+    allowedLevels.forEach(level => {
+      if (remaining <= 0) return;
+      const levelQs = level.lessons.flatMap(l => l.questions).filter(q => q.type !== QuestionType.SORTING);
+      if (!levelQs.length) return;
+      const target = Math.min(Math.max(2, Math.ceil(10 / allowedLevels.length)), levelQs.length, remaining);
+      const picks = takeFromLevel(levelQs, target);
+      selected.push(...picks);
+      remaining = 10 - selected.length;
     });
 
-    // Shuffle
-    const shuffled = pool.sort(() => 0.5 - Math.random()).slice(0, 10); // Limit to 10 waves
-    setQuestions(shuffled);
+    // If we still need more, fill from the remaining pool without dupe prompts
+    if (selected.length < 10) {
+      const allPool = allowedLevels.flatMap(level => level.lessons.flatMap(l => l.questions)).filter(q => q.type !== QuestionType.SORTING);
+      const fillers = shuffle(allPool).filter(q => {
+        const key = q.prompt.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 10 - selected.length);
+      selected.push(...fillers);
+    }
+
+    setQuestions(selected.slice(0, 10));
     setCurrentQIndex(0);
     setLives(3);
     setScore(0);
