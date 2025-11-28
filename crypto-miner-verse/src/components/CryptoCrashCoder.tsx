@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LEVELS } from '../constants';
 import type { Question } from '../types';
 import { QuestionType } from '../types';
@@ -23,42 +23,75 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
   // Audio Refs (Mocking sound for now, purely visual in this implementation)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Debug: Log when component mounts
-  useEffect(() => {
-    console.log('🎯 CryptoCrashCoder mounted!', { unlockedLevelId, gameState });
-    return () => console.log('🎯 CryptoCrashCoder unmounting');
-  }, []);
-
   // Initialize Game
-  const startGame = () => {
-    // 1. Gather pool of questions from unlocked levels
-    // For Arcade mode, we flatten questions and filter out complex SORTING ones to keep it fast
-    // or convert them if possible. Here we stick to Choice/Blank for speed.
-    const pool: Question[] = [];
-    LEVELS.forEach(level => {
-      // Allow questions from current level + previous
-      if (level.id <= unlockedLevelId) {
-        level.lessons.forEach(lesson => {
-          lesson.questions.forEach(q => {
-            if (q.type !== QuestionType.SORTING) {
-              pool.push(q);
-            }
-          });
-        });
+  const startGame = useCallback(() => {
+    // Build pool across unlocked levels, exclude sorting, prioritize latest levels, dedupe by prompt
+    const allowedLevels = LEVELS.filter(level => level.id <= unlockedLevelId).sort((a, b) => b.id - a.id);
+    const selected: Question[] = [];
+    const seen = new Set<string>();
+
+    const shuffle = (arr: Question[]) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
       }
+      return copy;
+    };
+
+    const takeFromLevel = (qs: Question[], count: number) => {
+      const picks = shuffle(qs).filter(q => {
+        const key = q.prompt.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      return picks.slice(0, count);
+    };
+
+    let remaining = 10;
+    allowedLevels.forEach(level => {
+      if (remaining <= 0) return;
+      const levelQs = level.lessons.flatMap(l => l.questions).filter(q => q.type !== QuestionType.SORTING);
+      if (!levelQs.length) return;
+      const target = Math.min(Math.max(2, Math.ceil(10 / allowedLevels.length)), levelQs.length, remaining);
+      const picks = takeFromLevel(levelQs, target);
+      selected.push(...picks);
+      remaining = 10 - selected.length;
     });
 
-    // Shuffle
-    const shuffled = pool.sort(() => 0.5 - Math.random()).slice(0, 10); // Limit to 10 waves
-    setQuestions(shuffled);
+    if (selected.length < 10) {
+      const allPool = allowedLevels.flatMap(level => level.lessons.flatMap(l => l.questions)).filter(q => q.type !== QuestionType.SORTING);
+      const fillers = shuffle(allPool).filter(q => {
+        const key = q.prompt.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 10 - selected.length);
+      selected.push(...fillers);
+    }
+
+    setQuestions(selected.slice(0, 10));
     setCurrentQIndex(0);
     setLives(3);
     setScore(0);
     setTimeLeft(100);
     setGameState('PLAYING');
-  };
+  }, [unlockedLevelId]);
 
-  const handleAnswer = (answer: string | null) => {
+  const nextQuestion = useCallback(() => {
+    setFeedback(null);
+    setTimeLeft(100);
+    setCurrentQIndex(prev => {
+      if (prev + 1 >= questions.length) {
+        setGameState('VICTORY');
+        return prev + 1;
+      }
+      return prev + 1;
+    });
+  }, [questions.length]);
+
+  const handleAnswer = useCallback((answer: string | null) => {
     const currentQ = questions[currentQIndex];
     const isCorrect = answer === currentQ.correctAnswer;
 
@@ -78,11 +111,13 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
         return newLives;
       });
     }
-  };
+  }, [currentQIndex, questions, timeLeft, nextQuestion]);
 
   // Ref to access latest handleAnswer without triggering effect
   const handleAnswerRef = useRef(handleAnswer);
-  handleAnswerRef.current = handleAnswer;
+  useEffect(() => {
+    handleAnswerRef.current = handleAnswer;
+  }, [handleAnswer]);
 
   // Timer Logic
   useEffect(() => {
@@ -100,17 +135,7 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [gameState, feedback, currentQIndex]);
-
-  const nextQuestion = () => {
-    setFeedback(null);
-    setTimeLeft(100);
-    if (currentQIndex + 1 >= questions.length) {
-      setGameState('VICTORY');
-    } else {
-      setCurrentQIndex(prev => prev + 1);
-    }
-  };
+  }, [gameState, feedback]);
 
   const renderStartScreen = () => (
     <div className="absolute inset-0 flex items-center justify-center p-6 z-10">

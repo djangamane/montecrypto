@@ -3,17 +3,21 @@ import type { Candle, Portfolio, RiskMetrics, OrderBookItem, NewsItem } from '..
 // Generate initial history of candles (e.g. 1 hour of 1-minute candles)
 export const generateInitialMarket = (count: number): Candle[] => {
   const data: Candle[] = [];
-  let price = 42000; // Retro starting price point
+  const startBand = [25000, 60000];
+  let price = startBand[0] + Math.random() * (startBand[1] - startBand[0]); // Random start each session
 
   const now = Date.now();
   const ONE_MINUTE = 60 * 1000;
 
   for (let i = count; i > 0; i--) {
     const time = now - (i * ONE_MINUTE);
-    const volatility = price * 0.003;
+    const baseVol = 0.0015 + Math.random() * 0.0015; // 0.15% - 0.3% baseline
+    const volatility = price * baseVol;
 
     const open = price;
-    const change = (Math.random() - 0.45) * volatility; // Slight upward bias initially
+    const drift = (Math.random() - 0.5) * volatility;
+    const bias = Math.random() < 0.5 ? -0.2 : 0.2;
+    const change = drift + bias * volatility; // small bias random
     const close = open + change;
 
     const high = Math.max(open, close) + Math.random() * (volatility * 0.5);
@@ -36,21 +40,61 @@ export const generateInitialMarket = (count: number): Candle[] => {
   return data;
 };
 
+type Regime = 'BULL' | 'BEAR' | 'CHOP';
+let currentRegime: Regime = Math.random() < 0.33 ? 'BEAR' : Math.random() < 0.5 ? 'CHOP' : 'BULL';
+let ticksInRegime = 0;
+const regimeDurationTarget = () => 30 + Math.floor(Math.random() * 40); // 30-70 ticks
+
+const maybeShiftRegime = () => {
+  ticksInRegime++;
+  const limit = regimeDurationTarget();
+  if (ticksInRegime > limit || Math.random() < 0.05) {
+    // shift regimes
+    const roll = Math.random();
+    if (currentRegime === 'BULL') currentRegime = roll < 0.5 ? 'CHOP' : 'BEAR';
+    else if (currentRegime === 'BEAR') currentRegime = roll < 0.5 ? 'CHOP' : 'BULL';
+    else currentRegime = roll < 0.5 ? 'BULL' : 'BEAR';
+    ticksInRegime = 0;
+  }
+};
+
 // Return both candle and potential news event
 export const generateNextTick = (prev: Candle): { candle: Candle, news: NewsItem | null } => {
+  maybeShiftRegime();
   const ONE_MINUTE = 60 * 1000;
   const nextTime = prev.time + ONE_MINUTE;
 
-  // 5% Chance of a "Flash Crash" (Sharp Fall)
-  const isCrash = Math.random() < 0.05;
-  // 10% Chance of a "Pump" (Sharp Rise)
-  const isPump = Math.random() < 0.10;
+  // Regime-based probabilities
+  const baseVol = prev.close * 0.002;
+  const regimeVolMult = currentRegime === 'BULL' ? 1.2 : currentRegime === 'BEAR' ? 1.6 : 1.0;
+
+  // Event odds
+  const crashOdds = currentRegime === 'BEAR' ? 0.08 : currentRegime === 'CHOP' ? 0.05 : 0.03;
+  const pumpOdds = currentRegime === 'BULL' ? 0.15 : currentRegime === 'CHOP' ? 0.10 : 0.05;
+
+  const isCrash = Math.random() < crashOdds;
+  const isPump = Math.random() < pumpOdds;
+
+  // Rare surprise events (once in a while)
+  const rareRoll = Math.random();
+  let rareEvent: 'ETF_MEGA' | 'EXCHANGE_HACK' | null = null;
+  if (rareRoll < 0.01) {
+    rareEvent = rareRoll < 0.005 ? 'ETF_MEGA' : 'EXCHANGE_HACK';
+  }
 
   let change = 0;
-  let volatility = prev.close * 0.002;
+  let volatility = baseVol * regimeVolMult;
   let news: NewsItem | null = null;
 
-  if (isCrash) {
+  if (rareEvent === 'ETF_MEGA') {
+    change = prev.close * (0.04 + Math.random() * 0.03); // +4% to +7%
+    volatility *= 6;
+    news = generateNews('POSITIVE', 'ETF Mega Pump: Institutions Flood In');
+  } else if (rareEvent === 'EXCHANGE_HACK') {
+    change = -(prev.close * (0.05 + Math.random() * 0.05)); // -5% to -10%
+    volatility *= 6;
+    news = generateNews('NEGATIVE', 'Major Exchange Hack: Liquidity Shock');
+  } else if (isCrash) {
     // Sharp Fall
     change = -(prev.close * (0.02 + Math.random() * 0.03)); // Drop 2-5%
     volatility *= 5; // High volatility during crash
@@ -61,9 +105,10 @@ export const generateNextTick = (prev: Candle): { candle: Candle, news: NewsItem
     news = generateNews('POSITIVE');
   } else {
     // Moderate Rise (Grind up)
-    change = (Math.random() - 0.4) * volatility;
+    const bias = currentRegime === 'BULL' ? 0.1 : currentRegime === 'BEAR' ? -0.1 : 0;
+    change = (Math.random() - 0.4 + bias) * volatility;
     // Small chance of neutral news
-    if (Math.random() < 0.1) news = generateNews('NEUTRAL');
+    if (Math.random() < 0.2) news = generateNews('NEUTRAL');
   }
 
   const open = prev.close;
@@ -97,7 +142,11 @@ const POSITIVE_HEADLINES = [
   "Fed Announces Rate Cuts",
   "MicroStrategy Buys Another 1000 BTC",
   "Amazon Rumored to Accept Crypto",
-  "Bitcoin Hashrate Hits All-Time High"
+  "Bitcoin Hashrate Hits All-Time High",
+  "Sovereign Wealth Fund Discloses BTC Position",
+  "Nation-State Announces BTC Mining Initiative",
+  "Visa Launches BTC Rewards Program",
+  "ETF Inflows Hit Record High"
 ];
 
 const NEGATIVE_HEADLINES = [
@@ -106,7 +155,11 @@ const NEGATIVE_HEADLINES = [
   "Fed Hikes Interest Rates by 0.75%",
   "Tether De-pegs to $0.98",
   "SEC Sues Major Celebrity for Shilling",
-  "Bitcoin Miners Capitulating"
+  "Bitcoin Miners Capitulating",
+  "Whale Dumps 5k BTC on Market",
+  "Celsius Liquidation Fears Resurface",
+  "Stablecoin Loses Peg Intraday",
+  "Regulator Warns of Leverage Crackdown"
 ];
 
 const NEUTRAL_HEADLINES = [
@@ -114,15 +167,20 @@ const NEUTRAL_HEADLINES = [
   "Whale Alert: 500 BTC Moved to Cold Storage",
   "Crypto Regulation Bills Stalled in Congress",
   "Trading Volume Low on Weekends",
-  "Analyst Predicts 'Crab Market'"
+  "Analyst Predicts 'Crab Market'",
+  "Sideways Chop Persists",
+  "ETF Applications Under Review",
+  "Hashrate Stable; Difficulty Adjusts Slightly",
+  "OTC Desks Report Balanced Flows",
+  "Volatility Index Near Monthly Average"
 ];
 
-const generateNews = (sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'): NewsItem => {
+const generateNews = (sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL', custom?: string): NewsItem => {
   let headlines = NEUTRAL_HEADLINES;
   if (sentiment === 'POSITIVE') headlines = POSITIVE_HEADLINES;
   if (sentiment === 'NEGATIVE') headlines = NEGATIVE_HEADLINES;
 
-  const text = headlines[Math.floor(Math.random() * headlines.length)];
+  const text = custom || headlines[Math.floor(Math.random() * headlines.length)];
 
   return {
     id: Date.now(),

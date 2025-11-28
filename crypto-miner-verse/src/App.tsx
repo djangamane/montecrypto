@@ -15,7 +15,7 @@ import bgImage from './assets/minerverse_bg.png';
 
 const App: React.FC = () => {
   // --- STATE ---
-  const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL' | 'TRADING_SIM'>('WELCOME');
+  const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL' | 'TRADING_SIM' | 'TRAINING' | 'CHAMPIONS'>('WELCOME');
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [globalBTC, setGlobalBTC] = useState(0);
@@ -68,8 +68,25 @@ const App: React.FC = () => {
         </p>
 
         <Button fullWidth variant="primary" size="lg" onClick={() => setView('MAP')}>
-          ENTER SIMULATION <ArrowRight className="ml-2 w-5 h-5" />
+          START MISSION <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
+
+        <div className="grid grid-cols-1 gap-3 text-left">
+          <button
+            onClick={() => setView('TRAINING')}
+            className="w-full px-4 py-3 bg-black/60 border border-arcade-cyan/50 hover:border-arcade-cyan text-white font-mono text-sm rounded transition-all"
+          >
+            <div className="text-arcade-cyan font-bold text-lg">Mission Training</div>
+            <div className="text-gray-400 text-xs mt-1">Study zone: video lessons & level briefings</div>
+          </button>
+          <button
+            onClick={() => setView('CHAMPIONS')}
+            className="w-full px-4 py-3 bg-black/60 border border-arcade-pink/50 hover:border-arcade-pink text-white font-mono text-sm rounded transition-all"
+          >
+            <div className="text-arcade-pink font-bold text-lg">Crypto Champions</div>
+            <div className="text-gray-400 text-xs mt-1">Hall of fame: top scores & wallets</div>
+          </button>
+        </div>
 
         <div className="text-xs text-gray-600 font-mono mt-8">
           v1.0.4 // SYSTEM READY
@@ -91,6 +108,12 @@ const App: React.FC = () => {
       setActiveLesson(lesson);
       setView('BRIEFING');
     }
+  };
+
+  const handleLaunchSim = (mode: 'CEX' | 'DEX') => {
+    const simLevel = LEVELS.find(l => l.id === (mode === 'CEX' ? 4 : 5)) || null;
+    setActiveLevel(simLevel);
+    setView('TRADING_SIM');
   };
 
   const handleStartMission = () => {
@@ -326,6 +349,74 @@ const App: React.FC = () => {
               onComplete={handleRiskScanComplete}
               scansRemaining={5}
             />
+          </div>
+        )}
+
+        {view === 'TRAINING' && (
+          <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-4xl font-retro text-arcade-cyan">Mission Training</h2>
+              <p className="text-gray-400 font-mono text-sm">Level-by-level video lessons and simulations.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              {LEVELS.map(level => (
+                <div key={level.id} className="border border-gray-800 bg-black/50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-gray-500 font-mono text-xs">LEVEL {level.id}</div>
+                      <div className="text-white font-retro text-2xl">{level.name}</div>
+                      <p className="text-gray-400 text-sm mt-1">{level.description}</p>
+                    </div>
+                    <Button size="sm" variant="secondary">Watch Lesson</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border border-arcade-cyan/40 bg-black/60 p-4 rounded-lg">
+                <h3 className="text-arcade-cyan font-retro text-xl mb-2">Enter Simulation (CEX)</h3>
+                <p className="text-gray-400 text-sm mb-3">Practice centralized exchange trading with no stakes.</p>
+                <Button fullWidth onClick={() => handleLaunchSim('CEX')}>Launch CEX Simulation</Button>
+              </div>
+              <div className="border border-arcade-pink/40 bg-black/60 p-4 rounded-lg">
+                <h3 className="text-arcade-pink font-retro text-xl mb-2">Enter Simulation (DEX)</h3>
+                <p className="text-gray-400 text-sm mb-3">Decentralized swap drills with risk prompts.</p>
+                <Button fullWidth variant="secondary" onClick={() => handleLaunchSim('DEX')}>Launch DEX Simulation</Button>
+              </div>
+            </div>
+            <div className="text-center">
+              <button onClick={() => setView('WELCOME')} className="text-gray-500 hover:text-white font-mono text-xs uppercase">← Back to Welcome</button>
+            </div>
+          </div>
+        )}
+
+        {view === 'CHAMPIONS' && (
+          <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-4xl font-retro text-arcade-pink">Crypto Champions</h2>
+              <p className="text-gray-400 font-mono text-sm">Hall of fame for top scores and stacked sats.</p>
+            </div>
+            <div className="border border-gray-800 bg-black/60 rounded-lg p-4">
+              <div className="grid grid-cols-3 text-xs font-mono text-gray-500 mb-2">
+                <span>Rank</span>
+                <span>Agent</span>
+                <span className="text-right">Score</span>
+              </div>
+              {[
+                { name: 'SATSTACKER', score: 58200 },
+                { name: 'RISKSCOUT', score: 44150 },
+                { name: 'HALVINGHERO', score: 39900 },
+              ].map((champ, idx) => (
+                <div key={champ.name} className="grid grid-cols-3 items-center py-2 border-t border-gray-800 text-white font-mono">
+                  <span className="text-gray-500">#{idx + 1}</span>
+                  <span>{champ.name}</span>
+                  <span className="text-right text-arcade-cyan">{champ.score.toLocaleString()} XP</span>
+                </div>
+              ))}
+            </div>
+            <div className="text-center">
+              <button onClick={() => setView('WELCOME')} className="text-gray-500 hover:text-white font-mono text-xs uppercase">← Back to Welcome</button>
+            </div>
           </div>
         )}
 

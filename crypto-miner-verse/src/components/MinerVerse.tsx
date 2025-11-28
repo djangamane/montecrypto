@@ -127,10 +127,14 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       const nodeCount = levelId === 1 ? 5 : levelId === 2 ? 8 : 12;
 
       // Generate Random Gold Nodes
+      // Keep nodes fully on-screen with generous padding to avoid hiding under HUD
+      const padX = 60;
+      const padTop = 140; // leave room for HUD bar
+      const padBottom = 80;
       nodes.current = Array.from({ length: nodeCount }).map((_, i) => ({
          id: i,
-         x: Math.random() * (canvasWidth - 60) + 30,
-         y: Math.random() * (canvasHeight - 60) + 30,
+         x: Math.random() * Math.max(1, canvasWidth - padX * 2) + padX,
+         y: Math.random() * Math.max(1, canvasHeight - (padTop + padBottom)) + padTop,
          width: 40,
          height: 40,
          value: 800,
