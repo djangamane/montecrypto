@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { analyzeCryptoRisk } from '../services/geminiService';
-import { AnalysisResult } from '../types';
+import type { AnalysisResult } from '../types';
 import Button from './ui/Button';
 import { ShieldAlert, ShieldCheck, BrainCircuit, Activity } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -21,7 +21,7 @@ const RiskAnalyzer: React.FC<RiskAnalyzerProps> = ({ onComplete, scansRemaining 
     const data = await analyzeCryptoRisk(scenario);
     setResult(data);
     setLoading(false);
-    
+
     // Simulate completing the "lesson" after one successful scan
     if (data) {
       setTimeout(onComplete, 5000); // Complete after viewing results for 5s
@@ -46,29 +46,29 @@ const RiskAnalyzer: React.FC<RiskAnalyzerProps> = ({ onComplete, scansRemaining 
       <div className="mt-6 bg-gray-800 rounded-xl p-6 border border-gray-700 animate-fade-in">
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="w-32 h-32 relative">
-             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data}
-                    innerRadius={40}
-                    outerRadius={60}
-                    paddingAngle={5}
-                    dataKey="value"
-                    startAngle={90}
-                    endAngle={-270}
-                  >
-                    <Cell fill={scoreColor(result.score)} />
-                    <Cell fill="#374151" />
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-             </ResponsiveContainer>
-             <div className="absolute inset-0 flex items-center justify-center flex-col">
-               <span className="text-xl font-bold text-white">{result.score}/100</span>
-               <span className="text-[10px] uppercase text-gray-400">Risk</span>
-             </div>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  innerRadius={40}
+                  outerRadius={60}
+                  paddingAngle={5}
+                  dataKey="value"
+                  startAngle={90}
+                  endAngle={-270}
+                >
+                  <Cell fill={scoreColor(result.score)} />
+                  <Cell fill="#374151" />
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex items-center justify-center flex-col">
+              <span className="text-xl font-bold text-white">{result.score}/100</span>
+              <span className="text-[10px] uppercase text-gray-400">Risk</span>
+            </div>
           </div>
-          
+
           <div className="flex-1">
             <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
               {result.score > 70 ? <ShieldAlert className="text-red-500" /> : <ShieldCheck className="text-emerald-500" />}
@@ -94,17 +94,17 @@ const RiskAnalyzer: React.FC<RiskAnalyzerProps> = ({ onComplete, scansRemaining 
     <div className="flex flex-col h-full max-w-2xl mx-auto p-4">
       <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-             <BrainCircuit className="text-brand-500" />
-             AI Risk Decoder
-           </h2>
-           <span className="bg-brand-900 text-brand-200 text-xs font-bold px-3 py-1 rounded-full border border-brand-700">
-             {scansRemaining} Scans Remaining
-           </span>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <BrainCircuit className="text-brand-500" />
+            AI Risk Decoder
+          </h2>
+          <span className="bg-brand-900 text-brand-200 text-xs font-bold px-3 py-1 rounded-full border border-brand-700">
+            {scansRemaining} Scans Remaining
+          </span>
         </div>
 
         <p className="text-gray-400 mb-4 text-sm">
-          Paste a token contract, a tweet describing a project, or a description of tokenomics. 
+          Paste a token contract, a tweet describing a project, or a description of tokenomics.
           The AI will cross-reference signals to detect potential scams.
         </p>
 
@@ -117,9 +117,9 @@ const RiskAnalyzer: React.FC<RiskAnalyzerProps> = ({ onComplete, scansRemaining 
         />
 
         <div className="mt-4">
-          <Button 
-            fullWidth 
-            onClick={handleAnalyze} 
+          <Button
+            fullWidth
+            onClick={handleAnalyze}
             disabled={loading || !scenario.trim() || scansRemaining <= 0}
             variant={scansRemaining <= 0 ? "secondary" : "primary"}
           >
