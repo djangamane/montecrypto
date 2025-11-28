@@ -93,7 +93,7 @@ const LessonInteract: React.FC<LessonInteractProps> = ({ lesson, onComplete, onB
               <Terminal className="text-arcade-pink w-8 h-8" />
               <div>
                 <h1 className="text-4xl text-white uppercase tracking-wider">{lesson.title}</h1>
-                <p className="text-arcade-cyan text-xl">/// {lesson.description}</p>
+                <p className="text-arcade-cyan text-xl">{'///'} {lesson.description}</p>
               </div>
             </div>
 

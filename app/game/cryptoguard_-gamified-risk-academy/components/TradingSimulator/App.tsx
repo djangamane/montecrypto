@@ -432,7 +432,7 @@ const App: React.FC<TradingSimProps> = ({ initialBTC, mode, onComplete }) => {
                         <p>{'>'} STARTING CAPITAL: $50,000</p>
                         <p>{'>'} TIME LIMIT: 5 MINUTES</p>
                         <p>{'>'} OBJECTIVE: Grow your portfolio while managing volatility.</p>
-                        <p className="text-secondary">{'>'} WARNING: DEX Markets contain 'SCAM' tokens.</p>
+                        <p className="text-secondary">{'>'} WARNING: DEX Markets contain &apos;SCAM&apos; tokens.</p>
                         <p className="text-danger">{'>'} WARNING: CEX Leverage {'>'} 5x risks instant LIQUIDATION.</p>
                     </div>
                     <Button onClick={() => {

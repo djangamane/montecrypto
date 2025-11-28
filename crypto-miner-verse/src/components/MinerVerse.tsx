@@ -582,7 +582,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                      <DollarSign className="w-16 h-16" />
                   </div>
                   <h2 className="text-4xl text-white mb-2 text-shadow-retro">VENTURE CAPITALIST</h2>
-                  <p className="text-gray-400 mb-8 font-sans">"Market volatility detected. Want to leverage your position?"</p>
+                  <p className="text-gray-400 mb-8 font-sans">&quot;Market volatility detected. Want to leverage your position?&quot;</p>
 
                   <div className="flex gap-4 justify-center">
                      <Button variant="arcade" onClick={() => handleInvestment(true)} className="text-green-400 border-green-400 hover:bg-green-400 hover:text-black pixel-border-sm">
