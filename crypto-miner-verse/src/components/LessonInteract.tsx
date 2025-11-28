@@ -189,7 +189,7 @@ const LessonInteract: React.FC<LessonInteractProps> = ({ lesson, onComplete, onB
               {/* SORTING UI */}
               {currentQuestion.type === QuestionType.SORTING && (
                 <div className="space-y-3">
-                  <p className="text-xl text-gray-500 mb-4">{'>'} REORDER DATA PACKETS:</p>
+                  <p className="text-xl text-gray-500 mb-4">&gt; REORDER DATA PACKETS:</p>
                   {sortOrder.map((item, idx) => (
                     <div key={item} className={`flex items-center justify-between p-4 border-2 bg-black
                         ${feedback === 'correct' ? 'border-emerald-500' : 'border-arcade-pink'}

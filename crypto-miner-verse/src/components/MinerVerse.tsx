@@ -503,10 +503,10 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                <div className="text-center space-y-6 animate-fade-in border-4 border-arcade-yellow p-10 bg-gray-900/90 max-w-2xl pixel-border">
                   <h1 className="text-6xl text-arcade-yellow mb-2 text-shadow-retro">MISSION: LEVEL {levelId}</h1>
                   <div className="text-left bg-black/80 p-4 border border-gray-700 font-mono text-sm text-green-400 mb-4">
-                     <p>{'> TARGET: ' + targetScore + ' SATS'}</p>
-                     <p>{'> THREAT: SCAM CLOUDS DETECTED'}</p>
-                     <p>{'> PROTOCOL: MINE NODES. DEFEND INTEGRITY.'}</p>
-                     <p>{'> WARNING: INCORRECT ANSWERS INCREASE RISK LEVEL.'}</p>
+                     <p>&gt; TARGET: {targetScore} SATS</p>
+                     <p>&gt; THREAT: SCAM CLOUDS DETECTED</p>
+                     <p>&gt; PROTOCOL: MINE NODES. DEFEND INTEGRITY.</p>
+                     <p>&gt; WARNING: INCORRECT ANSWERS INCREASE RISK LEVEL.</p>
                   </div>
                   <Button variant="arcade" onClick={initGame} size="lg">START MISSION</Button>
                   <button onClick={() => onExit(false, 0)} className="block w-full mt-4 text-gray-500 hover:text-white">ABORT MISSION</button>
@@ -520,7 +520,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                   <h1 className="text-6xl text-green-500 text-shadow-retro">MISSION COMPLETE</h1>
                   <p className="text-2xl text-white">TARGET ACQUIRED: {player.current.score} SATS</p>
                   <div className="text-yellow-400 animate-pulse text-xl">
-                     {'>>> BONUS ROUND UNLOCKED <<<'}
+                     &gt;&gt;&gt; BONUS ROUND UNLOCKED &lt;&lt;&lt;
                   </div>
                   <Button variant="arcade" onClick={() => onExit(true, player.current.score)}>PROCEED TO ARCADE</Button>
                </div>

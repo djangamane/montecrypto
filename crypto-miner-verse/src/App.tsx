@@ -11,6 +11,8 @@ import TradingSimulator from './components/TradingSimulator/App'; // Import Simu
 import Button from './components/ui/Button';
 import { Flame, Star, Terminal, ArrowRight } from 'lucide-react';
 
+import bgImage from './assets/minerverse_bg.png';
+
 const App: React.FC = () => {
   // --- STATE ---
   const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL' | 'TRADING_SIM'>('WELCOME');
@@ -45,33 +47,34 @@ const App: React.FC = () => {
 
   // --- WELCOME SCREEN ---
   const renderWelcome = () => (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
       <div className="arcade-scanline"></div>
 
-      <div className="z-10 text-center space-y-8 max-w-4xl">
-        <div className="mb-12 relative group">
-          <h1 className="text-8xl md:text-9xl font-retro text-transparent bg-clip-text bg-gradient-to-b from-arcade-neon to-green-900 animate-pulse tracking-widest filter drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">
-            MINER<br />VERSE
+      <div className="max-w-md w-full text-center space-y-8 relative z-10">
+        <div className="animate-float">
+          <h1 className="text-6xl md:text-8xl font-retro text-transparent bg-clip-text bg-gradient-to-b from-arcade-cyan to-blue-600 drop-shadow-[0_0_15px_rgba(0,255,255,0.5)]">
+            MINER
+            <span className="block text-4xl md:text-6xl text-arcade-pink mt-2">VERSE</span>
           </h1>
-          <div className="absolute -inset-10 bg-arcade-neon/10 blur-3xl rounded-full opacity-50 group-hover:opacity-75 transition-opacity"></div>
         </div>
 
-        <div className="space-y-4 font-retro text-2xl text-gray-400 tracking-wide">
-          <p>/// INITIATE CRYPTO SURVIVAL PROTOCOL ///</p>
-          <p className="text-arcade-cyan">LEARN. MINE. SURVIVE.</p>
-        </div>
+        <p className="text-gray-400 font-mono text-sm md:text-base bg-black/50 p-4 rounded border border-gray-800">
+          DECODE THE BLOCKCHAIN. MASTER THE MARKET.
+        </p>
 
-        <div className="pt-8">
-          <Button variant="arcade" size="lg" onClick={() => setView('MAP')} className="animate-bounce-slow">
-            PRESS START
-          </Button>
+        <Button fullWidth variant="primary" size="lg" onClick={() => setView('MAP')}>
+          ENTER SIMULATION <ArrowRight className="ml-2 w-5 h-5" />
+        </Button>
+
+        <div className="text-xs text-gray-600 font-mono mt-8">
+          v1.0.4 // SYSTEM READY
         </div>
       </div>
-
-      {/* Background Decor */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-arcade-neon/20 to-transparent"></div>
-      <div className="absolute top-10 left-10 text-gray-800 font-retro text-9xl opacity-10 select-none">BTC</div>
-      <div className="absolute bottom-10 right-10 text-gray-800 font-retro text-9xl opacity-10 select-none">HODL</div>
     </div>
   );
 
@@ -194,7 +197,13 @@ const App: React.FC = () => {
   if (view === 'WELCOME') return renderWelcome();
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 font-sans selection:bg-brand-500 selection:text-white flex flex-col">
+    <div className="min-h-screen text-gray-100 font-sans selection:bg-brand-500 selection:text-white flex flex-col"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}>
 
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 shadow-md">
@@ -294,7 +303,8 @@ const App: React.FC = () => {
         {view === 'MINER_GAME' && activeLevel && (
           <MinerVerse
             levelId={activeLevel.id}
-            targetScore={1000 + (activeLevel.id * 200)} // Harder targets for higher levels
+            targetScore={1000 + (activeLevel.id * 200)}
+            // Harder targets for higher levels
             onExit={handleMinerComplete}
           />
         )}

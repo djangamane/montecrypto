@@ -58,13 +58,17 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
     setGameState('PLAYING');
   };
 
+  // Ref to access latest handleAnswer without triggering effect
+  const handleAnswerRef = useRef(handleAnswer);
+  handleAnswerRef.current = handleAnswer;
+
   // Timer Logic
   useEffect(() => {
     if (gameState === 'PLAYING' && !feedback) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 0) {
-            handleAnswer(null); // Time out treated as wrong
+            handleAnswerRef.current(null); // Time out treated as wrong
             return 100;
           }
           return prev - 1.5; // Decay speed
