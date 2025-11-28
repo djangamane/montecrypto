@@ -559,7 +559,6 @@ const App: React.FC<TradingSimProps> = ({ initialBTC, mode, onComplete }) => {
                                                 y={portfolio.liquidationPrice}
                                                 stroke="red"
                                                 strokeDasharray="5 5"
-                                                label="LIQUIDATION"
                                             />
                                         )}
                                         <Bar
