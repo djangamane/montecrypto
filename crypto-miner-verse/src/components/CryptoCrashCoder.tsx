@@ -58,28 +58,6 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
     setGameState('PLAYING');
   };
 
-  // Ref to access latest handleAnswer without triggering effect
-  const handleAnswerRef = useRef(handleAnswer);
-  handleAnswerRef.current = handleAnswer;
-
-  // Timer Logic
-  useEffect(() => {
-    if (gameState === 'PLAYING' && !feedback) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 0) {
-            handleAnswerRef.current(null); // Time out treated as wrong
-            return 100;
-          }
-          return prev - 1.5; // Decay speed
-        });
-      }, 100);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [gameState, feedback, currentQIndex]);
-
   const handleAnswer = (answer: string | null) => {
     const currentQ = questions[currentQIndex];
     const isCorrect = answer === currentQ.correctAnswer;
@@ -101,6 +79,28 @@ const CryptoCrashCoder: React.FC<CryptoCrashCoderProps> = ({ unlockedLevelId, on
       });
     }
   };
+
+  // Ref to access latest handleAnswer without triggering effect
+  const handleAnswerRef = useRef(handleAnswer);
+  handleAnswerRef.current = handleAnswer;
+
+  // Timer Logic
+  useEffect(() => {
+    if (gameState === 'PLAYING' && !feedback) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 0) {
+            handleAnswerRef.current(null); // Time out treated as wrong
+            return 100;
+          }
+          return prev - 1.5; // Decay speed
+        });
+      }, 100);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [gameState, feedback, currentQIndex]);
 
   const nextQuestion = () => {
     setFeedback(null);
