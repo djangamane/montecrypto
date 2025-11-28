@@ -135,46 +135,39 @@ export const LEVELS: Level[] = [
   },
   {
     id: 4,
-    name: "Risk Decoding",
-    description: "AI-Powered Risk Analysis",
+    name: "CEX Trading",
+    description: "Centralized Exchange Simulation",
     status: LevelStatus.LOCKED,
     color: "bg-orange-500",
     lessons: [
       {
         id: "l4-1",
         levelId: 4,
-        title: "Layering Signals",
-        description: "Spotting what NOT to buy",
-        xpReward: 50,
-        content: "Risk assessment requires looking at On-chain data, Social sentiment, and Institutional flows.",
-        questions: [
-          {
-            id: "q4-1",
-            type: QuestionType.SORTING,
-            prompt: "Prioritize risk checks (First to Last):",
-            options: ["Check Social Hype", "Verify Liquidity Lock", "Read Whitepaper", "Check Team Wallets"],
-            correctAnswer: ["Verify Liquidity Lock", "Check Team Wallets", "Read Whitepaper", "Check Social Hype"],
-            explanation: "Hard on-chain data (Liquidity/Wallets) always trumps soft social signals."
-          },
-          {
-            id: "q4-2",
-            type: QuestionType.MULTIPLE_CHOICE,
-            prompt: "What is the biggest red flag in a new token?",
-            options: ["Unlocked Liquidity", "No Website", "Low Twitter Followers", "Ugly Logo"],
-            correctAnswer: "Unlocked Liquidity",
-            explanation: "If liquidity is unlocked, the developers can pull the money (Rug Pull) at any moment."
-          }
-        ]
+        title: "CEX Trading Challenge",
+        description: "Trade Bitcoin with leverage on a centralized exchange",
+        xpReward: 100,
+        content: "Master centralized exchange trading with leverage, liquidation risks, and market orders. You'll have 5 minutes to maximize your portfolio value starting with $50,000 and any BTC you've collected.",
+        questions: [] // No questions - this goes straight to trading sim
       }
     ]
   },
   {
     id: 5,
-    name: "Advanced",
-    description: "DeFi & Exchanges",
+    name: "DEX Trading",
+    description: "Decentralized Exchange Simulation",
     status: LevelStatus.LOCKED,
     color: "bg-red-500",
-    lessons: []
+    lessons: [
+      {
+        id: "l5-1",
+        levelId: 5,
+        title: "DEX Swap Challenge",
+        description: "Trade on decentralized exchanges and avoid rug pulls",
+        xpReward: 150,
+        content: "Navigate the wild world of DEX trading. Swap tokens, avoid scam coins, and manage gas fees. Watch out for rug pulls! You have 5 minutes to grow your wealth.",
+        questions: [] // No questions - this goes straight to trading sim
+      }
+    ]
   }
 ];
 

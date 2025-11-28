@@ -75,6 +75,10 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
    const [quizFeedback, setQuizFeedback] = useState<boolean | null>(null);
    const [riskLevel, setRiskLevel] = useState(1); // Difficulty Multiplier
 
+   // Power-Up State
+   const [freezeCharges, setFreezeCharges] = useState(0);
+   const [isFrozen, setIsFrozen] = useState(false);
+
    // Assets
    const bgImageRef = useRef<HTMLImageElement | null>(null);
 
@@ -112,8 +116,18 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       projectiles.current = [];
       setRiskLevel(1);
 
+      // Freeze Gun: 3 Charges for Level 3+
+      setFreezeCharges(levelId >= 3 ? 3 : 0);
+      setIsFrozen(false);
+
+      // Difficulty Scaling: Node Count
+      // Level 1: 5 Nodes
+      // Level 2: 8 Nodes
+      // Level 3+: 12 Nodes
+      const nodeCount = levelId === 1 ? 5 : levelId === 2 ? 8 : 12;
+
       // Generate Random Gold Nodes
-      nodes.current = Array.from({ length: 6 }).map((_, i) => ({
+      nodes.current = Array.from({ length: nodeCount }).map((_, i) => ({
          id: i,
          x: Math.random() * (canvasWidth - 60) + 30,
          y: Math.random() * (canvasHeight - 60) + 30,
@@ -143,7 +157,8 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          gameTime.current++;
 
          // Win Condition
-         if (player.current.score >= targetScore) {
+         const activeNodes = nodes.current.filter(n => !n.depleted);
+         if (activeNodes.length === 0) {
             setGameState('VICTORY');
             return;
          }
@@ -165,37 +180,37 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                player.current.score += MINING_RATE;
                if (node.value <= 0) {
                   node.depleted = true;
-                  // Spawn new node elsewhere
-                  setTimeout(() => {
-                     node.x = Math.random() * (canvasWidth - 60) + 30;
-                     node.y = Math.random() * (canvasHeight - 60) + 30;
-                     node.value = 800;
-                     node.depleted = false;
-                  }, 4000);
+                  // Node respawn removed - Collect them all!
                }
             }
          });
 
          // 3. Enemy Spawning based on Risk Level
-         const spawnRate = Math.max(30, 120 - (riskLevel * 10)); // Higher risk = faster spawn
-         if (gameTime.current % spawnRate === 0) {
-            const side = Math.floor(Math.random() * 4);
-            let ex = 0, ey = 0;
-            if (side === 0) { ex = Math.random() * canvasWidth; ey = -30; } // Top
-            if (side === 1) { ex = canvasWidth + 30; ey = Math.random() * canvasHeight; } // Right
-            if (side === 2) { ex = Math.random() * canvasWidth; ey = canvasHeight + 30; } // Bottom
-            if (side === 3) { ex = -30; ey = Math.random() * canvasHeight; } // Left
+         // If Frozen, NO spawning!
+         if (!isFrozen) {
+            const spawnRate = Math.max(30, 120 - (riskLevel * 10)); // Higher risk = faster spawn
+            if (gameTime.current % spawnRate === 0) {
+               const side = Math.floor(Math.random() * 4);
+               let ex = 0, ey = 0;
+               if (side === 0) { ex = Math.random() * canvasWidth; ey = -30; } // Top
+               if (side === 1) { ex = canvasWidth + 30; ey = Math.random() * canvasHeight; } // Right
+               if (side === 2) { ex = Math.random() * canvasWidth; ey = canvasHeight + 30; } // Bottom
+               if (side === 3) { ex = -30; ey = Math.random() * canvasHeight; } // Left
 
-            // Enemy speed scales with Risk Level
-            const currentEnemySpeed = BASE_ENEMY_SPEED * riskLevel;
-            enemies.current.push({ x: ex, y: ey, width: 32, height: 32, id: Date.now() + Math.random(), hp: 1, speed: currentEnemySpeed });
+               // Enemy speed scales with Risk Level
+               const currentEnemySpeed = BASE_ENEMY_SPEED * riskLevel;
+               enemies.current.push({ x: ex, y: ey, width: 32, height: 32, id: Date.now() + Math.random(), hp: 1, speed: currentEnemySpeed });
+            }
          }
 
          // 4. Enemy Logic (Chase Player)
          enemies.current.forEach(enemy => {
-            const angle = Math.atan2(player.current.y - enemy.y, player.current.x - enemy.x);
-            enemy.x += Math.cos(angle) * enemy.speed;
-            enemy.y += Math.sin(angle) * enemy.speed;
+            // If Frozen, enemies don't move!
+            if (!isFrozen) {
+               const angle = Math.atan2(player.current.y - enemy.y, player.current.x - enemy.x);
+               enemy.x += Math.cos(angle) * enemy.speed;
+               enemy.y += Math.sin(angle) * enemy.speed;
+            }
 
             // Collision with Player
             const dist = Math.hypot(player.current.x - enemy.x, player.current.y - enemy.y);
@@ -262,6 +277,12 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
          }
 
+         // Freeze Effect Overlay
+         if (isFrozen) {
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+         }
+
          // Grid (Subtler now)
          ctx.strokeStyle = 'rgba(31, 41, 55, 0.5)';
          ctx.lineWidth = 1;
@@ -269,8 +290,12 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          for (let i = 0; i < canvasHeight; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvasWidth, i); ctx.stroke(); }
 
          // Nodes
+         let collectedCount = 0;
          nodes.current.forEach(node => {
-            if (node.depleted) return;
+            if (node.depleted) {
+               collectedCount++;
+               return;
+            }
 
             // Draw Coin Sprite
             drawPixelSprite(ctx, COIN_SPRITE, node.x, node.y, '#facc15', '#b45309');
@@ -306,12 +331,14 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
          // Enemies
          enemies.current.forEach(enemy => {
-            // Draw Enemy Sprite
-            drawPixelSprite(ctx, ENEMY_SPRITE, enemy.x, enemy.y, '#ef4444', '#7f1d1d');
+            // Draw Enemy Sprite - Blue if Frozen
+            const c1 = isFrozen ? '#67e8f9' : '#ef4444';
+            const c2 = isFrozen ? '#0e7490' : '#7f1d1d';
+            drawPixelSprite(ctx, ENEMY_SPRITE, enemy.x, enemy.y, c1, c2);
 
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = c1;
             ctx.font = 'bold 10px monospace';
-            ctx.fillText('SCAM', enemy.x + 4, enemy.y + 42);
+            ctx.fillText(isFrozen ? 'FROZEN' : 'SCAM', enemy.x + 4, enemy.y + 42);
          });
 
          // Projectiles
@@ -326,13 +353,24 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          // HUD
          ctx.fillStyle = 'white';
          ctx.font = '24px "VT323", monospace';
-         ctx.fillText(`BTC: ${player.current.score} / ${targetScore}`, 20, 30);
+         // NEW HUD: Show Nodes Collected
+         ctx.fillText(`NODES: ${collectedCount} / ${nodes.current.length}`, 20, 30);
 
          // Ammo
          ctx.fillText(`LOGIC:`, 20, 60);
          for (let i = 0; i < AMMO_MAX; i++) {
             ctx.fillStyle = i < player.current.ammo ? '#00ffff' : '#374151';
             ctx.fillRect(80 + (i * 20), 42, 16, 16);
+         }
+
+         // Freeze Charges HUD
+         if (levelId >= 3) {
+            ctx.fillStyle = isFrozen ? '#67e8f9' : 'white';
+            ctx.fillText(`FREEZE [F]:`, 20, 90);
+            for (let i = 0; i < 3; i++) {
+               ctx.fillStyle = i < freezeCharges ? '#67e8f9' : '#374151';
+               ctx.fillRect(130 + (i * 20), 72, 16, 16);
+            }
          }
 
          // Risk HUD
@@ -347,12 +385,21 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       return () => {
          cancelAnimationFrame(animationFrameId.current);
       };
-   }, [gameState, riskLevel, canvasWidth, canvasHeight]);
+   }, [gameState, riskLevel, canvasWidth, canvasHeight, isFrozen, freezeCharges]);
 
    // --- CONTROLS ---
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
          keys.current[e.key] = true;
+
+         // Freeze Gun Activation
+         if ((e.key === 'f' || e.key === 'F') && gameState === 'PLAYING') {
+            if (freezeCharges > 0 && !isFrozen) {
+               setFreezeCharges(prev => prev - 1);
+               setIsFrozen(true);
+               setTimeout(() => setIsFrozen(false), 5000); // 5 Seconds Freeze
+            }
+         }
 
          if (e.code === 'Space' && gameState === 'PLAYING') {
             if (player.current.ammo > 0) {
@@ -362,14 +409,21 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                if (target) {
                   angle = Math.atan2(target.y - player.current.y, target.x - player.current.x);
                }
-               projectiles.current.push({
-                  x: player.current.x + 16,
-                  y: player.current.y + 16,
-                  width: 8, height: 8,
-                  vx: Math.cos(angle) * PROJECTILE_SPEED,
-                  vy: Math.sin(angle) * PROJECTILE_SPEED,
-                  id: Date.now()
+
+               // Multi-Shot Logic (Level 2+)
+               const shots = levelId >= 2 ? [-0.2, 0, 0.2] : [0]; // Spread angles
+
+               shots.forEach(offset => {
+                  projectiles.current.push({
+                     x: player.current.x + 16,
+                     y: player.current.y + 16,
+                     width: 8, height: 8,
+                     vx: Math.cos(angle + offset) * PROJECTILE_SPEED,
+                     vy: Math.sin(angle + offset) * PROJECTILE_SPEED,
+                     id: Date.now() + Math.random()
+                  });
                });
+
             } else {
                triggerQuiz();
             }
@@ -421,7 +475,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
             // PUNISHMENT: Increase Risk Level (Enemy Speed)
             setRiskLevel(prev => Math.min(prev + 0.5, 3.0)); // Cap at 3x speed
             player.current.score = Math.max(0, player.current.score - 50);
-            player.current.ammo = 3; // Pity ammo
+            player.current.ammo = 0; // STRICT: No pity ammo!
          }
          setQuizFeedback(null);
          setActiveQuiz(null);

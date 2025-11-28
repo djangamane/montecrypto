@@ -7,14 +7,16 @@ import LevelMap from './components/LevelMap';
 import RiskAnalyzer from './components/RiskAnalyzer';
 import CryptoCrashCoder from './components/CryptoCrashCoder';
 import MinerVerse from './components/MinerVerse';
+import TradingSimulator from './components/TradingSimulator/App'; // Import Simulator
 import Button from './components/ui/Button';
 import { Flame, Star, Terminal, ArrowRight } from 'lucide-react';
 
 const App: React.FC = () => {
   // --- STATE ---
-  const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL'>('WELCOME');
+  const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL' | 'TRADING_SIM'>('WELCOME');
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+  const [globalBTC, setGlobalBTC] = useState(0);
 
   // User Progress with localStorage persistence
   const [user, setUser] = useState<UserProgress>(() => {
@@ -76,12 +78,6 @@ const App: React.FC = () => {
   // --- ACTIONS ---
 
   const handleLevelSelect = (level: Level) => {
-    // Pro/Risk Tool Check
-    if (level.id === 4 && !user.isPro) {
-      setView('RISK_TOOL'); // Or a modal to upsell
-      return;
-    }
-
     // Find lesson content to show as "Briefing"
     // For this game loop, we assume 1 main lesson per level for simplicity, 
     // or we chain them. Let's pick the first uncompleted or just the first one.
@@ -95,14 +91,31 @@ const App: React.FC = () => {
   };
 
   const handleStartMission = () => {
-    setView('MINER_GAME');
+    if (!activeLevel) return;
+
+    console.log('🚀 handleStartMission called:', {
+      levelId: activeLevel.id,
+      levelName: activeLevel.name,
+      willGoToSim: activeLevel.id === 4 || activeLevel.id === 5
+    });
+
+    // Level 4 = CEX Simulator
+    // Level 5 = DEX Simulator
+    if (activeLevel.id === 4 || activeLevel.id === 5) {
+      console.log('✅ Routing to TRADING_SIM for level', activeLevel.id);
+      setView('TRADING_SIM');
+    } else {
+      console.log('🎮 Routing to MINER_GAME for level', activeLevel.id);
+      setView('MINER_GAME');
+    }
   };
 
   const handleMinerComplete = (success: boolean, score: number) => {
     console.log('🎮 handleMinerComplete called:', { success, score, currentView: view });
     if (success) {
-      // Add score to XP
+      // Add score to XP AND Global Wallet
       setUser(prev => ({ ...prev, xp: prev.xp + score }));
+      setGlobalBTC(prev => prev + score);
       // Proceed to Bonus Round
       console.log('✅ Setting view to ARCADE_BONUS');
       setView('ARCADE_BONUS');
@@ -114,10 +127,36 @@ const App: React.FC = () => {
   };
 
   const handleArcadeComplete = (score: number) => {
-    // Bonus XP
+    // Bonus XP AND Global Wallet
     setUser(prev => ({ ...prev, xp: prev.xp + score }));
+    setGlobalBTC(prev => prev + score);
 
     // Unlock Next Level logic
+    if (activeLevel && activeLevel.id === user.currentLevel) {
+      setUser(prev => ({
+        ...prev,
+        currentLevel: prev.currentLevel + 1
+      }));
+    }
+
+    setView('MAP');
+    setActiveLesson(null);
+    setActiveLevel(null);
+  };
+
+  const handleSimComplete = (finalEquity: number) => {
+    // Simulator Complete
+    console.log('📈 Simulator Complete. Equity:', finalEquity);
+
+    // Update Global Wallet? Or just XP?
+    // Maybe convert final equity to XP or keep it?
+    // For now, let's give XP based on profit
+    const profit = finalEquity - 50000; // Assuming 50k start
+    const xpGain = Math.max(0, Math.floor(profit / 10));
+
+    setUser(prev => ({ ...prev, xp: prev.xp + xpGain }));
+
+    // Unlock Next Level
     if (activeLevel && activeLevel.id === user.currentLevel) {
       setUser(prev => ({
         ...prev,
@@ -177,10 +216,11 @@ const App: React.FC = () => {
       </header>
 
       {/* MAIN */}
-      <main className="flex-grow relative overflow-hidden">
+      <main className="flex-grow relative overflow-y-auto">
+
 
         {view === 'MAP' && (
-          <div className="max-w-md mx-auto h-full pb-32 pt-8">
+          <div className="max-w-md mx-auto pb-32 pt-8">
             <div className="text-center mb-8">
               <h2 className="text-gray-500 font-retro text-lg">CURRENT OBJECTIVE</h2>
               <div className="text-2xl text-white font-bold uppercase tracking-wider">
@@ -213,20 +253,34 @@ const App: React.FC = () => {
                   {activeLesson.content}
                 </div>
 
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div className="bg-gray-800 p-4 border border-gray-700">
                     <h3 className="text-gray-400 text-xs font-bold uppercase mb-1">OBJECTIVE</h3>
-                    <p className="text-white font-retro text-xl">COLLECT 1000 SATS</p>
+                    <p className="text-white font-retro text-xl">
+                      {activeLevel?.id === 4 || activeLevel?.id === 5
+                        ? "MAXIMIZE PORTFOLIO"
+                        : "COLLECT 1000 SATS"}
+                    </p>
                   </div>
                   <div className="bg-gray-800 p-4 border border-gray-700">
-                    <h3 className="text-gray-400 text-xs font-bold uppercase mb-1">INTEL</h3>
-                    <p className="text-white font-retro text-xl">AVOID SCAM CLOUDS</p>
+                    <h3 className="text-gray-400 text-xs font-bold uppercase mb-1">
+                      {activeLevel?.id === 4 || activeLevel?.id === 5 ? "DURATION" : "INTEL"}
+                    </h3>
+                    <p className="text-white font-retro text-xl">
+                      {activeLevel?.id === 4 || activeLevel?.id === 5
+                        ? "5 MINUTES"
+                        : "AVOID SCAM CLOUDS"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="mt-4 space-y-3">
                   <Button fullWidth variant="arcade" onClick={handleStartMission}>
-                    DEPLOY MINER <ArrowRight className="ml-2" />
+                    {activeLevel?.id === 4 || activeLevel?.id === 5
+                      ? `START ${activeLevel?.id === 4 ? 'CEX' : 'DEX'} TRADING`
+                      : "DEPLOY MINER"}
+                    <ArrowRight className="ml-2" />
                   </Button>
                   <button onClick={() => setView('MAP')} className="w-full text-center text-gray-500 hover:text-white font-retro text-lg uppercase">
                     Cancel Mission
@@ -242,6 +296,14 @@ const App: React.FC = () => {
             levelId={activeLevel.id}
             targetScore={1000 + (activeLevel.id * 200)} // Harder targets for higher levels
             onExit={handleMinerComplete}
+          />
+        )}
+
+        {view === 'TRADING_SIM' && activeLevel && (
+          <TradingSimulator
+            initialBTC={globalBTC}
+            mode={activeLevel.id === 4 ? 'CEX' : 'DEX'}
+            onComplete={handleSimComplete}
           />
         )}
 

@@ -21,7 +21,7 @@ const LevelMap: React.FC<LevelMapProps> = ({ levels, currentLevelId, onSelectLev
     svg.selectAll("*").remove();
 
     const width = containerRef.current.clientWidth;
-    const nodeHeight = 160; // Distance between nodes
+    const nodeHeight = 120; // Distance between nodes - reduced from 160
     const height = levels.length * nodeHeight + 100;
 
     svg.attr("width", width).attr("height", height);
@@ -50,10 +50,10 @@ const LevelMap: React.FC<LevelMapProps> = ({ levels, currentLevelId, onSelectLev
   }, [levels]);
 
   return (
-    <div className="relative w-full overflow-hidden pb-20" ref={containerRef}>
+    <div className="relative w-full overflow-y-auto pb-32" ref={containerRef}>
       <svg ref={svgRef} className="absolute top-0 left-0 w-full h-full pointer-events-none z-0" />
 
-      <div className="flex flex-col items-center w-full pt-10 relative z-10 space-y-16">
+      <div className="flex flex-col items-center w-full pt-10 relative z-10 space-y-8">
         {levels.map((level, index) => {
           const isEven = index % 2 === 0;
           const isLocked = level.status === LevelStatus.LOCKED;
