@@ -4,16 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function ThankYouPage() {
+  const DEFAULT_ONBOARDING_TARGET = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=onboarding";
   const [emailInput, setEmailInput] = useState(() => {
     const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
     return params.get("email") || "";
   });
+  const [nextPath, setNextPath] = useState(DEFAULT_ONBOARDING_TARGET);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const email = params.get("email");
+    const next = params.get("next");
     localStorage.setItem("minerverse_paid", "true");
     if (email) localStorage.setItem("minerverse_email", email);
+    if (next) setNextPath(next);
   }, []);
 
   const handleConfirm = () => {
@@ -47,10 +51,7 @@ export default function ThankYouPage() {
             Confirm Access
           </button>
         </div>
-        <Link
-          href="/"
-          className="inline-flex items-center justify-center px-4 py-3 bg-arcade-cyan text-black font-heading rounded shadow hover:scale-105 transition-transform"
-        >
+        <Link href={nextPath} className="inline-flex items-center justify-center px-4 py-3 bg-arcade-cyan text-black font-heading rounded shadow hover:scale-105 transition-transform">
           Continue to Scam Shooter
         </Link>
       </div>

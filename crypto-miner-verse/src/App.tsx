@@ -54,6 +54,20 @@ const App: React.FC = () => {
     localStorage.setItem('minerverse_user', JSON.stringify(user));
   }, [user]);
 
+  // Force onboarding when requested (e.g., from marketing CTA)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const startParam = params.get('start') || params.get('onboarding');
+    const shouldForceOnboarding = startParam === 'onboarding' || startParam === 'true' || startParam === '1';
+    if (shouldForceOnboarding) {
+      localStorage.setItem('minerverse_onboarded', 'false');
+      setOnboarded(false);
+      setOnboardStep(0);
+      setView('ONBOARD');
+    }
+  }, []);
+
   // --- ONBOARDING CONFIG ---
   const onboardingSteps = [
     { id: 'q1', type: 'choice', title: 'Your goal with digital assets', prompt: 'What is your primary goal right now?', options: ['Grow long-term stack', 'Trade short-term swings', 'Learn without losing money', 'Build confidence before investing'] },
