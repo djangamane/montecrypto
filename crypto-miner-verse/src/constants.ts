@@ -8,6 +8,8 @@ export const LEVELS: Level[] = [
     description: "Bitcoin Fundamentals & Context",
     status: LevelStatus.UNLOCKED,
     color: "bg-emerald-500",
+    videoSrc: "/lessons/Lesson_1.mp4",
+    youtubeUrl: "https://youtu.be/B5lfTSMK0Ws",
     lessons: [
       {
         id: "l1-1",
@@ -245,6 +247,8 @@ export const LEVELS: Level[] = [
     description: "Blockchain & Decentralization",
     status: LevelStatus.LOCKED,
     color: "bg-blue-500",
+    videoSrc: "/lessons/Lesson_2.mp4",
+    youtubeUrl: "https://youtu.be/dct6n1UIK2o",
     lessons: [
       {
         id: "l2-1",
@@ -420,10 +424,12 @@ export const LEVELS: Level[] = [
   },
   {
     id: 3,
-    name: "Strategy",
-    description: "Scarcity & Halving",
+    name: "Altcoins Strategy",
+    description: "Utility & Risks",
     status: LevelStatus.LOCKED,
     color: "bg-purple-500",
+    videoSrc: "/lessons/Lesson_3.mp4",
+    youtubeUrl: "https://youtu.be/RpQjOCMiUcQ",
     lessons: [
       {
         id: "l3-1",
@@ -547,10 +553,12 @@ export const LEVELS: Level[] = [
   },
   {
     id: 4,
-    name: "Risk Decoding",
-    description: "AI-Powered Risk Analysis",
+    name: "Risk Simulator",
+    description: "CEX Risk Analysis",
     status: LevelStatus.LOCKED,
     color: "bg-orange-500",
+    videoSrc: "/lessons/Lesson_4.mp4",
+    youtubeUrl: "https://youtu.be/xBxHWzzJ2ww",
     lessons: [
       {
         id: "l4-1",
@@ -598,10 +606,12 @@ export const LEVELS: Level[] = [
   },
   {
     id: 5,
-    name: "Advanced",
-    description: "DeFi & Exchanges",
+    name: "Crypto Exchanges",
+    description: "CEX & DEX",
     status: LevelStatus.LOCKED,
     color: "bg-red-500",
+    videoSrc: "/lessons/Lesson_5.mp4",
+    youtubeUrl: "https://youtu.be/ZSK-v1sZcQM",
     lessons: [
       {
         id: "l5-1",

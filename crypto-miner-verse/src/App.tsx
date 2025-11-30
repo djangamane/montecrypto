@@ -15,10 +15,19 @@ import bgImage from './assets/minerverse_bg.png';
 
 const App: React.FC = () => {
   // --- STATE ---
-  const [view, setView] = useState<'WELCOME' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL' | 'TRADING_SIM' | 'TRAINING' | 'CHAMPIONS'>('WELCOME');
+  const [view, setView] = useState<'WELCOME' | 'ONBOARD' | 'LESSON' | 'MAP' | 'BRIEFING' | 'MINER_GAME' | 'ARCADE_BONUS' | 'RISK_TOOL' | 'TRADING_SIM' | 'TRAINING' | 'CHAMPIONS'>('WELCOME');
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [globalBTC, setGlobalBTC] = useState(0);
+  const [lessonReady, setLessonReady] = useState(false);
+  const [lessonWatched, setLessonWatched] = useState<Record<number, boolean>>(() => {
+    const saved = localStorage.getItem('minerverse_lessons');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [onboardStep, setOnboardStep] = useState(0);
+  const [onboarded, setOnboarded] = useState(() => localStorage.getItem('minerverse_onboarded') === 'true');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [practiceMode, setPracticeMode] = useState(false);
 
   // User Progress with localStorage persistence
   const [user, setUser] = useState<UserProgress>(() => {
@@ -45,6 +54,22 @@ const App: React.FC = () => {
     localStorage.setItem('minerverse_user', JSON.stringify(user));
   }, [user]);
 
+  // --- ONBOARDING CONFIG ---
+  const onboardingSteps = [
+    { id: 'q1', type: 'choice', title: 'Your goal with digital assets', prompt: 'What is your primary goal right now?', options: ['Grow long-term stack', 'Trade short-term swings', 'Learn without losing money', 'Build confidence before investing'] },
+    { id: 'q2', type: 'choice', title: 'Critical skill', prompt: 'Which risk skill do you most urgently want to master?', options: ['Strategy & scarcity (Level 3)', 'Spotting red flags (Level 4)', 'Understanding CEX/DEX (Levels 4-5)'] },
+    { id: 'q3', type: 'multi', title: 'Transformation', prompt: 'What will mastering risk let you achieve?', options: ['Avoid costly mistakes', 'Save time vs research rabbit holes', 'Reduce stress & FUD', 'Feel pro-level confidence'] },
+    { id: 'info1', type: 'info', title: 'Experience first. Hype never.', body: 'We have tracked scams and risk anomalies since 2017. Educators and compliance teams rely on our alerts.' },
+    { id: 'q4', type: 'scale', title: 'Overwhelm check', prompt: 'How overwhelmed are you by scams/volatility?', options: ['1-2 Chill', '3-4 Mild', '5-6 Concerned', '7-8 Stressed', '9-10 Maxed'] },
+    { id: 'q5', type: 'choice', title: 'Time spent', prompt: 'Time you want to spend manually researching each week?', options: ['0-1 hour', '1-3 hours', '3-5 hours', '5+ hours'] },
+    { id: 'q6', type: 'choice', title: 'Tokenomics comfort', prompt: "Do you check tokenomics/max supply (e.g., BTC's 21M) before investing?", options: ['Yes', 'No'] },
+    { id: 'info2', type: 'info', title: 'Your path to mastery', body: 'Linear plan: Foundation → Mechanics → Strategy → Risk Decoding → Simulators. You are 10% on your way to mastering risk assessment.' },
+    { id: 'q7', type: 'choice', title: 'Signal stacking', prompt: 'Do you know how to combine on-chain, off-chain, social, and institutional signals?', options: ['Yes, confident', 'Somewhat', 'No, need guidance'] },
+    { id: 'q8', type: 'choice', title: 'Exchange risk', prompt: 'Which worries you more?', options: ['CEX leverage/liquidations', 'DEX rugs/liquidity traps'] },
+    { id: 'q9', type: 'email', title: 'Secure your plan & discount', prompt: 'Enter your email to lock your personalized plan.', options: [] },
+    { id: 'info3', type: 'info', title: 'Core value', body: 'Structured, handheld curriculum + AI Risk Tool (150 scans/month) + Weekly Scam Watch Newsletter. Experience first, hype never.' },
+  ];
+
   // --- WELCOME SCREEN ---
   const renderWelcome = () => (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden"
@@ -58,8 +83,8 @@ const App: React.FC = () => {
       <div className="max-w-md w-full text-center space-y-8 relative z-10">
         <div className="animate-float">
           <h1 className="text-6xl md:text-8xl font-retro text-transparent bg-clip-text bg-gradient-to-b from-arcade-cyan to-blue-600 drop-shadow-[0_0_15px_rgba(0,255,255,0.5)]">
-            MINER
-            <span className="block text-4xl md:text-6xl text-arcade-pink mt-2">VERSE</span>
+            SCAM
+            <span className="block text-4xl md:text-6xl text-arcade-pink mt-2">SHOOTER</span>
           </h1>
         </div>
 
@@ -67,7 +92,7 @@ const App: React.FC = () => {
           DECODE THE BLOCKCHAIN. MASTER THE MARKET.
         </p>
 
-        <Button fullWidth variant="primary" size="lg" onClick={() => setView('MAP')}>
+        <Button fullWidth variant="primary" size="lg" onClick={() => setView(onboarded ? 'MAP' : 'ONBOARD')}>
           START MISSION <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
 
@@ -98,15 +123,17 @@ const App: React.FC = () => {
   // --- ACTIONS ---
 
   const handleLevelSelect = (level: Level) => {
-    // Find lesson content to show as "Briefing"
-    // For this game loop, we assume 1 main lesson per level for simplicity, 
-    // or we chain them. Let's pick the first uncompleted or just the first one.
     const lesson = level.lessons[0];
-
+    setPracticeMode(false);
     if (lesson) {
       setActiveLevel(level);
       setActiveLesson(lesson);
-      setView('BRIEFING');
+      if (lessonWatched[level.id]) {
+        setView('BRIEFING');
+      } else {
+        setLessonReady(false);
+        setView('LESSON');
+      }
     }
   };
 
@@ -138,6 +165,11 @@ const App: React.FC = () => {
 
   const handleMinerComplete = (success: boolean, score: number) => {
     console.log('🎮 handleMinerComplete called:', { success, score, currentView: view });
+    if (practiceMode) {
+      setPracticeMode(false);
+      setView('TRAINING');
+      return;
+    }
     if (success) {
       // Add score to XP AND Global Wallet
       setUser(prev => ({ ...prev, xp: prev.xp + score }));
@@ -242,7 +274,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="font-retro text-xl text-arcade-cyan tracking-widest cursor-pointer" onClick={() => setView('WELCOME')}>
-            MINER_VERSE
+            SCAM SHOOTER
           </div>
         </div>
       </header>
@@ -265,6 +297,85 @@ const App: React.FC = () => {
               currentLevelId={user.currentLevel}
               onSelectLevel={handleLevelSelect}
             />
+          </div>
+        )}
+
+        {view === 'LESSON' && activeLevel && (
+          <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden"
+            style={{
+              backgroundImage: `url(${bgImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed'
+            }}>
+            <div className="arcade-scanline"></div>
+            <div className="max-w-3xl w-full bg-gray-900/90 border border-arcade-cyan/40 rounded-lg p-4 md:p-6 relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="text-gray-500 font-mono text-xs">LEVEL {activeLevel.id}</div>
+                  <h2 className="text-3xl text-white font-retro">{activeLevel.name} Lesson</h2>
+                </div>
+                <span className="text-xs font-mono text-gray-400">{lessonReady ? 'Ready' : 'Watch to unlock'}</span>
+              </div>
+              <div className="aspect-video w-full bg-black border border-gray-800 mb-4">
+                {activeLevel.videoSrc ? (
+                  <video
+                    key={activeLevel.videoSrc}
+                    controls
+                    className="w-full h-full object-contain"
+                    onEnded={() => {
+                      setLessonReady(true);
+                      setLessonWatched(prev => {
+                        const next = { ...prev, [activeLevel.id]: true };
+                        localStorage.setItem('minerverse_lessons', JSON.stringify(next));
+                        return next;
+                      });
+                    }}
+                    onTimeUpdate={(e) => {
+                      const el = e.currentTarget;
+                      if (!lessonReady && el.duration && el.currentTime / el.duration > 0.9) {
+                        setLessonReady(true);
+                        setLessonWatched(prev => {
+                          const next = { ...prev, [activeLevel.id]: true };
+                          localStorage.setItem('minerverse_lessons', JSON.stringify(next));
+                          return next;
+                        });
+                      }
+                    }}
+                  >
+                    <source src={activeLevel.videoSrc} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">Lesson video missing.</div>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <a
+                  href={activeLevel.youtubeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-arcade-cyan text-sm font-mono underline"
+                >
+                  Watch on YouTube
+                </a>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setView('MAP')}
+                    className="px-4 py-2 text-sm font-mono text-gray-400 hover:text-white"
+                  >
+                    ← Cancel
+                  </button>
+                  <Button
+                    onClick={() => setView('BRIEFING')}
+                    disabled={!lessonReady}
+                    variant="arcade"
+                  >
+                    {lessonReady ? 'Continue to Mission' : 'Watch to Unlock'}
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -352,40 +463,187 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {view === 'ONBOARD' && (
+          <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
+            <div className="arcade-scanline"></div>
+            <div className="max-w-3xl w-full bg-gray-900/90 border border-arcade-cyan/40 p-6 md:p-10 relative z-10 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-retro text-arcade-cyan">Mission Onboarding</h2>
+                <div className="text-sm font-mono text-gray-400">Step {onboardStep + 1} / {onboardingSteps.length}</div>
+              </div>
+              <div className="space-y-4">
+                {(() => {
+                  const step = onboardingSteps[onboardStep];
+                  if (!step) return null;
+                  if (step.type === 'info') {
+                    return (
+                      <div className="space-y-3">
+                        <div className="text-lg text-gray-300 font-retro">{step.title}</div>
+                        <p className="text-gray-400 font-mono text-sm leading-relaxed">{step.body}</p>
+                      </div>
+                    );
+                  }
+                  if (step.type === 'choice' || step.type === 'multi') {
+                    return (
+                      <div className="space-y-3">
+                        <div className="text-lg text-gray-300 font-retro">{step.title}</div>
+                        <p className="text-gray-400 font-mono text-sm">{step.prompt}</p>
+                        <div className="grid grid-cols-1 gap-3">
+                          {step.options.map(opt => {
+                            const selected = answers[step.id] === opt || (answers[step.id]?.includes?.(opt));
+                            return (
+                              <button
+                                key={opt}
+                                onClick={() => setAnswers(prev => ({ ...prev, [step.id]: step.type === 'multi' ? (prev[step.id] ? `${prev[step.id]}, ${opt}` : opt) : opt }))}
+                                className={`text-left px-4 py-3 border rounded transition-all ${selected ? 'border-arcade-cyan text-white bg-black/60' : 'border-gray-700 text-gray-300 hover:border-arcade-cyan'}`}
+                              >
+                                {opt}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (step.type === 'scale') {
+                    return (
+                      <div className="space-y-3">
+                        <div className="text-lg text-gray-300 font-retro">{step.title}</div>
+                        <p className="text-gray-400 font-mono text-sm">{step.prompt}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {step.options.map(opt => {
+                            const selected = answers[step.id] === opt;
+                            return (
+                              <button
+                                key={opt}
+                                onClick={() => setAnswers(prev => ({ ...prev, [step.id]: opt }))}
+                                className={`px-3 py-2 border text-sm font-mono rounded ${selected ? 'border-arcade-pink text-white bg-black/60' : 'border-gray-700 text-gray-300 hover:border-arcade-pink'}`}
+                              >
+                                {opt}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (step.type === 'email') {
+                    return (
+                      <div className="space-y-3">
+                        <div className="text-lg text-gray-300 font-retro">{step.title}</div>
+                        <p className="text-gray-400 font-mono text-sm">{step.prompt}</p>
+                        <input
+                          type="email"
+                          className="w-full bg-black/60 border border-arcade-cyan/50 text-white px-3 py-2 rounded outline-none"
+                          placeholder="you@example.com"
+                          value={answers[step.id] || ''}
+                          onChange={e => setAnswers(prev => ({ ...prev, [step.id]: e.target.value }))}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+              <div className="flex items-center justify-between mt-6">
+                <button
+                  onClick={() => setOnboardStep(s => Math.max(0, s - 1))}
+                  className="text-gray-500 hover:text-white font-mono text-sm"
+                  disabled={onboardStep === 0}
+                >
+                  ← Back
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      if (onboardStep < onboardingSteps.length - 1) {
+                        setOnboardStep(s => s + 1);
+                      } else {
+                        localStorage.setItem('minerverse_onboarded', 'true');
+                        setOnboarded(true);
+                        setView('MAP');
+                      }
+                    }}
+                    className="px-4 py-2 bg-arcade-cyan text-black font-retro rounded shadow hover:scale-105 transition-transform"
+                  >
+                    {onboardStep === onboardingSteps.length - 1 ? 'Continue to Game' : 'Next'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {view === 'TRAINING' && (
-          <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+          <div className="min-h-screen w-full flex flex-col items-center px-4 py-10 pb-28 space-y-6">
             <div className="text-center space-y-2">
               <h2 className="text-4xl font-retro text-arcade-cyan">Mission Training</h2>
               <p className="text-gray-400 font-mono text-sm">Level-by-level video lessons and simulations.</p>
             </div>
-            <div className="grid grid-cols-1 gap-4">
-              {LEVELS.map(level => (
-                <div key={level.id} className="border border-gray-800 bg-black/50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-gray-500 font-mono text-xs">LEVEL {level.id}</div>
-                      <div className="text-white font-retro text-2xl">{level.name}</div>
-                      <p className="text-gray-400 text-sm mt-1">{level.description}</p>
-                    </div>
-                    <Button size="sm" variant="secondary">Watch Lesson</Button>
-                  </div>
+            <div className="max-w-4xl w-full space-y-6">
+              <div className="border border-arcade-yellow/40 bg-black/60 p-4 rounded-lg">
+              <h3 className="text-arcade-yellow font-retro text-xl mb-2">Practice Scam Shooter</h3>
+              <p className="text-gray-400 text-sm mb-3">Run the game without the arcade bonus. Mini quizzes stay on.</p>
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3].map(lid => (
+                    <Button
+                      key={lid}
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        const lvl = LEVELS.find(l => l.id === lid) || null;
+                        if (lvl) {
+                          setPracticeMode(true);
+                          setActiveLevel(lvl);
+                          setActiveLesson(lvl.lessons[0] || null);
+                          setView('MINER_GAME');
+                        }
+                      }}
+                    >
+                      Practice Level {lid}
+                    </Button>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="border border-arcade-cyan/40 bg-black/60 p-4 rounded-lg">
-                <h3 className="text-arcade-cyan font-retro text-xl mb-2">Enter Simulation (CEX)</h3>
-                <p className="text-gray-400 text-sm mb-3">Practice centralized exchange trading with no stakes.</p>
-                <Button fullWidth onClick={() => handleLaunchSim('CEX')}>Launch CEX Simulation</Button>
               </div>
-              <div className="border border-arcade-pink/40 bg-black/60 p-4 rounded-lg">
-                <h3 className="text-arcade-pink font-retro text-xl mb-2">Enter Simulation (DEX)</h3>
-                <p className="text-gray-400 text-sm mb-3">Decentralized swap drills with risk prompts.</p>
-                <Button fullWidth variant="secondary" onClick={() => handleLaunchSim('DEX')}>Launch DEX Simulation</Button>
+
+              <div className="grid grid-cols-1 gap-4">
+                {LEVELS.map(level => (
+                  <div key={level.id} className="border border-gray-800 bg-black/50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-gray-500 font-mono text-xs">LEVEL {level.id}</div>
+                        <div className="text-white font-retro text-2xl">{level.name}</div>
+                        <p className="text-gray-400 text-sm mt-1">{level.description}</p>
+                      </div>
+                      <a
+                        href={level.youtubeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-2 border border-arcade-cyan/50 text-arcade-cyan text-sm font-mono rounded hover:bg-arcade-cyan/10"
+                      >
+                        Watch Lesson
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="text-center">
-              <button onClick={() => setView('WELCOME')} className="text-gray-500 hover:text-white font-mono text-xs uppercase">← Back to Welcome</button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border border-arcade-cyan/40 bg-black/60 p-4 rounded-lg">
+                  <h3 className="text-arcade-cyan font-retro text-xl mb-2">Enter Simulation (CEX)</h3>
+                  <p className="text-gray-400 text-sm mb-3">Practice centralized exchange trading with no stakes.</p>
+                  <Button fullWidth onClick={() => handleLaunchSim('CEX')}>Launch CEX Simulation</Button>
+                </div>
+                <div className="border border-arcade-pink/40 bg-black/60 p-4 rounded-lg">
+                  <h3 className="text-arcade-pink font-retro text-xl mb-2">Enter Simulation (DEX)</h3>
+                  <p className="text-gray-400 text-sm mb-3">Decentralized swap drills with risk prompts.</p>
+                  <Button fullWidth variant="secondary" onClick={() => handleLaunchSim('DEX')}>Launch DEX Simulation</Button>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button onClick={() => setView('WELCOME')} className="text-gray-500 hover:text-white font-mono text-xs uppercase">← Back to Welcome</button>
+              </div>
             </div>
           </div>
         )}

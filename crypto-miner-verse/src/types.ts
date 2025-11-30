@@ -36,6 +36,8 @@ export interface Level {
   status: LevelStatus;
   lessons: Lesson[];
   color: string;
+  videoSrc?: string;
+  youtubeUrl?: string;
 }
 
 export interface UserProgress {

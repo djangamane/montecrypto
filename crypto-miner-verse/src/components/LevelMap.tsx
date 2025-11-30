@@ -26,27 +26,6 @@ const LevelMap: React.FC<LevelMapProps> = ({ levels, currentLevelId, onSelectLev
 
     svg.attr("width", width).attr("height", height);
 
-    // Draw Path
-    const pathData = levels.map((_, i) => {
-      const x = i % 2 === 0 ? width * 0.3 : width * 0.7; // Zigzag
-      const y = i * nodeHeight + 80;
-      return { x, y };
-    });
-
-    const lineGenerator = d3.line<{ x: number, y: number }>()
-      .x(d => d.x)
-      .y(d => d.y)
-      .curve(d3.curveCatmullRom.alpha(0.5));
-
-    svg.append("path")
-      .datum(pathData)
-      .attr("d", lineGenerator)
-      .attr("fill", "none")
-      .attr("stroke", "#4b5563") // Gray-600
-      .attr("stroke-width", 8)
-      .attr("stroke-dasharray", "16 8")
-      .attr("stroke-linecap", "round");
-
   }, [levels]);
 
   return (
@@ -63,7 +42,7 @@ const LevelMap: React.FC<LevelMapProps> = ({ levels, currentLevelId, onSelectLev
           return (
             <div
               key={level.id}
-              className={`flex w-full ${isEven ? 'justify-start pl-[20%]' : 'justify-end pr-[20%]'} transition-transform duration-500`}
+              className={`flex w-full ${isEven ? 'justify-start pl-[32%]' : 'justify-end pr-[32%]'} transition-transform duration-500`}
             >
               <div className="flex flex-col items-center transform hover:scale-105 transition-transform duration-200 cursor-pointer"
                 onClick={() => !isLocked && onSelectLevel(level)}>

@@ -511,6 +511,12 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                      <p>&gt; THREAT: SCAM CLOUDS DETECTED</p>
                      <p>&gt; PROTOCOL: MINE NODES. DEFEND INTEGRITY.</p>
                      <p>&gt; WARNING: INCORRECT ANSWERS INCREASE RISK LEVEL.</p>
+                     <div className="mt-3 text-white text-sm">
+                        <div className="font-bold text-arcade-cyan mb-1">Controls</div>
+                        <p>Move: Arrow Keys / WASD</p>
+                        <p>Shoot: Spacebar</p>
+                        {levelId >= 3 && <p>Freeze Blast: F (3 charges)</p>}
+                     </div>
                   </div>
                   <Button variant="arcade" onClick={initGame} size="lg">START MISSION</Button>
                   <button onClick={() => onExit(false, 0)} className="block w-full mt-4 text-gray-500 hover:text-white">ABORT MISSION</button>
