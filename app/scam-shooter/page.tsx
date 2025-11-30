@@ -35,7 +35,7 @@ export default function ScamShooterPage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/onboard"
+                href="/"
                 className="inline-flex items-center px-5 py-3 bg-arcade-cyan text-black font-heading rounded shadow hover:scale-105 transition-transform"
               >
                 Enter Game <ArrowRight className="ml-2 w-5 h-5" />
