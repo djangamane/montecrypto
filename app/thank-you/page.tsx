@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export default function ThankYouPage() {
-  const DEFAULT_ONBOARDING_TARGET = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=onboarding";
+  const DEFAULT_ONBOARDING_TARGET = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=menu";
   const [emailInput, setEmailInput] = useState(() => {
     const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
     return params.get("email") || "";

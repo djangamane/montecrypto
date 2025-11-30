@@ -28,6 +28,10 @@ const App: React.FC = () => {
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem('minerverse_onboarded') === 'true');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [practiceMode, setPracticeMode] = useState(false);
+  const [isPaid, setIsPaid] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('minerverse_paid') === 'true';
+  });
 
   // User Progress with localStorage persistence
   const [user, setUser] = useState<UserProgress>(() => {
@@ -54,19 +58,47 @@ const App: React.FC = () => {
     localStorage.setItem('minerverse_user', JSON.stringify(user));
   }, [user]);
 
+  // Track paid status from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const paidFlag = localStorage.getItem('minerverse_paid') === 'true';
+    setIsPaid(paidFlag);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === 'minerverse_paid') {
+        setIsPaid(event.newValue === 'true');
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   // Force onboarding when requested (e.g., from marketing CTA)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const startParam = params.get('start') || params.get('onboarding');
+    const startParam = (params.get('start') || params.get('onboarding') || '').toLowerCase();
     const shouldForceOnboarding = startParam === 'onboarding' || startParam === 'true' || startParam === '1';
     if (shouldForceOnboarding) {
       localStorage.setItem('minerverse_onboarded', 'false');
       setOnboarded(false);
       setOnboardStep(0);
       setView('ONBOARD');
+      return;
+    }
+    if (startParam === 'menu' || startParam === 'home' || startParam === 'welcome') {
+      setView('WELCOME');
+    }
+    if (startParam === 'map') {
+      setView('MAP');
     }
   }, []);
+
+  // Keep paid-only views locked
+  useEffect(() => {
+    if (!isPaid && (view === 'TRAINING' || view === 'CHAMPIONS')) {
+      setView('WELCOME');
+    }
+  }, [isPaid, view]);
 
   // --- ONBOARDING CONFIG ---
   const onboardingSteps = [
@@ -112,18 +144,36 @@ const App: React.FC = () => {
 
         <div className="grid grid-cols-1 gap-3 text-left">
           <button
-            onClick={() => setView('TRAINING')}
-            className="w-full px-4 py-3 bg-black/60 border border-arcade-cyan/50 hover:border-arcade-cyan text-white font-mono text-sm rounded transition-all"
+            onClick={() => {
+              if (!isPaid) return;
+              setView('TRAINING');
+            }}
+            disabled={!isPaid}
+            className={`w-full px-4 py-3 bg-black/60 border text-white font-mono text-sm rounded transition-all ${isPaid ? 'border-arcade-cyan/50 hover:border-arcade-cyan' : 'border-gray-700 cursor-not-allowed opacity-60'}`}
           >
-            <div className="text-arcade-cyan font-bold text-lg">Mission Training</div>
-            <div className="text-gray-400 text-xs mt-1">Study zone: video lessons & level briefings</div>
+            <div className="text-arcade-cyan font-bold text-lg flex items-center gap-2">
+              Mission Training
+              {!isPaid && <span className="text-xs text-gray-400 font-mono uppercase tracking-wide">Locked</span>}
+            </div>
+            <div className="text-gray-400 text-xs mt-1">
+              {isPaid ? 'Study zone: video lessons & level briefings' : 'Unlock with purchase to access training'}
+            </div>
           </button>
           <button
-            onClick={() => setView('CHAMPIONS')}
-            className="w-full px-4 py-3 bg-black/60 border border-arcade-pink/50 hover:border-arcade-pink text-white font-mono text-sm rounded transition-all"
+            onClick={() => {
+              if (!isPaid) return;
+              setView('CHAMPIONS');
+            }}
+            disabled={!isPaid}
+            className={`w-full px-4 py-3 bg-black/60 border text-white font-mono text-sm rounded transition-all ${isPaid ? 'border-arcade-pink/50 hover:border-arcade-pink' : 'border-gray-700 cursor-not-allowed opacity-60'}`}
           >
-            <div className="text-arcade-pink font-bold text-lg">Crypto Champions</div>
-            <div className="text-gray-400 text-xs mt-1">Hall of fame: top scores & wallets</div>
+            <div className="text-arcade-pink font-bold text-lg flex items-center gap-2">
+              Crypto Champions
+              {!isPaid && <span className="text-xs text-gray-400 font-mono uppercase tracking-wide">Locked</span>}
+            </div>
+            <div className="text-gray-400 text-xs mt-1">
+              {isPaid ? 'Hall of fame: top scores & wallets' : 'Unlock with purchase to view the leaderboard'}
+            </div>
           </button>
         </div>
 

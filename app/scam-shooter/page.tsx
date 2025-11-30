@@ -23,7 +23,7 @@ const rewards = [
   "Retro achievements and XP to track your streak",
 ];
 
-const onboardingTarget = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=onboarding";
+const onboardingTarget = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=menu";
 const onboardingHref: { pathname: "/thank-you"; query: { next: string } } = {
   pathname: "/thank-you",
   query: { next: onboardingTarget },
