@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { LinkProps } from "next/link";
 import { ArrowRight, Gamepad2, Shield, Sparkles, Target, Zap } from "lucide-react";
 
 const plans = [
@@ -25,10 +24,10 @@ const rewards = [
 ];
 
 const onboardingTarget = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=onboarding";
-const onboardingHref = {
+const onboardingHref: { pathname: "/thank-you"; query: { next: string } } = {
   pathname: "/thank-you",
   query: { next: onboardingTarget },
-} satisfies LinkProps["href"];
+};
 
 export default function ScamShooterPage() {
   return (
