@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 export default function ThankYouPage() {
   const DEFAULT_ONBOARDING_TARGET = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=onboarding";
@@ -51,9 +50,12 @@ export default function ThankYouPage() {
             Confirm Access
           </button>
         </div>
-        <Link href={nextPath} className="inline-flex items-center justify-center px-4 py-3 bg-arcade-cyan text-black font-heading rounded shadow hover:scale-105 transition-transform">
+        <a
+          href={nextPath}
+          className="inline-flex items-center justify-center px-4 py-3 bg-arcade-cyan text-black font-heading rounded shadow hover:scale-105 transition-transform"
+        >
           Continue to Scam Shooter
-        </Link>
+        </a>
       </div>
     </div>
   );
