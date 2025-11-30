@@ -11,7 +11,7 @@ const plans = [
 
 export default function ScamShooterPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-[#0a0f1f] to-black text-white">
       <header className="w-full flex items-center justify-between px-6 py-4 bg-gray-900/80 backdrop-blur border-b border-gray-800">
         <div className="font-heading text-xl tracking-widest flex items-center gap-2 text-arcade-cyan">
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-arcade-pink text-black text-xs font-bold">
@@ -35,10 +35,10 @@ export default function ScamShooterPage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/"
+                href="/thank-you"
                 className="inline-flex items-center px-5 py-3 bg-arcade-cyan text-black font-heading rounded shadow hover:scale-105 transition-transform"
               >
-                Enter Game <ArrowRight className="ml-2 w-5 h-5" />
+                Play Now! <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
               <a
                 href="#pricing"
@@ -48,14 +48,25 @@ export default function ScamShooterPage() {
               </a>
             </div>
           </div>
-          <div className="w-full h-full">
-            <Image
-              src="/scam_shooter1.png"
-              alt="Scam Shooter"
-              width={800}
-              height={600}
-              className="w-full rounded-lg border border-gray-800 shadow-xl"
-            />
+          <div className="w-full h-full space-y-4">
+            <div className="w-full h-full rounded-lg border border-arcade-pink/60 shadow-[0_0_30px_rgba(255,0,128,0.25)] overflow-hidden">
+              <Image
+                src="/scam_shooter1.png"
+                alt="Scam Shooter"
+                width={800}
+                height={600}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="w-full rounded-lg border border-arcade-cyan/40 bg-gradient-to-r from-[#0f172a] to-[#0b1130] p-4 shadow-[0_0_25px_rgba(0,255,255,0.18)] flex items-center justify-between">
+              <div>
+                <div className="text-arcade-cyan font-heading text-lg">Gameplay Preview</div>
+                <p className="text-gray-400 font-mono text-xs">Arcade chaos, neon blasts, and scam hunters in action.</p>
+              </div>
+              <div className="w-24 h-16 bg-arcade-pink/20 border border-arcade-pink/40 rounded flex items-center justify-center text-arcade-pink font-heading text-xs">
+                Coming Soon
+              </div>
+            </div>
           </div>
         </section>
 
