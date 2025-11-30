@@ -34,14 +34,14 @@ export function Header({ onBookNowClick, session, isSessionLoading }) {
             About
           </a>
         </nav>
-        <button
-          type="button"
-          onClick={onBookNowClick}
+        <a
+          href="/scam-shooter"
           className="hidden items-center gap-2 rounded-xl bg-brand-accent px-4 py-2 text-sm font-semibold text-brand-text shadow md:flex"
         >
-          <span>Book Premium Coaching</span>
+          <img src="/sprite_enemy1.png" alt="Scam Blob" className="h-5 w-5" />
+          <span>Play Scam Shooter!</span>
           <ArrowRight className="h-4 w-4" />
-        </button>
+        </a>
       </div>
       <HeaderAuthBar session={session} isLoading={isSessionLoading} />
     </header>

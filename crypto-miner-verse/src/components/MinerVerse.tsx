@@ -81,6 +81,10 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
    // Assets
    const bgImageRef = useRef<HTMLImageElement | null>(null);
+   const playerImgRef = useRef<HTMLImageElement | null>(null);
+   const enemyImgRef = useRef<HTMLImageElement | null>(null);
+   const coinImgRef = useRef<HTMLImageElement | null>(null);
+   const projImgRef = useRef<HTMLImageElement | null>(null);
 
    // Mutable Game State
    const player = useRef<Player>({ x: 400, y: 300, width: 32, height: 32, angle: 0, ammo: AMMO_MAX, score: 0 });
@@ -99,6 +103,17 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
       bg.src = typeof cyberSpaceBg === 'string' ? cyberSpaceBg : cyberSpaceBg.src;
       bg.onload = () => console.log('Background loaded');
       bgImageRef.current = bg;
+
+      const loadImg = (src: string, ref: React.MutableRefObject<HTMLImageElement | null>) => {
+         const img = new Image();
+         img.src = src;
+         ref.current = img;
+      };
+
+      loadImg('/assets/sprite_player1.png', playerImgRef);
+      loadImg('/assets/sprite_enemy1.png', enemyImgRef);
+      loadImg('/assets/sprite_btc.png', coinImgRef);
+      loadImg('/assets/sprite_projectile.png', projImgRef);
 
       // Handle window resize
       const handleResize = () => {
@@ -253,16 +268,6 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          animationFrameId.current = requestAnimationFrame(update);
       };
 
-      const drawPixelSprite = (ctx: CanvasRenderingContext2D, pattern: number[][], x: number, y: number, color1: string, color2: string) => {
-         pattern.forEach((row, r) => {
-            row.forEach((pixel, c) => {
-               if (pixel === 0) return;
-               ctx.fillStyle = pixel === 1 ? color1 : color2;
-               ctx.fillRect(x + (c * SPRITE_SCALE), y + (r * SPRITE_SCALE), SPRITE_SCALE, SPRITE_SCALE);
-            });
-         });
-      };
-
       const draw = (ctx: CanvasRenderingContext2D, isMining: boolean) => {
          // Clear / Background
          if (bgImageRef.current) {
@@ -302,7 +307,14 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
             }
 
             // Draw Coin Sprite
-            drawPixelSprite(ctx, COIN_SPRITE, node.x, node.y, '#facc15', '#b45309');
+            if (coinImgRef.current) {
+               ctx.drawImage(coinImgRef.current, node.x, node.y, 32, 32);
+            } else {
+               ctx.fillStyle = '#facc15';
+               ctx.beginPath();
+               ctx.arc(node.x + 16, node.y + 16, 16, 0, Math.PI * 2);
+               ctx.fill();
+            }
 
             // Label
             ctx.fillStyle = 'white';
@@ -329,7 +341,12 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          // Draw Player Sprite (Centered)
          // Undo translate to draw sprite at absolute position relative to player center
          ctx.translate(-16, -16);
-         drawPixelSprite(ctx, PLAYER_SPRITE, 0, 0, '#3b82f6', '#60a5fa');
+         if (playerImgRef.current) {
+            ctx.drawImage(playerImgRef.current, 0, 0, 32, 32);
+         } else {
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(0, 0, 32, 32);
+         }
 
          ctx.restore();
 
@@ -337,8 +354,12 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          enemies.current.forEach(enemy => {
             // Draw Enemy Sprite - Blue if Frozen
             const c1 = isFrozen ? '#67e8f9' : '#ef4444';
-            const c2 = isFrozen ? '#0e7490' : '#7f1d1d';
-            drawPixelSprite(ctx, ENEMY_SPRITE, enemy.x, enemy.y, c1, c2);
+            if (enemyImgRef.current) {
+               ctx.drawImage(enemyImgRef.current, enemy.x, enemy.y, 32, 32);
+            } else {
+               ctx.fillStyle = c1;
+               ctx.fillRect(enemy.x, enemy.y, 32, 32);
+            }
 
             ctx.fillStyle = c1;
             ctx.font = 'bold 10px monospace';
@@ -346,13 +367,14 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
          });
 
          // Projectiles
-         ctx.fillStyle = '#00ffff';
-         ctx.shadowColor = '#00ffff';
-         ctx.shadowBlur = 5;
          projectiles.current.forEach(proj => {
-            ctx.fillRect(proj.x, proj.y, 8, 8);
+            if (projImgRef.current) {
+               ctx.drawImage(projImgRef.current, proj.x, proj.y, 16, 16);
+            } else {
+               ctx.fillStyle = '#00ffff';
+               ctx.fillRect(proj.x, proj.y, 8, 8);
+            }
          });
-         ctx.shadowBlur = 0;
 
          // HUD
          ctx.fillStyle = 'white';
