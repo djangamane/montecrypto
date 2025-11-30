@@ -20,7 +20,7 @@ export default function ScamShooterPage() {
           SCAM SHOOTER
         </div>
         <div className="flex gap-3 text-sm font-mono">
-          <Link href="/signin" className="text-gray-300 hover:text-white">Log In</Link>
+          <Link href="/" className="text-gray-300 hover:text-white">Log In</Link>
           <Link href="/" className="text-gray-300 hover:text-white">Back</Link>
         </div>
       </header>
