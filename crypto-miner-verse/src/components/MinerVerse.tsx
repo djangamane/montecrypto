@@ -112,7 +112,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
       loadImg('/assets/sprite_player1.png', playerImgRef);
       loadImg('/assets/sprite_enemy1.png', enemyImgRef);
-      loadImg('/assets/sprite_btc.png', coinImgRef);
+      loadImg('/assets/sprite_btc22.png', coinImgRef);
       loadImg('/assets/sprite_projectile.png', projImgRef);
 
       // Handle window resize
