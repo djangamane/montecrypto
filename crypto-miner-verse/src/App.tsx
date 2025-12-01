@@ -135,7 +135,7 @@ const App: React.FC = () => {
     { id: 'q1', type: 'choice', title: 'Your goal with digital assets', prompt: 'What is your primary goal right now?', options: ['Grow long-term stack', 'Trade short-term swings', 'Learn without losing money', 'Build confidence before investing'] },
     { id: 'q2', type: 'choice', title: 'Critical skill', prompt: 'Which risk skill do you most urgently want to master?', options: ['Strategy & scarcity (Level 3)', 'Spotting red flags (Level 4)', 'Understanding CEX/DEX (Levels 4-5)'] },
     { id: 'q3', type: 'multi', title: 'Transformation', prompt: 'What will mastering risk let you achieve?', options: ['Avoid costly mistakes', 'Save time vs research rabbit holes', 'Reduce stress & FUD', 'Feel pro-level confidence'] },
-    { id: 'info1', type: 'info', title: 'Experience first. Hype never.', body: 'We have tracked scams and risk anomalies since 2017. Educators and compliance teams rely on our alerts.' },
+    { id: 'info1', type: 'info', title: 'Experience first. Hype never.', body: 'We have tracked scams and risk anomalies since 2017. Visit our YouTube channel for legacy walkthroughs that show our commitment to proper crypto education: https://www.youtube.com/@aicryptorisk' },
     { id: 'q4', type: 'scale', title: 'Overwhelm check', prompt: 'How overwhelmed are you by scams/volatility?', options: ['1-2 Chill', '3-4 Mild', '5-6 Concerned', '7-8 Stressed', '9-10 Maxed'] },
     { id: 'q5', type: 'choice', title: 'Time spent', prompt: 'Time you want to spend manually researching each week?', options: ['0-1 hour', '1-3 hours', '3-5 hours', '5+ hours'] },
     { id: 'q6', type: 'choice', title: 'Tokenomics comfort', prompt: "Do you check tokenomics/max supply (e.g., BTC's 21M) before investing?", options: ['Yes', 'No'] },
@@ -815,7 +815,7 @@ const App: React.FC = () => {
             </div>
             <div className="mt-4 text-xs text-gray-400 font-mono space-y-1">
               <p>Already paid? Complete checkout and you&apos;ll be redirected to set access.</p>
-              <p>Need help? Ping support@aicryptorisk.com with your receipt.</p>
+              <p>Need help? Ping jason@aicryptorisk.com with your receipt.</p>
             </div>
           </div>
         </div>
