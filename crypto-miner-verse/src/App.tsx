@@ -93,18 +93,21 @@ const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const startParam = (params.get('start') || params.get('onboarding') || '').toLowerCase();
     const paidParam = (params.get('paid') || '').toLowerCase();
+    let paidFlag = localStorage.getItem('minerverse_paid') === 'true';
 
     if (paidParam === 'true') {
       localStorage.setItem('minerverse_paid', 'true');
       setIsPaid(true);
-    } else if (startParam && !paidParam) {
+      paidFlag = true;
+    } else if (paidParam === 'false') {
       localStorage.setItem('minerverse_paid', 'false');
       setIsPaid(false);
       setOnboarded(false);
+      paidFlag = false;
     }
 
     const shouldForceOnboarding = startParam === 'onboarding' || startParam === 'true' || startParam === '1' || startParam === 'menu';
-    if (shouldForceOnboarding || !isPaid) {
+    if (shouldForceOnboarding || !paidFlag) {
       localStorage.setItem('minerverse_onboarded', 'false');
       setOnboarded(false);
       setOnboardStep(0);
