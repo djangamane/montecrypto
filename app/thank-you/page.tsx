@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ThankYouPage() {
@@ -44,6 +44,29 @@ export default function ThankYouPage() {
     return null;
   }
 
+  return (
+    <Suspense fallback={null}>
+      <ThankYouContent
+        emailInput={emailInput}
+        setEmailInput={setEmailInput}
+        handleConfirm={handleConfirm}
+        nextPath={nextPath}
+      />
+    </Suspense>
+  );
+}
+
+function ThankYouContent({
+  emailInput,
+  setEmailInput,
+  handleConfirm,
+  nextPath,
+}: {
+  emailInput: string;
+  setEmailInput: (val: string) => void;
+  handleConfirm: () => void;
+  nextPath: string;
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-6 text-center text-white">
       <div className="max-w-lg w-full space-y-6 bg-gray-900/80 border border-arcade-cyan/40 p-6 rounded-lg shadow-lg">
