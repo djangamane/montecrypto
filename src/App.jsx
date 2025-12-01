@@ -5,6 +5,7 @@ import { Header } from "./components/Header.jsx";
 import { Hero } from "./components/Hero.jsx";
 import { VideoSection } from "./components/VideoSection.jsx";
 import { PremiumCourse } from "./components/PremiumCourse.jsx";
+import { ScamShooterVideo } from "./components/ScamShooterVideo.jsx";
 import { Benefits } from "./components/Benefits.jsx";
 import { Footer } from "./components/Footer.jsx";
 import { BookingModal } from "./components/BookingModal.jsx";
@@ -55,6 +56,8 @@ function App() {
 
       <main>
         <Hero onRunRiskCheck={scrollToRisk} onStartCourse={scrollToCourse} />
+
+        <ScamShooterVideo />
 
         <VideoSection ref={courseSectionRef} />
 
