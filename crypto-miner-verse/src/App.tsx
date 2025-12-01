@@ -32,6 +32,12 @@ const App: React.FC = () => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('minerverse_paid') === 'true';
   });
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const stripeCheckoutLinks = {
+    monthly: 'https://buy.stripe.com/7sY00k7HN7xA4mU4ffcIE05',
+    lifetime: 'https://buy.stripe.com/8x228sd276twcTqcLLcIE06'
+  };
 
   // User Progress with localStorage persistence
   const [user, setUser] = useState<UserProgress>(() => {
@@ -97,6 +103,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!isPaid && (view === 'TRAINING' || view === 'CHAMPIONS')) {
       setView('WELCOME');
+      setShowPaywall(true);
     }
   }, [isPaid, view]);
 
@@ -145,11 +152,13 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 gap-3 text-left">
           <button
             onClick={() => {
-              if (!isPaid) return;
+              if (!isPaid) {
+                setShowPaywall(true);
+                return;
+              }
               setView('TRAINING');
             }}
-            disabled={!isPaid}
-            className={`w-full px-4 py-3 bg-black/60 border text-white font-mono text-sm rounded transition-all ${isPaid ? 'border-arcade-cyan/50 hover:border-arcade-cyan' : 'border-gray-700 cursor-not-allowed opacity-60'}`}
+            className={`w-full px-4 py-3 bg-black/60 border text-white font-mono text-sm rounded transition-all ${isPaid ? 'border-arcade-cyan/50 hover:border-arcade-cyan' : 'border-gray-700 cursor-pointer opacity-80'}`}
           >
             <div className="text-arcade-cyan font-bold text-lg flex items-center gap-2">
               Mission Training
@@ -161,11 +170,13 @@ const App: React.FC = () => {
           </button>
           <button
             onClick={() => {
-              if (!isPaid) return;
+              if (!isPaid) {
+                setShowPaywall(true);
+                return;
+              }
               setView('CHAMPIONS');
             }}
-            disabled={!isPaid}
-            className={`w-full px-4 py-3 bg-black/60 border text-white font-mono text-sm rounded transition-all ${isPaid ? 'border-arcade-pink/50 hover:border-arcade-pink' : 'border-gray-700 cursor-not-allowed opacity-60'}`}
+            className={`w-full px-4 py-3 bg-black/60 border text-white font-mono text-sm rounded transition-all ${isPaid ? 'border-arcade-pink/50 hover:border-arcade-pink' : 'border-gray-700 cursor-pointer opacity-80'}`}
           >
             <div className="text-arcade-pink font-bold text-lg flex items-center gap-2">
               Crypto Champions
@@ -743,6 +754,45 @@ const App: React.FC = () => {
         )}
 
       </main>
+
+      {showPaywall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4">
+          <div className="relative w-full max-w-md rounded-2xl border border-arcade-cyan/40 bg-gray-900/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+            <button
+              onClick={() => setShowPaywall(false)}
+              className="absolute right-3 top-3 text-gray-500 hover:text-white font-mono text-sm"
+              aria-label="Close paywall"
+            >
+              ✕
+            </button>
+            <div className="space-y-2">
+              <div className="text-xs font-mono uppercase tracking-[0.25em] text-arcade-cyan">Access Locked</div>
+              <h3 className="text-2xl font-retro text-white">Unlock Scam Shooter</h3>
+              <p className="text-sm text-gray-300 font-mono">
+                Choose a plan to unlock Mission Training, Crypto Champions, and the full arcade loop.
+              </p>
+            </div>
+            <div className="mt-6 space-y-3">
+              <a
+                href={stripeCheckoutLinks.monthly}
+                className="block w-full rounded-lg bg-gradient-to-r from-arcade-pink via-arcade-yellow to-arcade-cyan px-4 py-3 text-center font-retro text-black shadow-[0_10px_35px_rgba(24,224,255,0.35)] hover:scale-[1.01] transition-transform"
+              >
+                Buy Monthly – $19.99
+              </a>
+              <a
+                href={stripeCheckoutLinks.lifetime}
+                className="block w-full rounded-lg border border-arcade-cyan/50 bg-black/60 px-4 py-3 text-center font-retro text-arcade-cyan hover:bg-arcade-cyan/10 transition-colors"
+              >
+                Buy Lifetime – $299
+              </a>
+            </div>
+            <div className="mt-4 text-xs text-gray-400 font-mono space-y-1">
+              <p>Already paid? Complete checkout and you&apos;ll be redirected to set access.</p>
+              <p>Need help? Ping support@aicryptorisk.com with your receipt.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ARCADE BONUS - Use portal to render directly to body */}
       {view === 'ARCADE_BONUS' && ReactDOM.createPortal(

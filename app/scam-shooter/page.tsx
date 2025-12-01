@@ -23,11 +23,7 @@ const rewards = [
   "Retro achievements and XP to track your streak",
 ];
 
-const onboardingTarget = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=menu";
-const onboardingHref: { pathname: "/thank-you"; query: { next: string } } = {
-  pathname: "/thank-you",
-  query: { next: onboardingTarget },
-};
+const gameMenuHref = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=menu";
 
 export default function ScamShooterPage() {
   return (
@@ -71,18 +67,18 @@ export default function ScamShooterPage() {
               Scam Shooter blends mandatory lesson videos with arcade-style gameplay. Watch the briefing, clear the mission with in-game quizzes, then hit the neon bonus round to stress-test your instincts.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href={onboardingHref}
+              <a
+                href={gameMenuHref}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-arcade-pink via-arcade-yellow to-arcade-cyan text-black font-heading tracking-wider shadow-[0_12px_45px_rgba(24,224,255,0.35)] hover:scale-105 transition-transform"
               >
                 Play Scam Shooter Now!
                 <ArrowRight className="w-5 h-5" />
-              </Link>
+              </a>
               <a
-                href="#experience"
+                href={gameMenuHref}
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-arcade-cyan/50 bg-white/5 text-arcade-cyan font-heading tracking-wide hover:bg-arcade-cyan/10 transition-colors"
               >
-                Mission Brief
+                Play Scam Shooter Now!
               </a>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm font-mono">
@@ -149,13 +145,13 @@ export default function ScamShooterPage() {
                 <h2 className="text-2xl font-heading text-arcade-cyan">Choose your cartridge</h2>
                 <p className="text-gray-300 font-mono text-sm">Pick a plan to unlock Scam Shooter and the full curriculum.</p>
               </div>
-              <Link
-                href={onboardingHref}
+              <a
+                href={gameMenuHref}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-arcade-pink/60 bg-arcade-pink/15 text-arcade-pink font-heading tracking-wide hover:bg-arcade-pink/25 transition-colors"
               >
-                Jump to Onboarding
+                Play Scam Shooter Now!
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </a>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {plans.map((plan) => (
