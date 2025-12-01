@@ -104,6 +104,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
             audioCtxRef.current = new Ctx();
          }
          const ctx = audioCtxRef.current;
+         if (!ctx) return;
          const osc = ctx.createOscillator();
          const gain = ctx.createGain();
          osc.frequency.value = frequency;
