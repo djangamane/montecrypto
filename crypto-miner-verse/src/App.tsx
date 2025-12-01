@@ -11,7 +11,7 @@ import TradingSimulator from './components/TradingSimulator/App'; // Import Simu
 import Button from './components/ui/Button';
 import { Flame, Star, Terminal, ArrowRight } from 'lucide-react';
 
-import bgImage from './assets/minerverse_bg.png';
+const BG_IMAGE = "/assets/minerverse_bg.png";
 
 const App: React.FC = () => {
   // --- STATE ---
@@ -83,6 +83,16 @@ const App: React.FC = () => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const startParam = (params.get('start') || params.get('onboarding') || '').toLowerCase();
+    const paidParam = (params.get('paid') || '').toLowerCase();
+
+    if (paidParam === 'true') {
+      localStorage.setItem('minerverse_paid', 'true');
+      setIsPaid(true);
+    } else if (startParam && !paidParam) {
+      localStorage.setItem('minerverse_paid', 'false');
+      setIsPaid(false);
+    }
+
     const shouldForceOnboarding = startParam === 'onboarding' || startParam === 'true' || startParam === '1';
     if (shouldForceOnboarding) {
       localStorage.setItem('minerverse_onboarded', 'false');
@@ -127,7 +137,7 @@ const App: React.FC = () => {
   const renderWelcome = () => (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden"
       style={{
-        backgroundImage: `url(${bgImage})`,
+        backgroundImage: `url(${BG_IMAGE})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}>
@@ -329,7 +339,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen text-gray-100 font-sans selection:bg-brand-500 selection:text-white flex flex-col"
       style={{
-        backgroundImage: `url(${bgImage})`,
+        backgroundImage: `url(${BG_IMAGE})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
