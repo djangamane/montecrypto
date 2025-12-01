@@ -1,12 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
-// Initialize Gemini Client (supports both Vite and Next builds)
-const apiKey =
-  (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_GEMINI_API_KEY) ||
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_GEMINI_API_KEY) ||
-  '';
+// Initialize Gemini Client (Next build friendly)
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
 
 export const analyzeCryptoRisk = async (scenario: string): Promise<AnalysisResult> => {

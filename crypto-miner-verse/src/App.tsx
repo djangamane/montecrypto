@@ -388,7 +388,7 @@ const App: React.FC = () => {
         {view === 'LESSON' && activeLevel && (
           <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden"
             style={{
-              backgroundImage: `url(${bgImage})`,
+              backgroundImage: `url(${BG_IMAGE})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundAttachment: 'fixed'
