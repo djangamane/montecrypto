@@ -1,5 +1,3 @@
-import spritePlayer from "../assets/sprite_player1.png";
-
 export function ScamShooterVideo() {
   return (
     <section className="px-6 py-16">
@@ -15,7 +13,7 @@ export function ScamShooterVideo() {
             Simplify complex crypto lessons into a fun, playable game. Watch the demo to see how lessons and missions blend together.
           </p>
           <div className="flex items-center gap-3 text-sm text-brand-muted">
-            <img src={spritePlayer} alt="Scam Shooter hero" className="h-10 w-10" />
+            <img src="/assets/sprite_player1.png" alt="Scam Shooter hero" className="h-10 w-10" />
             <span>Scam Shooter arcade + lesson flow preview</span>
           </div>
         </div>
