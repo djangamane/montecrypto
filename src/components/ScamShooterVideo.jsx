@@ -18,7 +18,7 @@ export function ScamShooterVideo() {
           </div>
         </div>
         <div className="rounded-2xl overflow-hidden border border-brand-muted/40 shadow-lg">
-          <div className="aspect-video w-full min-h-[360px] md:min-h-[420px]">
+          <div className="w-full min-h-[380px] md:min-h-[520px]">
             <iframe
               className="h-full w-full"
               src="https://www.youtube.com/embed/gfQsXYE86HU"
