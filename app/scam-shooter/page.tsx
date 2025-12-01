@@ -12,7 +12,6 @@ const plans = [
 const highlights = [
   { title: "Mandatory Briefing", body: "Onboarding drops you into the lesson-first briefing before any mission starts.", icon: Shield },
   { title: "Arcade Bonus", body: "Finish the mission, then smash the neon bonus round for extra XP and streaks.", icon: Gamepad2 },
-  { title: "Live Scam Radar", body: "Gameplay pulls real red-flag patterns so every wave feels ripped from the headlines.", icon: Sparkles },
   { title: "Risk Power-Ups", body: "CEX and DEX drills baked into the loop to harden your instincts under pressure.", icon: Target },
 ];
 
@@ -74,12 +73,6 @@ export default function ScamShooterPage() {
                 Play Scam Shooter Now!
                 <ArrowRight className="w-5 h-5" />
               </a>
-              <a
-                href={gameMenuHref}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-arcade-cyan/50 bg-white/5 text-arcade-cyan font-heading tracking-wide hover:bg-arcade-cyan/10 transition-colors"
-              >
-                Play Scam Shooter Now!
-              </a>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm font-mono">
               {[
@@ -99,18 +92,18 @@ export default function ScamShooterPage() {
             <div className="relative overflow-hidden rounded-2xl border border-arcade-cyan/30 bg-gradient-to-br from-[#0d1a37] via-[#0b1126] to-[#070d18] shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
               <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent)] opacity-60" />
               <Image
-                src="/scam_shooter1.png"
-                alt="Scam Shooter"
-                width={900}
-                height={650}
+                src="/scamshooter_demo.png"
+                alt="Scam Shooter gameplay"
+                width={1200}
+                height={750}
                 className="w-full h-full object-cover relative"
                 priority
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 flex items-center justify-between">
-                <div className="text-sm font-mono text-arcade-cyan">Retro Arcade Build</div>
+                <div className="text-sm font-mono text-arcade-cyan">Gameplay preview</div>
                 <div className="inline-flex items-center gap-2 text-xs font-mono text-gray-200">
                   <Zap className="w-4 h-4 text-arcade-pink" />
-                  Neon difficulty
+                  Real in-mission action
                 </div>
               </div>
             </div>
@@ -202,6 +195,27 @@ export default function ScamShooterPage() {
             <div className="flex items-center gap-2 text-arcade-pink font-heading">
               <Zap className="w-5 h-5" />
               Pixel-perfect & vibrant
+            </div>
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden rounded-2xl border border-arcade-cyan/30 bg-gradient-to-br from-[#0d1b3a] via-[#0a1228] to-[#050b15] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.6)]">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,77,163,0.08),transparent),linear-gradient(-135deg,rgba(24,224,255,0.08),transparent)] opacity-60" />
+          <div className="relative flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-2xl font-heading text-arcade-cyan">Lesson flow preview</h3>
+                <p className="text-gray-300 font-mono text-sm">Mandatory modules before the simulator unlocks.</p>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-3 shadow-[0_12px_45px_rgba(0,0,0,0.5)]">
+              <Image
+                src="/lesson_demo.png"
+                alt="Lesson module demo"
+                width={1200}
+                height={700}
+                className="w-full h-auto object-contain rounded-lg"
+              />
             </div>
           </div>
         </section>
