@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Gamepad2, Shield, Sparkles, Target, Zap } from "lucide-react";
+import { ArrowRight, Gamepad2, Shield, Target, Zap } from "lucide-react";
 
 const plans = [
   { name: "Monthly", price: "$19.99", daily: "≈ 66¢/day", link: "https://buy.stripe.com/7sY00k7HN7xA4mU4ffcIE05" },
@@ -92,18 +92,18 @@ export default function ScamShooterPage() {
             <div className="relative overflow-hidden rounded-2xl border border-arcade-cyan/30 bg-gradient-to-br from-[#0d1a37] via-[#0b1126] to-[#070d18] shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
               <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent)] opacity-60" />
               <Image
-                src="/scamshooter_demo.png"
-                alt="Scam Shooter gameplay"
-                width={1200}
-                height={750}
+                src="/scam_shooter1.png"
+                alt="Scam Shooter"
+                width={900}
+                height={650}
                 className="w-full h-full object-cover relative"
                 priority
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 flex items-center justify-between">
-                <div className="text-sm font-mono text-arcade-cyan">Gameplay preview</div>
+                <div className="text-sm font-mono text-arcade-cyan">Scam Shooter</div>
                 <div className="inline-flex items-center gap-2 text-xs font-mono text-gray-200">
                   <Zap className="w-4 h-4 text-arcade-pink" />
-                  Real in-mission action
+                  Retro arcade logo
                 </div>
               </div>
             </div>
@@ -128,6 +128,25 @@ export default function ScamShooterPage() {
               </div>
             </div>
           ))}
+        </section>
+
+        <section className="relative overflow-hidden rounded-2xl border border-arcade-cyan/30 bg-gradient-to-br from-[#0d1b3a] via-[#0a1228] to-[#050b15] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.6)]">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,77,163,0.08),transparent),linear-gradient(-135deg,rgba(24,224,255,0.08),transparent)] opacity-60" />
+          <div className="relative flex flex-col gap-4">
+            <div>
+              <h3 className="text-2xl font-heading text-arcade-cyan">Gameplay preview</h3>
+              <p className="text-gray-300 font-mono text-sm">A peek at the live in-mission action.</p>
+            </div>
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-3 shadow-[0_12px_45px_rgba(0,0,0,0.5)]">
+              <Image
+                src="/scamshooter_demo.png"
+                alt="Scam Shooter gameplay demo"
+                width={1200}
+                height={700}
+                className="w-full h-auto object-contain rounded-lg"
+              />
+            </div>
+          </div>
         </section>
 
         <section id="pricing" className="relative overflow-hidden rounded-2xl border border-arcade-cyan/30 bg-gradient-to-br from-[#0d1b3a] via-[#0a1228] to-[#050b15] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.6)]">
