@@ -1,0 +1,25 @@
+What is the core philosophy behind Bitcoin's creation regarding trust?,It enables a system where you don't have to trust anyone else with your funds due to its cryptography and security.
+What technology did Ethereum introduce to improve upon the original Bitcoin philosophy?,"Smart contracts, which allow for agreements that don't need intermediaries like judges because the code protects both parties."
+What is the fundamental aim of Decentralized Finance (DeFi)?,DeFi aims to replace traditional finance by rebuilding financial services on a decentralized blockchain network.
+"According to the course, what is the number one reference source for researching cryptocurrencies?",CoinMarketCap.com.
+"The characteristics of a coin, such as its supply and distribution, are collectively known as its _____.",tokenomics
+"What is arguably the most important number associated with Bitcoin, directly impacting its supply and demand?",Its maximum supply of 21 million coins.
+"Satoshi Nakamoto designed Bitcoin to be a _____ currency system, meaning its total supply can never be increased.",finite
+"What economic principle explains why Bitcoin's price has risen significantly, given its capped supply and growing interest?","The law of supply and demand, where high demand for a scarce asset drives up its price."
+What is the name of the event where the rate of new Bitcoin creation is cut in half?,The Bitcoin Halving.
+How often does the Bitcoin Halving event occur?,Every four years.
+What specific effect does the Bitcoin Halving have on the currency's supply?,It decreases the supply of new bitcoin entering circulation by 50%.
+What is the term for any cryptocurrency that is not Bitcoin?,An altcoin.
+What is the primary goal of the 'Bitcoining Out' strategy?,"To accumulate more Bitcoin by selling altcoins for a profit, rather than cashing out into a declining fiat currency."
+The 'Bitcoining Out' strategy involves buying _____ while they're low and selling them for _____ when they rise.,altcoins; Bitcoin
+Why does the 'Bitcoining Out' strategy discourage cashing out into dollars?,"Because it views the dollar as a weakening, inflationary asset compared to Bitcoin's finite supply."
+"What chart is used to illustrate the adoption lifecycle of new technologies like Bitcoin, from innovators to laggards?",An S-curve chart.
+"According to the S-curve adoption model, which group of adopters is a new crypto investor currently a part of?",The early majority.
+What is the smallest unit of Bitcoin called?,A satoshi.
+Bitcoin's decimal system extends out to how many places?,Eight decimal places.
+Understanding Bitcoin's decimal system helps investors recognize opportunities in new coins that are priced at less than one _____.,satoshi
+"In the Level 3 gamified module, a user must recall that the most important number for Bitcoin's supply and demand is _____.",21 million
+What gamification mechanism is used in Level 3 to test a user's understanding of the Bitcoin Halving?,A timed lesson completion to emphasize that the supply decreases by 50% every four years.
+A gamified Level 3 exercise has the user fill in the blank: The strategy of selling altcoins for [_____] instead of [a weakening dollar] is called Bitcoining Out.,Bitcoin
+What reward is given in the gamified app for correctly recalling Bitcoin's finite supply cap?,A 'Finite Supply Master' Badge.
+What reward is given in the gamified app for completing the module on the 'Bitcoining Out' strategy?,An 'Strategy Applied' Check Mark.

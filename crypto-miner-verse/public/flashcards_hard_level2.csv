@@ -1,0 +1,25 @@
+What are the two most important technologies that the Bitcoin blockchain works based on?,The two core technologies are cryptography and the concept of miners.
+What term describes the owners of computers on the Bitcoin network who perform work to verify transactions?,Miners.
+"Cryptography is based on a variety of disciplines including mathematics, computer science, electrical engineering, and _____.",communication science
+"According to the source, what role does every computer on the Bitcoin network act as to create a trustless system?",Every computer on the network acts as a public ledger.
+What type of system is created when every computer on a network acts as a public ledger?,A trustless system.
+"Bitcoin's technology allows for a purely peer-to-peer version of electronic cash, enabling online payments to be sent directly without going through what?",A financial institution.
+"In the Bitcoin transaction process, where is a transaction sent immediately after it leaves a wallet or address?",It is sent to a block.
+What must a miner's computer do to win a block on the Bitcoin network?,It must solve a complicated math problem.
+What fundamental aspect of the Bitcoin network is ensured by the competitive process of miners solving math problems?,The security of the network.
+What does a miner receive for successfully solving the math problem and winning a block?,The miner is rewarded in bitcoin.
+"After a block is filled with transactions and has been mined, what happens to the transactions within it?",The transactions are sent to their desired locations.
+"Once transactions from a completed block are sent, what is then created to continue the process?",A new block on the chain is ready to be mined.
+Internet 1.0 was known as the internet of information; the phenomenon of Bitcoin is referred to as the internet of _____.,value
+What are the five innovative factors that make blockchains like Bitcoin unique?,"They are open source, public, neutral, borderless, and censorship resistant."
+"In the context of blockchain, what does the term 'open source' signify?",It means people can build upon the network and the technology.
+What is the meaning of a blockchain being 'public'?,"It means nothing is hidden, and every wallet, transfer, and transaction can be seen by everybody."
+What does it mean for a blockchain to be 'neutral'?,"The blockchain does not care about a user's identity, location, religion, or sex."
+How is a blockchain considered 'borderless'?,"It exists globally, and there are no borders to impede or stop its transactions."
+What does the 'censorship resistant' nature of a blockchain mean?,No single person or government can shut it down due to its decentralized nature.
+"In the gamified learning app, what type of quiz mechanism is used to teach the steps of how mining works in Level 2?",A sequence sorting quiz.
+What reward badge is earned for correctly sorting the mining process in the 'Mechanics' level of the gamified app?,The 'Proof-of-Work' Badge.
+"In the 'Mechanics' learning module, what type of interactive exercise is used to teach the five factors of blockchain innovation?",A matching exercise.
+An old saying in crypto claimed that Bitcoin would do to the bank what _____ did to the post office.,email
+What problem do miners on the Bitcoin network compete to solve in order to win a block?,A complicated math problem.
+What is created as a result of the decentralized network of computers all acting as public ledgers?,A trustless system where intermediaries are not needed.
