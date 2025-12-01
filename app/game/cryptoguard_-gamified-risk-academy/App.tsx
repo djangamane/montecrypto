@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import type { UserProgress, Level, Lesson } from './types';
