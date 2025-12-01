@@ -38,6 +38,8 @@
     "lib/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "crypto-miner-verse/src/**/*.ts",
+    "crypto-miner-verse/src/**/*.tsx",
     "types/**/*.d.ts",
     ".next/types/**/*.ts"
   ],
