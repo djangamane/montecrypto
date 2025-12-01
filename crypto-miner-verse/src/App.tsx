@@ -25,7 +25,11 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : {};
   });
   const [onboardStep, setOnboardStep] = useState(0);
-  const [onboarded, setOnboarded] = useState(() => localStorage.getItem('minerverse_onboarded') === 'true');
+  const [onboarded, setOnboarded] = useState(() => {
+    const paid = localStorage.getItem('minerverse_paid') === 'true';
+    if (!paid) return false;
+    return localStorage.getItem('minerverse_onboarded') === 'true';
+  });
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [practiceMode, setPracticeMode] = useState(false);
   const [isPaid, setIsPaid] = useState(() => {
@@ -69,6 +73,9 @@ const App: React.FC = () => {
     if (typeof window === 'undefined') return;
     const paidFlag = localStorage.getItem('minerverse_paid') === 'true';
     setIsPaid(paidFlag);
+    if (!paidFlag) {
+      setOnboarded(false);
+    }
     const onStorage = (event: StorageEvent) => {
       if (event.key === 'minerverse_paid') {
         setIsPaid(event.newValue === 'true');
@@ -91,17 +98,18 @@ const App: React.FC = () => {
     } else if (startParam && !paidParam) {
       localStorage.setItem('minerverse_paid', 'false');
       setIsPaid(false);
+      setOnboarded(false);
     }
 
-    const shouldForceOnboarding = startParam === 'onboarding' || startParam === 'true' || startParam === '1';
-    if (shouldForceOnboarding) {
+    const shouldForceOnboarding = startParam === 'onboarding' || startParam === 'true' || startParam === '1' || startParam === 'menu';
+    if (shouldForceOnboarding || !isPaid) {
       localStorage.setItem('minerverse_onboarded', 'false');
       setOnboarded(false);
       setOnboardStep(0);
       setView('ONBOARD');
       return;
     }
-    if (startParam === 'menu' || startParam === 'home' || startParam === 'welcome') {
+    if (startParam === 'home' || startParam === 'welcome') {
       setView('WELCOME');
     }
     if (startParam === 'map') {
@@ -114,6 +122,9 @@ const App: React.FC = () => {
     if (!isPaid && (view === 'TRAINING' || view === 'CHAMPIONS')) {
       setView('WELCOME');
       setShowPaywall(true);
+    }
+    if (!isPaid && (view === 'MAP' || view === 'MINER_GAME' || view === 'ARCADE_BONUS' || view === 'TRADING_SIM')) {
+      setView('ONBOARD');
     }
   }, [isPaid, view]);
 
@@ -155,7 +166,7 @@ const App: React.FC = () => {
           DECODE THE BLOCKCHAIN. MASTER THE MARKET.
         </p>
 
-        <Button fullWidth variant="primary" size="lg" onClick={() => setView(onboarded ? 'MAP' : 'ONBOARD')}>
+        <Button fullWidth variant="primary" size="lg" onClick={() => setView(isPaid && onboarded ? 'MAP' : 'ONBOARD')}>
           START MISSION <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
 
@@ -644,9 +655,13 @@ const App: React.FC = () => {
                       if (onboardStep < onboardingSteps.length - 1) {
                         setOnboardStep(s => s + 1);
                       } else {
-                        localStorage.setItem('minerverse_onboarded', 'true');
-                        setOnboarded(true);
-                        setView('MAP');
+                        if (isPaid) {
+                          localStorage.setItem('minerverse_onboarded', 'true');
+                          setOnboarded(true);
+                          setView('MAP');
+                        } else {
+                          setShowPaywall(true);
+                        }
                       }
                     }}
                     className="px-4 py-2 bg-arcade-cyan text-black font-retro rounded shadow hover:scale-105 transition-transform"
