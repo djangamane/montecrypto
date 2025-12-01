@@ -1,28 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ThankYouPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const DEFAULT_ONBOARDING_TARGET = process.env.NEXT_PUBLIC_SCAM_SHOOTER_ONBOARDING_URL || "/game?start=menu&paid=true";
   const [emailInput, setEmailInput] = useState(() => {
     const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
     return params.get("email") || "";
   });
   const [nextPath, setNextPath] = useState(DEFAULT_ONBOARDING_TARGET);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const email = params.get("email");
-    const next = params.get("next");
+    const email = searchParams.get("email");
+    const next = searchParams.get("next");
+    const sessionId = searchParams.get("session_id");
+    const paidFlag = searchParams.get("paid");
+    const token = searchParams.get("token");
+    const expectedToken = process.env.NEXT_PUBLIC_THANK_YOU_TOKEN || "";
+
+    const isAuthorized = !!sessionId || paidFlag === "true" || (expectedToken && token === expectedToken);
+
+    if (!isAuthorized) {
+      router.replace("/scam-shooter");
+      return;
+    }
+
+    setAuthorized(true);
     localStorage.setItem("minerverse_paid", "true");
     if (email) localStorage.setItem("minerverse_email", email);
     if (next) setNextPath(next);
-  }, []);
+  }, [router, searchParams]);
 
   const handleConfirm = () => {
     localStorage.setItem("minerverse_paid", "true");
     if (emailInput) localStorage.setItem("minerverse_email", emailInput);
   };
+
+  if (!authorized) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-6 text-center text-white">
