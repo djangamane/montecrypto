@@ -559,13 +559,13 @@ const App: React.FC = () => {
                     );
                   }
                   if (step.type === 'choice' || step.type === 'multi') {
-                    return (
-                      <div className="space-y-3">
-                        <div className="text-lg text-gray-300 font-retro">{step.title}</div>
-                        <p className="text-gray-400 font-mono text-sm">{step.prompt}</p>
-                        <div className="grid grid-cols-1 gap-3">
-                          {step.options.map(opt => {
-                            const selected = answers[step.id] === opt || (answers[step.id]?.includes?.(opt));
+                  return (
+                    <div className="space-y-3">
+                      <div className="text-lg text-gray-300 font-retro">{step.title}</div>
+                      <p className="text-gray-400 font-mono text-sm">{step.prompt}</p>
+                      <div className="grid grid-cols-1 gap-3">
+                        {(step.options ?? []).map(opt => {
+                          const selected = answers[step.id] === opt || (answers[step.id]?.includes?.(opt));
                             return (
                               <button
                                 key={opt}
