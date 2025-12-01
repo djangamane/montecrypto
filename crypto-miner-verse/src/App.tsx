@@ -586,7 +586,7 @@ const App: React.FC = () => {
                         <div className="text-lg text-gray-300 font-retro">{step.title}</div>
                         <p className="text-gray-400 font-mono text-sm">{step.prompt}</p>
                         <div className="flex flex-wrap gap-2">
-                          {step.options.map(opt => {
+                          {(step.options ?? []).map(opt => {
                             const selected = answers[step.id] === opt;
                             return (
                               <button
