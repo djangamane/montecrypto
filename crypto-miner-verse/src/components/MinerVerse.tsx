@@ -64,6 +64,7 @@ const COIN_SPRITE = [
 
 const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit }) => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
+   const audioCtxRef = useRef<AudioContext | null>(null);
 
    // Dynamic canvas dimensions
    const [canvasWidth, setCanvasWidth] = useState(window.innerWidth);
@@ -94,6 +95,31 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
    const keys = useRef<{ [key: string]: boolean }>({});
    const gameTime = useRef(0);
    const animationFrameId = useRef<number>(0);
+
+   const playTone = (frequency: number, duration = 0.12, volume = 0.2) => {
+      try {
+         const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+         if (!Ctx) return;
+         if (!audioCtxRef.current) {
+            audioCtxRef.current = new Ctx();
+         }
+         const ctx = audioCtxRef.current;
+         const osc = ctx.createOscillator();
+         const gain = ctx.createGain();
+         osc.frequency.value = frequency;
+         gain.gain.setValueAtTime(volume, ctx.currentTime);
+         gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start();
+         osc.stop(ctx.currentTime + duration);
+      } catch (e) {
+         // Fail silently if audio context cannot be started (e.g., autoplay restrictions)
+      }
+   };
+
+   const playShootSound = () => playTone(940, 0.08, 0.18);
+   const playCoinSound = () => playTone(620, 0.12, 0.2);
+   const playEnemyHitSound = () => playTone(480, 0.1, 0.14);
 
    // --- INITIALIZATION ---
    useEffect(() => {
@@ -200,6 +226,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                if (node.value <= 0) {
                   node.depleted = true;
                   // Node respawn removed - Collect them all!
+                  playCoinSound();
                }
             }
          });
@@ -255,6 +282,7 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                if (dist < 25) {
                   enemies.current.splice(eIdx, 1);
                   projectiles.current.splice(pIdx, 1);
+                  playEnemyHitSound();
                }
             });
          });
@@ -429,11 +457,11 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
 
          if (e.code === 'Space' && gameState === 'PLAYING') {
             if (player.current.ammo > 0) {
-               player.current.ammo--;
-               let target = enemies.current[0];
-               let angle = 0;
-               if (target) {
-                  angle = Math.atan2(target.y - player.current.y, target.x - player.current.x);
+              player.current.ammo--;
+              let target = enemies.current[0];
+              let angle = 0;
+              if (target) {
+                 angle = Math.atan2(target.y - player.current.y, target.x - player.current.x);
                }
 
                // Multi-Shot Logic (Level 2+)
@@ -447,9 +475,10 @@ const MinerVerse: React.FC<MinerVerseProps> = ({ levelId, targetScore, onExit })
                      vx: Math.cos(angle + offset) * PROJECTILE_SPEED,
                      vy: Math.sin(angle + offset) * PROJECTILE_SPEED,
                      id: Date.now() + Math.random()
-                  });
+                 });
                });
 
+               playShootSound();
             } else {
                triggerQuiz();
             }
