@@ -260,17 +260,10 @@ function enrichAnalysis(raw, { query }) {
   const derivedPillars = raw?.pillars ?? [
     {
       name: 'On-Chain Integrity',
-      score: pillarScore(score + (flags.some((flag) => flag.title.includes('Owner')) ? 10 : 0)),
+      score: pillarScore(score),
       severity: score >= 70 ? 'High Risk' : score >= 50 ? 'Moderate Risk' : 'Low Risk',
-      summary: raw?.token?.owner
-        ? 'Ownership remains active; confirm multisig or renounce transaction.'
-        : 'Ownership status unclear; investigate deployer wallet.',
-      highlights: [
-        raw?.token?.owner
-          ? `Reported owner: ${shortAddress(raw.token.owner)}`
-          : 'No owner surfaced from metadata.',
-        raw?.metrics?.supply ? `Reported total supply: ${formatNumber(raw.metrics.supply)}` : 'Total supply unavailable from API.',
-      ],
+      summary: 'On-chain data provides the most reliable information about a token\'s security.',
+      highlights: flags.map(flag => `${flag.title}: ${flag.detail}`),
     },
     {
       name: 'Off-Chain Intelligence',

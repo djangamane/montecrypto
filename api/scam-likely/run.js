@@ -1,6 +1,77 @@
 import { supabase } from "../_lib/supabase.js";
-import { getTokenInfo, getTokenSupply } from "../_lib/etherscan.js";
 import { checkUsageAndEntitlements } from "../_lib/limits.js";
+
+import { createHmac } from 'crypto';
+
+const GOPLUS_API_KEY = process.env.GOPLUS_API_KEY;
+const GOPLUS_API_SECRET = process.env.GOPLUS_API_SECRET;
+let accessToken = null;
+let tokenExpiresAt = null;
+
+async function getAccessToken() {
+  if (accessToken && tokenExpiresAt && tokenExpiresAt > Date.now()) {
+    return accessToken;
+  }
+
+  if (!GOPLUS_API_KEY || !GOPLUS_API_SECRET) {
+    throw new Error("GoPlus API key or secret is not configured.");
+  }
+
+  const time = Math.floor(Date.now() / 1000);
+  const signature = createHmac('sha256', GOPLUS_API_SECRET).update(GOPLUS_API_KEY.toLowerCase() + time).digest('hex');
+
+  const response = await fetch("https://api.gopluslabs.io/api/v1/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      app_key: GOPLUS_API_KEY,
+      sign: signature,
+      time: time,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get GoPlus access token: ${response.status}`);
+  }
+
+  const data = await response.json();
+  accessToken = data.result.access_token;
+  tokenExpiresAt = Date.now() + (data.result.expires_in * 1000);
+  return accessToken;
+}
+
+/**
+ * Fetches token security data from the GoPlus Security API.
+ * @param {string} address The contract address to check.
+ * @param {string} chainId The chain ID to check the address on.
+ * @returns {Promise<any>} The JSON response from the API.
+ */
+async function fetchGoPlusAnalysis(address, chainId = '1') { // Default to Ethereum mainnet
+  const token = await getAccessToken();
+  const url = `https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${address}`;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GoPlus API responded with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // GoPlus returns a result object where the key is the address
+    return data.result[address.toLowerCase()];
+  } catch (error) {
+    console.error("Error fetching from GoPlus API:", error);
+    throw new Error("Failed to fetch security analysis.");
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -64,21 +135,15 @@ export default async function handler(req, res) {
       });
   }
 
-  if (!process.env.ETHERSCAN_API_KEY) {
-    return res.status(503).json({ error: "Etherscan API key not configured" });
-  }
+  const chainId = body?.chainId || '1'; // Default to Ethereum mainnet
 
   try {
-    const [tokenInfoResult, supplyResult] = await Promise.all([
-      getTokenInfo(query),
-      getTokenSupply(query),
-    ]);
+    const goPlusData = await fetchGoPlusAnalysis(query, chainId);
+    if (!goPlusData) {
+      return res.status(404).json({ error: "Token not found or not supported by GoPlus." });
+    }
 
-    const tokenInfo = Array.isArray(tokenInfoResult)
-      ? tokenInfoResult[0]
-      : tokenInfoResult;
-
-    const analysis = buildAnalysis({ tokenInfo, supplyResult, address: query });
+    const analysis = buildAnalysis({ goPlusData, address: query });
 
     await persistScan({
       userId: userResult.user.id,
@@ -93,60 +158,95 @@ export default async function handler(req, res) {
   }
 }
 
-function buildAnalysis({ tokenInfo, supplyResult, address }) {
-  const supply = supplyResult ? Number(supplyResult) : null;
-  const owner = tokenInfo?.owner || null;
-  const decimals = tokenInfo?.tokenDecimal
-    ? Number(tokenInfo.tokenDecimal)
-    : null;
+function buildAnalysis({ goPlusData, address }) {
+  const {
+    token_name,
+    token_symbol,
+    total_supply,
+    owner_address,
+    is_honeypot,
+    honeypot_with_same_creator,
+    cannot_sell_all,
+    buy_tax,
+    sell_tax,
+    slippage_modifiable,
+    is_in_dex,
+    dex,
+    holder_count,
+    owner_balance,
+    owner_percent,
+    creator_address,
+    creator_balance,
+    creator_percent,
+    lp_holder_count,
+    lp_total_supply,
+  } = goPlusData;
 
   const flags = [];
-  if (!owner || owner === "0x0000000000000000000000000000000000000000") {
-    flags.push({
-      severity: "moderate",
-      title: "Ownership unclear",
-      detail:
-        "Unable to determine contract owner; verify renounce or multi-sig custody.",
-    });
+  if (is_honeypot === "1") {
+    flags.push({ severity: "high", title: "Honeypot Detected", detail: "This token appears to be a honeypot, meaning you may not be able to sell it after buying." });
+  }
+  if (honeypot_with_same_creator === "1") {
+    flags.push({ severity: "high", title: "Creator Linked to Previous Honeypots", detail: "The creator of this token has been associated with other honeypot scams." });
+  }
+  if (cannot_sell_all === "1") {
+    flags.push({ severity: "high", title: "Sell-All Restriction", detail: "The contract may prevent you from selling all of your tokens at once." });
+  }
+  if (parseFloat(buy_tax) > 10 || parseFloat(sell_tax) > 10) {
+    flags.push({ severity: "high", title: "High Buy/Sell Tax", detail: `The buy tax is ${buy_tax}% and the sell tax is ${sell_tax}%. High taxes can be a sign of a scam.` });
+  }
+  if (slippage_modifiable === "1") {
+    flags.push({ severity: "moderate", title: "Modifiable Slippage", detail: "The contract owner can modify the slippage, which could lead to unfavorable trades." });
+  }
+  if (owner_balance && owner_percent && parseFloat(owner_percent) > 20) {
+    flags.push({ severity: "moderate", title: "High Owner Balance", detail: `The contract owner holds ${owner_percent}% of the token supply.` });
+  }
+  if (creator_balance && creator_percent && parseFloat(creator_percent) > 20) {
+    flags.push({ severity: "moderate", title: "High Creator Balance", detail: `The token creator holds ${creator_percent}% of the token supply.` });
   }
 
-  if (!decimals || Number.isNaN(decimals)) {
-    flags.push({
-      severity: "moderate",
-      title: "Decimals missing",
-      detail: "Token decimals not reported; check contract metadata.",
-    });
-  }
-
-  const baseScore = 40;
-  const score = Math.min(100, baseScore + flags.length * 5);
+  const score = calculateRiskScore(flags);
+  const verdict = score >= 70 ? "High Risk" : score >= 40 ? "Elevated Risk" : "Guarded";
 
   return {
     token: {
       address,
-      name: tokenInfo?.tokenName || null,
-      symbol: tokenInfo?.tokenSymbol || null,
-      decimals,
-      type: tokenInfo?.type || "ERC20",
-      owner,
-      totalSupply: supplyResult ?? null,
-      circulatingSupply: tokenInfo?.circulatingSupply || null,
-      lastUpdated: tokenInfo?.lastUpdated || null,
+      name: token_name,
+      symbol: token_symbol,
+      decimals: null, // GoPlus doesn't provide this, may need another source if required
+      type: "ERC20",
+      owner: owner_address,
+      totalSupply: total_supply,
+      circulatingSupply: null, // GoPlus doesn't provide this
+      lastUpdated: null,
     },
     metrics: {
-      supply,
+      holderCount: holder_count,
+      lpTotalSupply: lp_total_supply,
+      dex,
     },
     risk: {
       score,
-      verdict:
-        score >= 70 ? "High Risk" : score >= 50 ? "Elevated Risk" : "Guarded",
+      verdict,
       flags,
     },
     sources: {
-      etherscan: true,
+      goplus: true,
     },
     fetchedAt: new Date().toISOString(),
   };
+}
+
+function calculateRiskScore(flags) {
+  let score = 0;
+  for (const flag of flags) {
+    if (flag.severity === "high") {
+      score += 25;
+    } else if (flag.severity === "moderate") {
+      score += 10;
+    }
+  }
+  return Math.min(100, score);
 }
 
 async function persistScan({ userId, query, analysis }) {
