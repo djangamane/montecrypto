@@ -51,7 +51,9 @@ export default async function BlogPostPage({ params }: PageParams) {
     notFound();
   }
 
-  const html = marked.parse(post.body_md ?? "");
+  // Remove the first H1 from the markdown if it exists, to avoid duplication with the template title
+  const cleanBody = (post.body_md ?? "").replace(/^#\s+.+$/m, "");
+  const html = marked.parse(cleanBody);
   const date = post.publish_at ? new Date(post.publish_at) : null;
 
   return (
