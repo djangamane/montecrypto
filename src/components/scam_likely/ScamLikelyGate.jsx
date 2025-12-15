@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import { useSupabaseSession } from "../../hooks/useSupabaseSession.js";
-import { RiskyChristieApp } from "../risky_christie/RiskyChristieApp.jsx";
+import { ScamLikelyApp } from "./ScamLikelyApp.jsx";
 import {
   getEntitlementStatus,
   ALL_SCAM_LIKELY_PRODUCT_IDS,
@@ -92,5 +92,5 @@ export function ScamLikelyGate({ onScrollToNewsletter }) {
     );
   }
 
-  return <RiskyChristieApp session={session} />;
+  return <ScamLikelyApp session={session} />;
 }
