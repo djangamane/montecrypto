@@ -8,6 +8,13 @@ export type Video = {
 
 export const videos: Video[] = [
     {
+        id: "ogbBLBuxzUQ",
+        title: "AI Crypto Risk - AI Verifies Crypto Roadmaps",
+        url: "https://youtu.be/ogbBLBuxzUQ",
+        thumbnail: "https://img.youtube.com/vi/ogbBLBuxzUQ/maxresdefault.jpg",
+        date: "2025-12-15",
+    },
+    {
         id: "pyM_E2PPdVg",
         title: "How to Protect Yourself from Pump Groups with AI",
         url: "https://youtu.be/pyM_E2PPdVg",
