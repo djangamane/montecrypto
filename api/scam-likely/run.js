@@ -9,44 +9,63 @@ let accessToken = null;
 let tokenExpiresAt = null;
 
 async function getAccessToken() {
+  // Return cached token if still valid
   if (accessToken && tokenExpiresAt && tokenExpiresAt > Date.now()) {
     return accessToken;
   }
 
+  // If no credentials configured, return null (API works without auth, just limited)
   if (!GOPLUS_API_KEY || !GOPLUS_API_SECRET) {
-    console.error("GoPlus credentials missing - API_KEY:", !!GOPLUS_API_KEY, "API_SECRET:", !!GOPLUS_API_SECRET);
-    throw new Error("GoPlus API key or secret is not configured.");
+    console.log("GoPlus credentials not configured - using unauthenticated mode");
+    return null;
   }
 
-  const time = Math.floor(Date.now() / 1000);
-  const signature = createHmac('sha256', GOPLUS_API_SECRET).update(GOPLUS_API_KEY.toLowerCase() + time).digest('hex');
+  try {
+    const time = Math.floor(Date.now() / 1000);
+    const signature = createHmac('sha256', GOPLUS_API_SECRET).update(GOPLUS_API_KEY.toLowerCase() + time).digest('hex');
 
-  const response = await fetch("https://api.gopluslabs.io/api/v1/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      app_key: GOPLUS_API_KEY,
-      sign: signature,
-      time: time,
-    }),
-  });
+    const response = await fetch("https://api.gopluslabs.io/api/v1/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        app_key: GOPLUS_API_KEY,
+        sign: signature,
+        time: time,
+      }),
+    });
 
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "");
-    console.error("GoPlus token request failed:", response.status, errorBody);
-    throw new Error(`Failed to get GoPlus access token: ${response.status} - ${errorBody}`);
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      console.error("GoPlus token request failed:", response.status, errorBody);
+      console.log("Falling back to unauthenticated mode");
+      return null;
+    }
+
+    const data = await response.json();
+
+    // Check for error in response
+    if (data.code !== 1 && data.code !== "1") {
+      console.error("GoPlus token error:", data.message || data.msg);
+      console.log("Falling back to unauthenticated mode");
+      return null;
+    }
+
+    if (!data.result?.access_token) {
+      console.error("GoPlus token response missing access_token");
+      console.log("Falling back to unauthenticated mode");
+      return null;
+    }
+
+    accessToken = data.result.access_token;
+    tokenExpiresAt = Date.now() + (data.result.expires_in * 1000);
+    return accessToken;
+  } catch (error) {
+    console.error("GoPlus auth error:", error.message);
+    console.log("Falling back to unauthenticated mode");
+    return null;
   }
-
-  const data = await response.json();
-  if (!data.result?.access_token) {
-    console.error("GoPlus token response missing access_token:", JSON.stringify(data));
-    throw new Error("GoPlus API returned invalid token response");
-  }
-  accessToken = data.result.access_token;
-  tokenExpiresAt = Date.now() + (data.result.expires_in * 1000);
-  return accessToken;
 }
 
 /**
@@ -59,12 +78,18 @@ async function fetchGoPlusAnalysis(address, chainId = '1') { // Default to Ether
   const token = await getAccessToken();
   const url = `https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${address}`;
 
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  // Only add auth header if we have a token
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -74,6 +99,13 @@ async function fetchGoPlusAnalysis(address, chainId = '1') { // Default to Ether
   }
 
   const data = await response.json();
+
+  // Check if API returned an error
+  if (data.code !== 1 && data.code !== "1") {
+    console.error("GoPlus API error:", data.message || data.msg);
+    throw new Error(`GoPlus API error: ${data.message || data.msg || "Unknown error"}`);
+  }
+
   console.log("GoPlus response keys:", Object.keys(data.result || {}));
 
   // GoPlus returns a result object where the key is the address
