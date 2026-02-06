@@ -185,23 +185,35 @@ export function ScamLikelyApp({ session }) {
             )}
 
             <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
-              <h4 className="text-sm font-medium text-sky-300">What We Analyze:</h4>
-              <ul className="mt-2 grid gap-2 text-xs text-slate-400 sm:grid-cols-2">
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  Contract Security & Audit Status
+              <h4 className="text-sm font-medium text-sky-300">Our 4-Pillar Risk Analysis:</h4>
+              <ul className="mt-3 grid gap-3 text-xs text-slate-400 sm:grid-cols-2">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" />
+                  <div>
+                    <span className="font-medium text-slate-200">On-Chain Analysis</span>
+                    <p className="mt-0.5 text-slate-500">Contract security, honeypot detection, taxes, liquidity locks</p>
+                  </div>
                 </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  Trading Mechanics & Taxes
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" />
+                  <div>
+                    <span className="font-medium text-slate-200">Social Media Monitor</span>
+                    <p className="mt-0.5 text-slate-500">Twitter, Telegram activity, sentiment, shill detection</p>
+                  </div>
                 </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  Ownership & Token Distribution
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" />
+                  <div>
+                    <span className="font-medium text-slate-200">Institutional Interest</span>
+                    <p className="mt-0.5 text-slate-500">Smart money signals, VC backing, exchange listings</p>
+                  </div>
                 </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  Community & Social Signals
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" />
+                  <div>
+                    <span className="font-medium text-slate-200">Off-Chain Intelligence</span>
+                    <p className="mt-0.5 text-slate-500">Audits, team doxxing, regulatory alerts, scam reports</p>
+                  </div>
                 </li>
               </ul>
             </div>

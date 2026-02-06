@@ -138,49 +138,101 @@ export default async function handler(req, res) {
 }
 
 function buildResearchPrompt({ contractAddress, coinName, coinSymbol, chain }) {
-  return `You are a cryptocurrency security analyst. Perform comprehensive due diligence research on the following token:
+  return `You are an expert cryptocurrency security analyst performing deep due diligence. Investigate this token thoroughly:
 
-TOKEN DETAILS:
-- Name: ${coinName}
-- Symbol: ${coinSymbol}
-- Contract Address: ${contractAddress}
-- Blockchain: ${chain}
+═══════════════════════════════════════════════════════════
+TOKEN UNDER INVESTIGATION
+═══════════════════════════════════════════════════════════
+Name: ${coinName}
+Symbol: ${coinSymbol}
+Contract: ${contractAddress}
+Chain: ${chain}
 
-Analyze this token across FOUR key risk dimensions and provide a detailed report:
+Analyze this token across these FOUR critical risk dimensions. Search for real, current information from reliable sources.
 
-## 1. CONTRACT SECURITY
-- Is the contract verified and open source?
-- Has it been audited? By whom?
-- Are there any known vulnerabilities or exploits?
-- Is it a proxy contract? Can it be upgraded?
-- Does the contract have dangerous functions (mint, pause, blacklist, selfdestruct)?
+═══════════════════════════════════════════════════════════
+1. ON-CHAIN ANALYSIS
+═══════════════════════════════════════════════════════════
+Investigate the smart contract and blockchain data:
 
-## 2. TRADING MECHANICS
-- What are the buy/sell taxes?
-- Are there any trading restrictions (cooldowns, limits, whitelists)?
-- Can the owner modify trading parameters?
-- Is there sufficient liquidity?
-- Is liquidity locked? For how long?
+• Contract Verification: Is the source code verified on block explorer? Is it open source?
+• Honeypot Detection: Can holders actually sell? Any transfer restrictions?
+• Token Functions: Does it have mint(), pause(), blacklist(), or selfdestruct() functions?
+• Tax Structure: What are the buy/sell taxes? Can they be modified by owner?
+• Ownership Status: Is ownership renounced? Or can owner still control the contract?
+• Liquidity Analysis: How much liquidity exists? Is it locked? Lock duration?
+• Holder Distribution: Top 10 holder concentration? Any wallets holding >5%?
+• Trading History: Volume patterns, suspicious wash trading, coordinated dumps?
 
-## 3. OWNERSHIP & TOKEN DISTRIBUTION
-- Who owns the contract? Is ownership renounced?
-- What percentage do the top 10 holders own?
-- Are there any suspicious wallet patterns?
-- Is the team doxxed or anonymous?
-- Are there any connections to known scammers?
+═══════════════════════════════════════════════════════════
+2. SOCIAL MEDIA MONITOR
+═══════════════════════════════════════════════════════════
+Analyze social presence and community signals:
 
-## 4. COMMUNITY & SOCIAL SIGNALS
-- How active is the community (Twitter, Telegram, Discord)?
-- What is the sentiment around this token?
-- Are there any scam reports or warnings?
-- How old is the project?
-- Are there any red flags in their marketing?
+• Twitter/X Activity: Follower count, engagement rate, account age, verified?
+• Telegram/Discord: Member count, activity level, bot vs real users?
+• Sentiment Analysis: What is the community saying? Positive, negative, or artificial hype?
+• Influencer Promotion: Is it being shilled by paid promoters? Coordinated campaigns?
+• Red Flags: Fake followers, deleted negative comments, echo chamber behavior?
+• Community Age: How long has the community existed? Organic growth or sudden spike?
+• Developer Communication: Are devs active and transparent? Do they answer questions?
 
-FINAL ASSESSMENT:
-- Provide an overall RISK SCORE (0-100, where higher = more risky)
-- Classify as: LOW RISK, MODERATE RISK, HIGH RISK, or CRITICAL RISK
-- List the TOP 3 concerns
-- Provide a clear RECOMMENDATION (Safe to invest, Proceed with caution, Avoid)
+═══════════════════════════════════════════════════════════
+3. INSTITUTIONAL INTEREST & SMART MONEY SIGNALS
+═══════════════════════════════════════════════════════════
+Look for signs of legitimate institutional backing:
 
-Use real, verifiable sources. Cite specific URLs where possible. Be thorough but concise.`;
+• VC/Fund Investment: Any known venture capital or crypto fund backing?
+• Whale Wallet Activity: Are known smart money wallets holding or accumulating?
+• Exchange Listings: Listed on reputable CEXs (Binance, Coinbase, Kraken)?
+• Market Makers: Any legitimate market makers providing liquidity?
+• Partnerships: Real partnerships with established companies? Or fake announcements?
+• Treasury/Backing: Any real assets backing the token? Proof of reserves?
+• Institutional Custody: Available on institutional platforms?
+
+If there is NO institutional interest, this is a significant warning sign for retail investors.
+
+═══════════════════════════════════════════════════════════
+4. OFF-CHAIN INTELLIGENCE
+═══════════════════════════════════════════════════════════
+Research external data sources and real-world factors:
+
+• Security Audits: Has it been audited? By whom (CertiK, Hacken, Trail of Bits)? Audit findings?
+• Team Identity: Is the team doxxed (publicly known)? LinkedIn profiles? Track record?
+• Legal Entity: Is there a registered company behind it? Jurisdiction?
+• Regulatory Status: Any SEC, CFTC, or international regulatory warnings?
+• Scam Reports: Listed on ScamAdviser, CryptoScamDB, or similar databases?
+• News Coverage: Any negative press? Hack reports? Lawsuit mentions?
+• Historical Incidents: Has this team launched failed/scam projects before?
+• Website Quality: Professional site or hastily made? Domain age? Contact info?
+
+═══════════════════════════════════════════════════════════
+RISK ASSESSMENT SUMMARY
+═══════════════════════════════════════════════════════════
+
+Based on your research, provide:
+
+1. RISK SCORE: 0-100 (0 = Very Safe, 100 = Definite Scam)
+
+2. RISK LEVEL:
+   • LOW RISK (0-25): Legitimate project with strong fundamentals
+   • MODERATE RISK (26-50): Some concerns but potentially viable
+   • HIGH RISK (51-75): Significant red flags, extreme caution advised
+   • CRITICAL RISK (76-100): Likely scam, do not invest
+
+3. TOP 5 FINDINGS: List the most important discoveries (good or bad)
+
+4. RED FLAGS: List all warning signs discovered
+
+5. GREEN FLAGS: List all positive indicators discovered
+
+6. VERDICT: One of:
+   • ✅ SAFE TO INVEST - Strong fundamentals, institutional backing, clean history
+   • ⚠️ PROCEED WITH CAUTION - Mixed signals, do additional research
+   • 🚫 AVOID - Too many red flags, high probability of loss
+   • ☠️ CONFIRMED SCAM - Evidence of fraud, rug pull, or malicious intent
+
+7. SOURCES: List all URLs you referenced in your research
+
+Be thorough, factual, and cite specific sources. If you cannot find information on a topic, explicitly state that the lack of information is itself a risk factor.`;
 }
