@@ -85,7 +85,7 @@ export function ScamLikelyApp({ session }) {
         <div>
           <h2 className="text-2xl font-bold text-white">Deep Risk Research</h2>
           <p className="mt-2 text-sm text-slate-400">
-            Enter a token's details and we'll perform comprehensive research across contract security,
+            Enter token details and we will perform comprehensive research across contract security,
             trading mechanics, ownership structure, and community signals. Results will be emailed to you.
           </p>
         </div>
@@ -99,7 +99,7 @@ export function ScamLikelyApp({ session }) {
             </div>
             <h3 className="text-lg font-semibold text-emerald-300">Research Request Submitted!</h3>
             <p className="mt-2 text-sm text-slate-300">
-              Our AI is analyzing this token across multiple data sources. You'll receive a detailed
+              Our AI is analyzing this token across multiple data sources. You will receive a detailed
               risk report at <span className="font-medium text-white">{session?.user?.email}</span> within 5-10 minutes.
             </p>
             <button
@@ -185,7 +185,7 @@ export function ScamLikelyApp({ session }) {
             )}
 
             <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
-              <h4 className="text-sm font-medium text-sky-300">What We'll Analyze:</h4>
+              <h4 className="text-sm font-medium text-sky-300">What We Analyze:</h4>
               <ul className="mt-2 grid gap-2 text-xs text-slate-400 sm:grid-cols-2">
                 <li className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
