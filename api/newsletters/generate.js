@@ -150,7 +150,7 @@ async function runPerplexityCoinScan({ focus }) {
     body: JSON.stringify({
       model: PERPLEXITY_COIN_MODEL,
       max_tokens: Number.parseInt(
-        process.env.PERPLEXITY_MAX_TOKENS ?? "1200",
+        process.env.PERPLEXITY_MAX_TOKENS ?? "4000",
         10,
       ),
       temperature: Number.parseFloat(
@@ -328,6 +328,65 @@ function robustStripThinkAndParse(text) {
     const jsonString = contentToParse.slice(jsonStart, jsonEnd + 1);
     return JSON.parse(jsonString);
   } catch (error) {
+    // Attempt to repair truncated JSON by closing open structures
+    return attemptJsonRepair(contentToParse);
+  }
+}
+
+function attemptJsonRepair(text) {
+  if (!text) return null;
+
+  try {
+    const jsonStart = text.indexOf("{");
+    if (jsonStart === -1) return null;
+
+    let jsonString = text.slice(jsonStart);
+
+    // Count open brackets and braces
+    let braceCount = 0;
+    let bracketCount = 0;
+    let inString = false;
+    let escapeNext = false;
+
+    for (const char of jsonString) {
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+
+      if (char === '{') braceCount++;
+      if (char === '}') braceCount--;
+      if (char === '[') bracketCount++;
+      if (char === ']') bracketCount--;
+    }
+
+    // If we're in a string, close it
+    if (inString) {
+      jsonString += '"';
+    }
+
+    // Close any unclosed arrays and objects
+    while (bracketCount > 0) {
+      jsonString += ']';
+      bracketCount--;
+    }
+    while (braceCount > 0) {
+      jsonString += '}';
+      braceCount--;
+    }
+
+    return JSON.parse(jsonString);
+  } catch (repairError) {
+    console.warn('[perplexity] JSON repair failed', repairError.message);
     return null;
   }
 }

@@ -140,7 +140,12 @@ export default async function handler(req, res) {
   try {
     const goPlusData = await fetchGoPlusAnalysis(query, chainId);
     if (!goPlusData) {
-      return res.status(404).json({ error: "Token not found or not supported by GoPlus." });
+      return res.status(404).json({
+        error: "Token not found or not supported by GoPlus.",
+        code: "token_not_found",
+        query,
+        chainId
+      });
     }
 
     const analysis = buildAnalysis({ goPlusData, address: query });
@@ -149,12 +154,18 @@ export default async function handler(req, res) {
       userId: userResult.user.id,
       query,
       analysis,
+    }).catch((persistError) => {
+      console.error("Failed to persist scan (non-blocking)", persistError);
     });
 
     return res.status(200).json(analysis);
   } catch (error) {
     console.error("Scan run failed", error);
-    return res.status(500).json({ error: error.message });
+    const isGoPlusError = error.message?.includes("GoPlus");
+    return res.status(500).json({
+      error: error.message,
+      code: isGoPlusError ? "goplus_error" : "scan_failed"
+    });
   }
 }
 

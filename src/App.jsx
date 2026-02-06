@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { Header } from "./components/Header.jsx";
 import { Hero } from "./components/Hero.jsx";
@@ -23,12 +23,19 @@ import { ThankYou } from "./components/ThankYou.jsx";
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
   const riskSectionRef = useRef(null);
   const courseSectionRef = useRef(null);
   const newsletterSectionRef = useRef(null);
   const { session, isLoading: isSessionLoading } = useSupabaseSession();
 
-  if (typeof window !== 'undefined' && window.location.pathname === '/thankyou') {
+  useEffect(() => {
+    if (window.location.pathname === '/thankyou') {
+      setShowThankYou(true);
+    }
+  }, []);
+
+  if (showThankYou) {
     return <ThankYou />;
   }
 

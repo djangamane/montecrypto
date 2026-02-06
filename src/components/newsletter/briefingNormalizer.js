@@ -25,6 +25,57 @@ function isPlainObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
 }
 
+function safeParseJson(text) {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Attempt to repair truncated JSON
+    try {
+      let jsonString = text;
+      let braceCount = 0;
+      let bracketCount = 0;
+      let inString = false;
+      let escapeNext = false;
+
+      for (const char of jsonString) {
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+        if (char === '\\') {
+          escapeNext = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (inString) continue;
+
+        if (char === '{') braceCount++;
+        if (char === '}') braceCount--;
+        if (char === '[') bracketCount++;
+        if (char === ']') bracketCount--;
+      }
+
+      if (inString) jsonString += '"';
+      while (bracketCount > 0) {
+        jsonString += ']';
+        bracketCount--;
+      }
+      while (braceCount > 0) {
+        jsonString += '}';
+        braceCount--;
+      }
+
+      return JSON.parse(jsonString);
+    } catch {
+      return null;
+    }
+  }
+}
+
 function normalizeInsight(insight, index) {
   const fallbackTitle = `Insight ${index + 1}`;
   const fallbackSummary =
@@ -148,8 +199,8 @@ function normalizeCoinScan(raw) {
   );
   const trimmedSummary = summaryText.trim();
   if (trimmedSummary.startsWith('{') || trimmedSummary.startsWith('[')) {
-    try {
-      const parsedSummary = JSON.parse(trimmedSummary);
+    const parsedSummary = safeParseJson(trimmedSummary);
+    if (parsedSummary) {
       if (typeof parsedSummary?.summary === 'string') {
         summaryText = stripThink(parsedSummary.summary);
       }
@@ -170,10 +221,7 @@ function normalizeCoinScan(raw) {
             .filter((item) => item.uri),
         );
       }
-    } catch (error) {
-      if (typeof window !== 'undefined') {
-        console.warn('Failed to parse coin summary JSON', error, trimmedSummary);
-      }
+    } else {
       summaryText = stripThink(summaryText);
     }
   }
