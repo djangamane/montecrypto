@@ -14,6 +14,7 @@ async function getAccessToken() {
   }
 
   if (!GOPLUS_API_KEY || !GOPLUS_API_SECRET) {
+    console.error("GoPlus credentials missing - API_KEY:", !!GOPLUS_API_KEY, "API_SECRET:", !!GOPLUS_API_SECRET);
     throw new Error("GoPlus API key or secret is not configured.");
   }
 
@@ -33,10 +34,16 @@ async function getAccessToken() {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get GoPlus access token: ${response.status}`);
+    const errorBody = await response.text().catch(() => "");
+    console.error("GoPlus token request failed:", response.status, errorBody);
+    throw new Error(`Failed to get GoPlus access token: ${response.status} - ${errorBody}`);
   }
 
   const data = await response.json();
+  if (!data.result?.access_token) {
+    console.error("GoPlus token response missing access_token:", JSON.stringify(data));
+    throw new Error("GoPlus API returned invalid token response");
+  }
   accessToken = data.result.access_token;
   tokenExpiresAt = Date.now() + (data.result.expires_in * 1000);
   return accessToken;
@@ -51,26 +58,26 @@ async function getAccessToken() {
 async function fetchGoPlusAnalysis(address, chainId = '1') { // Default to Ethereum mainnet
   const token = await getAccessToken();
   const url = `https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${address}`;
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-    });
 
-    if (!response.ok) {
-      throw new Error(`GoPlus API responded with status: ${response.status}`);
-    }
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  });
 
-    const data = await response.json();
-    // GoPlus returns a result object where the key is the address
-    return data.result[address.toLowerCase()];
-  } catch (error) {
-    console.error("Error fetching from GoPlus API:", error);
-    throw new Error("Failed to fetch security analysis.");
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "");
+    console.error("GoPlus security API failed:", response.status, errorBody);
+    throw new Error(`GoPlus API responded with status: ${response.status}`);
   }
+
+  const data = await response.json();
+  console.log("GoPlus response keys:", Object.keys(data.result || {}));
+
+  // GoPlus returns a result object where the key is the address
+  return data.result?.[address.toLowerCase()] ?? null;
 }
 
 export default async function handler(req, res) {
