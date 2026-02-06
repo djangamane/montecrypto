@@ -15,10 +15,10 @@ const scoreToBar = (score) => {
 };
 
 const overallToDescriptor = (score) => {
-  if (score >= 80) return { label: 'Critical', color: 'text-red-400' };
-  if (score >= 65) return { label: 'High', color: 'text-orange-300' };
-  if (score >= 45) return { label: 'Elevated', color: 'text-yellow-200' };
-  return { label: 'Guarded', color: 'text-emerald-300' };
+  if (score >= 75) return { label: 'Critical Risk', color: 'text-red-400', bg: 'bg-red-500' };
+  if (score >= 50) return { label: 'High Risk', color: 'text-orange-300', bg: 'bg-orange-500' };
+  if (score >= 25) return { label: 'Elevated', color: 'text-yellow-200', bg: 'bg-yellow-500' };
+  return { label: 'Low Risk', color: 'text-emerald-300', bg: 'bg-emerald-500' };
 };
 
 export function ScamLikelyApp({ session }) {
@@ -74,7 +74,8 @@ export function ScamLikelyApp({ session }) {
   const renderResults = () => {
     const record = analysis;
     if (!record) return null;
-    const descriptor = overallDescriptor ?? { label: '', color: 'text-slate-300' };
+    const descriptor = overallDescriptor ?? { label: '', color: 'text-slate-300', bg: 'bg-slate-500' };
+    const tokenDisplay = record.token?.symbol ? `${record.token.name} (${record.token.symbol})` : record.query;
 
     return (
       <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
@@ -83,7 +84,7 @@ export function ScamLikelyApp({ session }) {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-slate-400">
-                  Overall Scam Score
+                  Risk Score for {record.token?.symbol || 'Token'}
                 </p>
                 <div className="flex items-baseline gap-x-3">
                   <span className="text-5xl font-semibold text-white">
@@ -93,24 +94,34 @@ export function ScamLikelyApp({ session }) {
                     {descriptor.label}
                   </span>
                 </div>
+                <p className="mt-1 text-sm text-slate-400">{tokenDisplay}</p>
               </div>
               <div className="text-right text-sm text-slate-400">
-                <p>{record.query}</p>
+                <p className="font-mono text-xs">{shortAddress(record.query)}</p>
                 <p>Updated {formatRelativeTime(record.fetchedAt)}</p>
-                <p className="text-slate-500">Verdict {record.risk.verdict}</p>
               </div>
             </div>
 
             <div className="mt-5 h-3 w-full rounded-full bg-slate-800">
               <div
                 className={`h-full rounded-full ${scoreToBar(record.risk.score)} transition-all duration-700`}
-                style={{ width: `${Math.min(record.risk.score, 100)}%` }}
+                style={{ width: `${Math.max(Math.min(record.risk.score, 100), 5)}%` }}
               />
             </div>
 
             {record.narrative ? (
               <p className="mt-6 text-sm leading-relaxed text-slate-300">{record.narrative}</p>
             ) : null}
+
+            {record.positives?.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {record.positives.slice(0, 5).map((positive, idx) => (
+                  <span key={idx} className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300 border border-emerald-500/20">
+                    {positive}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {record.nextSteps?.length ? (
@@ -240,60 +251,26 @@ export function ScamLikelyApp({ session }) {
 export default ScamLikelyApp;
 
 function enrichAnalysis(raw, { query }) {
+  // Use actual API data, only provide fallbacks if missing
   const score = raw?.risk?.score ?? 0;
-  const verdict = raw?.risk?.verdict ?? (score >= 70 ? 'High Risk' : score >= 50 ? 'Elevated Risk' : 'Guarded');
+  const verdict = raw?.risk?.verdict ?? (score >= 75 ? 'Critical Risk' : score >= 50 ? 'High Risk' : score >= 25 ? 'Elevated' : 'Low Risk');
   const flags = raw?.risk?.flags ?? [];
-
-  const narrative =
-    raw?.narrative ??
-    (flags.length
-      ? `Initial heuristics surfaced ${flags.length} risk indicator${flags.length > 1 ? 's' : ''}. Examine the highlights below and escalate to manual review if you plan to deploy capital.`
-      : 'No critical heuristics fired, but this is a preliminary check. Continue with manual review and community vetting.');
-
-  const nextSteps = raw?.nextSteps ?? [
-    'Validate liquidity lock and ownership renounce status on-chain.',
-    'Inspect top holder activity over the past 72 hours.',
-    'Cross-reference the contract with reputable allowlists and audit repositories.',
-  ];
-
-  const pillarScore = (base) => Math.max(10, Math.min(95, base));
-  const derivedPillars = raw?.pillars ?? [
-    {
-      name: 'On-Chain Integrity',
-      score: pillarScore(score),
-      severity: score >= 70 ? 'High Risk' : score >= 50 ? 'Moderate Risk' : 'Low Risk',
-      summary: 'On-chain data provides the most reliable information about a token\'s security.',
-      highlights: flags.map(flag => `${flag.title}: ${flag.detail}`),
-    },
-    {
-      name: 'Off-Chain Intelligence',
-      score: pillarScore(score - 10),
-      severity: score >= 80 ? 'Critical Risk' : score >= 55 ? 'High Risk' : 'Moderate Risk',
-      summary: 'Add audited sources (RugDoc, CertiK, security repositories) to strengthen trust.',
-      highlights: ['No external audit linked in metadata.', 'Check for mentions on Cryptoscamdb and WalletLabels.'],
-    },
-    {
-      name: 'Social & Community Signals',
-      score: pillarScore(score - 5),
-      severity: score >= 70 ? 'High Risk' : 'Moderate Risk',
-      summary: 'Sentiment coverage deferred until social connectors are wired.',
-      highlights: ['Integrate Twitter/Telegram metrics to validate organic traction.', 'Watch for duplicate shilling campaigns.'],
-    },
-    {
-      name: 'Institutional Interest',
-      score: pillarScore(score + 5),
-      severity: score >= 70 ? 'Critical Risk' : 'High Risk',
-      summary: 'Institutional telemetry not yet collected; treat as unknown.',
-      highlights: ['Whale wallet and exchange custody integrations coming soon.', 'Monitor derivatives open interest for divergence.'],
-    },
-  ];
+  const positives = raw?.positives ?? [];
+  const pillars = raw?.pillars ?? [];
+  const nextSteps = raw?.nextSteps ?? ['Verify the contract on the block explorer.'];
+  const narrative = raw?.narrative ?? (
+    flags.length > 0
+      ? `Found ${flags.length} risk indicator${flags.length !== 1 ? 's' : ''}. Review the details below.`
+      : 'No major red flags detected. Continue with standard due diligence.'
+  );
 
   return {
     ...raw,
     query,
     narrative,
     nextSteps,
-    pillars: derivedPillars,
+    pillars,
+    positives,
     risk: { score, verdict, flags },
   };
 }

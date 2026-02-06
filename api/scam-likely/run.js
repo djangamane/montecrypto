@@ -209,77 +209,220 @@ export default async function handler(req, res) {
 }
 
 function buildAnalysis({ goPlusData, address }) {
-  const {
-    token_name,
-    token_symbol,
-    total_supply,
-    owner_address,
-    is_honeypot,
-    honeypot_with_same_creator,
-    cannot_sell_all,
-    buy_tax,
-    sell_tax,
-    slippage_modifiable,
-    is_in_dex,
-    dex,
-    holder_count,
-    owner_balance,
-    owner_percent,
-    creator_address,
-    creator_balance,
-    creator_percent,
-    lp_holder_count,
-    lp_total_supply,
-  } = goPlusData;
+  const g = goPlusData;
 
+  // Extract all relevant fields
+  const tokenName = g.token_name || "Unknown Token";
+  const tokenSymbol = g.token_symbol || "???";
+  const holderCount = parseInt(g.holder_count) || 0;
+  const lpHolderCount = parseInt(g.lp_holder_count) || 0;
+
+  // Parse percentages and taxes
+  const buyTax = parseFloat(g.buy_tax) || 0;
+  const sellTax = parseFloat(g.sell_tax) || 0;
+  const ownerPercent = parseFloat(g.owner_percent) * 100 || 0;
+  const creatorPercent = parseFloat(g.creator_percent) * 100 || 0;
+  const lpTotalSupply = parseFloat(g.lp_total_supply) || 0;
+
+  // Build comprehensive flags
   const flags = [];
-  if (is_honeypot === "1") {
-    flags.push({ severity: "high", title: "Honeypot Detected", detail: "This token appears to be a honeypot, meaning you may not be able to sell it after buying." });
+  const positives = [];
+
+  // === CRITICAL RISKS (25 points each) ===
+  if (g.is_honeypot === "1") {
+    flags.push({ severity: "critical", title: "Honeypot Detected", detail: "You will NOT be able to sell this token after buying. Avoid at all costs." });
   }
-  if (honeypot_with_same_creator === "1") {
-    flags.push({ severity: "high", title: "Creator Linked to Previous Honeypots", detail: "The creator of this token has been associated with other honeypot scams." });
+  if (g.honeypot_with_same_creator === "1") {
+    flags.push({ severity: "critical", title: "Creator Made Previous Honeypots", detail: "This creator has deployed honeypot scams before." });
   }
-  if (cannot_sell_all === "1") {
-    flags.push({ severity: "high", title: "Sell-All Restriction", detail: "The contract may prevent you from selling all of your tokens at once." });
+  if (g.is_blacklisted === "1") {
+    flags.push({ severity: "critical", title: "Blacklist Function", detail: "Owner can blacklist addresses from selling." });
   }
-  if (parseFloat(buy_tax) > 10 || parseFloat(sell_tax) > 10) {
-    flags.push({ severity: "high", title: "High Buy/Sell Tax", detail: `The buy tax is ${buy_tax}% and the sell tax is ${sell_tax}%. High taxes can be a sign of a scam.` });
+  if (g.is_whitelisted === "1") {
+    flags.push({ severity: "critical", title: "Whitelist Restriction", detail: "Only whitelisted addresses can trade." });
   }
-  if (slippage_modifiable === "1") {
-    flags.push({ severity: "moderate", title: "Modifiable Slippage", detail: "The contract owner can modify the slippage, which could lead to unfavorable trades." });
+  if (g.selfdestruct === "1") {
+    flags.push({ severity: "critical", title: "Self-Destruct Function", detail: "Contract can be destroyed, potentially stealing all funds." });
   }
-  if (owner_balance && owner_percent && parseFloat(owner_percent) > 20) {
-    flags.push({ severity: "moderate", title: "High Owner Balance", detail: `The contract owner holds ${owner_percent}% of the token supply.` });
-  }
-  if (creator_balance && creator_percent && parseFloat(creator_percent) > 20) {
-    flags.push({ severity: "moderate", title: "High Creator Balance", detail: `The token creator holds ${creator_percent}% of the token supply.` });
+  if (g.external_call === "1") {
+    flags.push({ severity: "critical", title: "External Call Risk", detail: "Contract makes external calls that could be exploited." });
   }
 
+  // === HIGH RISKS (15 points each) ===
+  if (g.cannot_sell_all === "1") {
+    flags.push({ severity: "high", title: "Cannot Sell All", detail: "You may not be able to sell 100% of your tokens." });
+  }
+  if (g.cannot_buy === "1") {
+    flags.push({ severity: "high", title: "Buying Disabled", detail: "Buying is currently disabled on this token." });
+  }
+  if (g.trading_cooldown === "1") {
+    flags.push({ severity: "high", title: "Trading Cooldown", detail: "Forced waiting period between trades." });
+  }
+  if (g.transfer_pausable === "1") {
+    flags.push({ severity: "high", title: "Transfers Pausable", detail: "Owner can pause all transfers at any time." });
+  }
+  if (g.is_anti_whale === "1") {
+    flags.push({ severity: "high", title: "Anti-Whale Limits", detail: "Transaction size limits may prevent large sells." });
+  }
+  if (g.anti_whale_modifiable === "1") {
+    flags.push({ severity: "high", title: "Modifiable Anti-Whale", detail: "Owner can change anti-whale rules arbitrarily." });
+  }
+  if (g.hidden_owner === "1") {
+    flags.push({ severity: "high", title: "Hidden Owner", detail: "True contract owner is obfuscated." });
+  }
+  if (buyTax > 10 || sellTax > 10) {
+    flags.push({ severity: "high", title: "High Tax", detail: `Buy: ${buyTax.toFixed(1)}% / Sell: ${sellTax.toFixed(1)}%. Over 10% is a red flag.` });
+  }
+
+  // === MODERATE RISKS (8 points each) ===
+  if (g.slippage_modifiable === "1") {
+    flags.push({ severity: "moderate", title: "Modifiable Slippage", detail: "Owner can change slippage settings." });
+  }
+  if (g.personal_slippage_modifiable === "1") {
+    flags.push({ severity: "moderate", title: "Personal Slippage Control", detail: "Owner can set different slippage per wallet." });
+  }
+  if (g.is_mintable === "1") {
+    flags.push({ severity: "moderate", title: "Mintable Supply", detail: "New tokens can be minted, diluting holders." });
+  }
+  if (g.can_take_back_ownership === "1") {
+    flags.push({ severity: "moderate", title: "Recoverable Ownership", detail: "Ownership can be reclaimed after renouncing." });
+  }
+  if (g.owner_change_balance === "1") {
+    flags.push({ severity: "moderate", title: "Balance Manipulation", detail: "Owner can modify wallet balances." });
+  }
+  if (ownerPercent > 10) {
+    flags.push({ severity: "moderate", title: "High Owner Holdings", detail: `Owner holds ${ownerPercent.toFixed(1)}% of supply.` });
+  }
+  if (creatorPercent > 10) {
+    flags.push({ severity: "moderate", title: "High Creator Holdings", detail: `Creator holds ${creatorPercent.toFixed(1)}% of supply.` });
+  }
+  if (buyTax > 5 && buyTax <= 10) {
+    flags.push({ severity: "moderate", title: "Elevated Tax", detail: `Buy: ${buyTax.toFixed(1)}% / Sell: ${sellTax.toFixed(1)}%.` });
+  }
+
+  // === POSITIVE SIGNALS ===
+  if (g.is_open_source === "1") {
+    positives.push("Contract is open source and verified");
+  }
+  if (g.is_proxy === "0") {
+    positives.push("Not a proxy contract (harder to rug)");
+  }
+  if (g.is_honeypot === "0") {
+    positives.push("Not detected as honeypot");
+  }
+  if (g.is_in_dex === "1") {
+    positives.push("Listed on decentralized exchange");
+  }
+  if (g.is_true_token === "1") {
+    positives.push("Verified as legitimate token standard");
+  }
+  if (g.is_airdrop_scam === "0") {
+    positives.push("No airdrop scam patterns detected");
+  }
+  if (holderCount > 1000) {
+    positives.push(`${holderCount.toLocaleString()} holders`);
+  }
+  if (lpHolderCount > 10) {
+    positives.push(`${lpHolderCount} liquidity providers`);
+  }
+  if (buyTax === 0 && sellTax === 0) {
+    positives.push("Zero trading tax");
+  }
+  if (g.owner_address === "0x0000000000000000000000000000000000000000") {
+    positives.push("Ownership renounced");
+  }
+
+  // Calculate score
   const score = calculateRiskScore(flags);
-  const verdict = score >= 70 ? "High Risk" : score >= 40 ? "Elevated Risk" : "Guarded";
+  const verdict = score >= 75 ? "Critical Risk" : score >= 50 ? "High Risk" : score >= 25 ? "Elevated Risk" : "Low Risk";
+
+  // Build narrative
+  let narrative;
+  if (score >= 75) {
+    narrative = `${tokenName} (${tokenSymbol}) shows critical risk signals. ${flags.length} warning${flags.length !== 1 ? 's' : ''} detected including potential scam indicators. Do not invest.`;
+  } else if (score >= 50) {
+    narrative = `${tokenName} (${tokenSymbol}) has significant risk factors. Found ${flags.length} concern${flags.length !== 1 ? 's' : ''} that warrant caution. Manual review strongly recommended.`;
+  } else if (score >= 25) {
+    narrative = `${tokenName} (${tokenSymbol}) shows some elevated risk signals. Review the ${flags.length} flag${flags.length !== 1 ? 's' : ''} below before investing.`;
+  } else if (flags.length > 0) {
+    narrative = `${tokenName} (${tokenSymbol}) appears relatively safe with ${flags.length} minor concern${flags.length !== 1 ? 's' : ''}. ${positives.length > 0 ? positives.slice(0, 2).join('. ') + '.' : ''}`;
+  } else {
+    narrative = `${tokenName} (${tokenSymbol}) shows no major red flags. ${positives.length > 0 ? positives.slice(0, 3).join('. ') + '.' : 'Continue with standard due diligence.'}`;
+  }
+
+  // Build pillars with actual data
+  const pillars = [
+    {
+      name: "Contract Security",
+      score: calculatePillarScore(flags, ["Honeypot", "Self-Destruct", "External Call", "Blacklist", "Whitelist", "Hidden Owner", "Proxy"]),
+      highlights: flags.filter(f => ["Honeypot", "Self-Destruct", "External Call", "Blacklist", "Whitelist", "Hidden Owner"].some(k => f.title.includes(k))).map(f => f.detail),
+      summary: g.is_open_source === "1" ? "Contract is verified and open source." : "Contract source not verified.",
+    },
+    {
+      name: "Trading Mechanics",
+      score: calculatePillarScore(flags, ["Tax", "Slippage", "Cannot Sell", "Cannot Buy", "Cooldown", "Pausable", "Anti-Whale"]),
+      highlights: [
+        `Buy Tax: ${buyTax.toFixed(1)}%`,
+        `Sell Tax: ${sellTax.toFixed(1)}%`,
+        ...flags.filter(f => ["Slippage", "Cannot", "Cooldown", "Pausable", "Anti-Whale"].some(k => f.title.includes(k))).map(f => f.title),
+      ].slice(0, 4),
+      summary: buyTax === 0 && sellTax === 0 ? "No trading taxes detected." : `Trading taxes: ${buyTax.toFixed(1)}% buy / ${sellTax.toFixed(1)}% sell.`,
+    },
+    {
+      name: "Ownership & Supply",
+      score: calculatePillarScore(flags, ["Owner", "Creator", "Mintable", "Balance"]),
+      highlights: [
+        g.owner_address === "0x0000000000000000000000000000000000000000" ? "Ownership renounced" : `Owner: ${g.owner_address?.slice(0, 8)}...`,
+        ownerPercent > 0 ? `Owner holds ${ownerPercent.toFixed(1)}%` : null,
+        creatorPercent > 0 ? `Creator holds ${creatorPercent.toFixed(1)}%` : null,
+        g.is_mintable === "1" ? "Token is mintable" : "Fixed supply",
+      ].filter(Boolean).slice(0, 4),
+      summary: g.owner_address === "0x0000000000000000000000000000000000000000" ? "Ownership has been renounced." : "Contract has active owner.",
+    },
+    {
+      name: "Liquidity & Holders",
+      score: holderCount < 100 ? 60 : holderCount < 500 ? 40 : holderCount < 1000 ? 25 : 10,
+      highlights: [
+        `${holderCount.toLocaleString()} token holders`,
+        `${lpHolderCount} liquidity providers`,
+        g.is_in_dex === "1" ? "Listed on DEX" : "Not on DEX",
+        lpTotalSupply > 0 ? `LP Supply: ${lpTotalSupply.toFixed(2)}` : null,
+      ].filter(Boolean),
+      summary: holderCount > 1000 ? "Strong holder distribution." : holderCount > 100 ? "Moderate holder count." : "Low holder count - higher risk.",
+    },
+  ];
+
+  // Add severity to pillars
+  pillars.forEach(p => {
+    p.severity = p.score >= 60 ? "High Risk" : p.score >= 40 ? "Moderate Risk" : "Low Risk";
+  });
 
   return {
     token: {
       address,
-      name: token_name,
-      symbol: token_symbol,
-      decimals: null, // GoPlus doesn't provide this, may need another source if required
+      name: tokenName,
+      symbol: tokenSymbol,
       type: "ERC20",
-      owner: owner_address,
-      totalSupply: total_supply,
-      circulatingSupply: null, // GoPlus doesn't provide this
-      lastUpdated: null,
+      owner: g.owner_address,
+      totalSupply: g.total_supply,
     },
     metrics: {
-      holderCount: holder_count,
-      lpTotalSupply: lp_total_supply,
-      dex,
+      holderCount,
+      lpHolderCount,
+      lpTotalSupply,
+      buyTax,
+      sellTax,
+      dex: g.dex,
     },
     risk: {
       score,
       verdict,
       flags,
     },
+    positives,
+    narrative,
+    pillars,
+    nextSteps: generateNextSteps(flags, score),
     sources: {
       goplus: true,
     },
@@ -287,13 +430,53 @@ function buildAnalysis({ goPlusData, address }) {
   };
 }
 
+function calculatePillarScore(flags, keywords) {
+  let score = 0;
+  for (const flag of flags) {
+    if (keywords.some(k => flag.title.includes(k))) {
+      if (flag.severity === "critical") score += 30;
+      else if (flag.severity === "high") score += 20;
+      else if (flag.severity === "moderate") score += 10;
+    }
+  }
+  return Math.min(100, score);
+}
+
+function generateNextSteps(flags, score) {
+  const steps = [];
+
+  if (score >= 50) {
+    steps.push("Do not invest until all flags are thoroughly investigated.");
+  }
+
+  if (flags.some(f => f.title.includes("Owner") || f.title.includes("Creator"))) {
+    steps.push("Check if ownership is renounced on the block explorer.");
+  }
+  if (flags.some(f => f.title.includes("Tax"))) {
+    steps.push("Verify actual tax rates by simulating a small trade.");
+  }
+  if (flags.some(f => f.title.includes("Liquidity") || f.title.includes("LP"))) {
+    steps.push("Verify liquidity is locked using a lock checker tool.");
+  }
+
+  if (steps.length === 0) {
+    steps.push("Verify the contract on the block explorer.");
+    steps.push("Check community channels for recent activity.");
+    steps.push("Start with a small test transaction if investing.");
+  }
+
+  return steps.slice(0, 4);
+}
+
 function calculateRiskScore(flags) {
   let score = 0;
   for (const flag of flags) {
-    if (flag.severity === "high") {
+    if (flag.severity === "critical") {
       score += 25;
+    } else if (flag.severity === "high") {
+      score += 15;
     } else if (flag.severity === "moderate") {
-      score += 10;
+      score += 8;
     }
   }
   return Math.min(100, score);
