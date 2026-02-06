@@ -1,69 +1,75 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
-const severityToBadge = {
-  'Critical Risk': 'bg-red-500/20 text-red-300 border border-red-500/40',
-  'High Risk': 'bg-orange-500/20 text-orange-200 border border-orange-500/40',
-  'Moderate Risk': 'bg-yellow-500/20 text-yellow-200 border border-yellow-500/40',
-  'Low Risk': 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40',
-};
-
-const scoreToBar = (score) => {
-  if (score >= 75) return 'bg-red-500';
-  if (score >= 60) return 'bg-orange-500';
-  if (score >= 40) return 'bg-yellow-500';
-  return 'bg-emerald-500';
-};
-
-const overallToDescriptor = (score) => {
-  if (score >= 75) return { label: 'Critical Risk', color: 'text-red-400', bg: 'bg-red-500' };
-  if (score >= 50) return { label: 'High Risk', color: 'text-orange-300', bg: 'bg-orange-500' };
-  if (score >= 25) return { label: 'Elevated', color: 'text-yellow-200', bg: 'bg-yellow-500' };
-  return { label: 'Low Risk', color: 'text-emerald-300', bg: 'bg-emerald-500' };
-};
+const CHAINS = [
+  { id: '1', name: 'Ethereum', symbol: 'ETH' },
+  { id: '56', name: 'BNB Chain', symbol: 'BSC' },
+  { id: '137', name: 'Polygon', symbol: 'MATIC' },
+  { id: '42161', name: 'Arbitrum', symbol: 'ARB' },
+  { id: '10', name: 'Optimism', symbol: 'OP' },
+  { id: '43114', name: 'Avalanche', symbol: 'AVAX' },
+  { id: '8453', name: 'Base', symbol: 'BASE' },
+  { id: 'solana', name: 'Solana', symbol: 'SOL' },
+];
 
 export function ScamLikelyApp({ session }) {
-  const [query, setQuery] = useState('');
-  const [analysis, setAnalysis] = useState(null);
+  const [contractAddress, setContractAddress] = useState('');
+  const [coinName, setCoinName] = useState('');
+  const [coinSymbol, setCoinSymbol] = useState('');
+  const [chain, setChain] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  const overallDescriptor = useMemo(() => {
-    if (!analysis) return null;
-    return overallToDescriptor(analysis.risk.score);
-  }, [analysis]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleRunAnalysis = async () => {
     if (!session) {
-      setError('Sign in to run the scan.');
+      setError('Please sign in to request a risk analysis.');
       return;
     }
 
-    const trimmed = query.trim();
-    if (!trimmed) {
-      setError('Enter a token contract address.');
+    const address = contractAddress.trim();
+    const name = coinName.trim();
+    const symbol = coinSymbol.trim().toUpperCase();
+
+    if (!address) {
+      setError('Contract address is required.');
+      return;
+    }
+
+    if (!name) {
+      setError('Coin name is required.');
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    setSuccess(false);
 
     try {
-      const response = await fetch('/api/scam-likely/run', {
+      const response = await fetch('/api/scam-likely/research', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ query: trimmed }),
+        body: JSON.stringify({
+          contractAddress: address,
+          coinName: name,
+          coinSymbol: symbol || name.toUpperCase().slice(0, 5),
+          chain,
+        }),
       });
 
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.error || 'Scan failed. Try again.');
+        throw new Error(payload.error || 'Failed to submit research request.');
       }
 
-      const payload = await response.json();
-      setAnalysis(enrichAnalysis(payload, { query: trimmed }));
+      setSuccess(true);
+      setContractAddress('');
+      setCoinName('');
+      setCoinSymbol('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -71,175 +77,160 @@ export function ScamLikelyApp({ session }) {
     }
   };
 
-  const renderResults = () => {
-    const record = analysis;
-    if (!record) return null;
-    const descriptor = overallDescriptor ?? { label: '', color: 'text-slate-300', bg: 'bg-slate-500' };
-    const tokenDisplay = record.token?.symbol ? `${record.token.name} (${record.token.symbol})` : record.query;
-
-    return (
-      <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
-        <div className="space-y-8">
-          <div className="rounded-2xl border border-white/5 bg-slate-950/50 p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">
-                  Risk Score for {record.token?.symbol || 'Token'}
-                </p>
-                <div className="flex items-baseline gap-x-3">
-                  <span className="text-5xl font-semibold text-white">
-                    {record.risk.score}
-                  </span>
-                  <span className={`text-lg font-medium ${descriptor.color}`}>
-                    {descriptor.label}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-slate-400">{tokenDisplay}</p>
-              </div>
-              <div className="text-right text-sm text-slate-400">
-                <p className="font-mono text-xs">{shortAddress(record.query)}</p>
-                <p>Updated {formatRelativeTime(record.fetchedAt)}</p>
-              </div>
-            </div>
-
-            <div className="mt-5 h-3 w-full rounded-full bg-slate-800">
-              <div
-                className={`h-full rounded-full ${scoreToBar(record.risk.score)} transition-all duration-700`}
-                style={{ width: `${Math.max(Math.min(record.risk.score, 100), 5)}%` }}
-              />
-            </div>
-
-            {record.narrative ? (
-              <p className="mt-6 text-sm leading-relaxed text-slate-300">{record.narrative}</p>
-            ) : null}
-
-            {record.positives?.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {record.positives.slice(0, 5).map((positive, idx) => (
-                  <span key={idx} className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300 border border-emerald-500/20">
-                    {positive}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {record.nextSteps?.length ? (
-            <div className="space-y-5">
-              <h3 className="text-lg font-semibold text-white">Recommended Checks</h3>
-              <ul className="grid gap-3 text-sm text-slate-300">
-                {record.nextSteps.map((step) => (
-                  <li
-                    key={step}
-                    className="flex items-start gap-3 rounded-xl border border-white/5 bg-slate-950/50 p-4"
-                  >
-                    <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/10 text-sky-300">
-                      •
-                    </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </div>
-
-        <aside className="space-y-6">
-          <div className="rounded-2xl border border-white/5 bg-slate-950/50 p-6">
-            <h3 className="text-lg font-semibold text-white">Pillar Breakdown</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              Scores roll up into the scam meter. Lower numbers are safer; anything over 60
-              deserves deeper manual review.
-            </p>
-          </div>
-
-          <div className="space-y-5">
-            {record.pillars.map((pillar) => (
-              <article
-                key={pillar.name}
-                className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 shadow-xl"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="text-base font-semibold text-white">{pillar.name}</h4>
-                    <p className="mt-1 text-sm text-slate-400">{pillar.summary}</p>
-                  </div>
-                  <span
-                    className={`mt-1 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${severityToBadge[pillar.severity]}`}
-                  >
-                    {pillar.severity}
-                  </span>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-xs uppercase tracking-wide text-slate-400">
-                    <span>Score</span>
-                    <span>{pillar.score}</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-slate-800">
-                    <div
-                      className={`h-full rounded-full ${scoreToBar(pillar.score)} transition-all duration-700`}
-                      style={{ width: `${Math.min(pillar.score, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                {pillar.highlights?.length ? (
-                  <ul className="mt-5 grid gap-2 text-sm text-slate-300">
-                    {pillar.highlights.map((highlight) => (
-                      <li
-                        key={highlight}
-                        className="rounded-lg border border-white/5 bg-slate-900/60 px-3 py-2"
-                      >
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        </aside>
-      </div>
-    );
-  };
-
-  const results = renderResults();
+  const selectedChain = CHAINS.find((c) => c.id === chain);
 
   return (
     <section className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-8 text-slate-100 shadow-2xl backdrop-blur-xl">
-      <div className="space-y-8">
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <label className="sr-only" htmlFor="scam-likely-query">
-            Token query
-          </label>
-          <input
-            id="scam-likely-query"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="0xabc…"
-            className="w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
-            disabled={isLoading}
-          />
-          <button
-            type="button"
-            onClick={handleRunAnalysis}
-            className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 font-semibold text-white transition hover:bg-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60 disabled:cursor-not-allowed disabled:bg-slate-600"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Scanning…' : 'Run Analysis'}
-          </button>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Deep Risk Research</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Enter a token's details and we'll perform comprehensive research across contract security,
+            trading mechanics, ownership structure, and community signals. Results will be emailed to you.
+          </p>
         </div>
 
-        {error ? (
-          <p className="text-sm text-orange-300">{error}</p>
-        ) : null}
-
-        {results ?? (!isLoading && !error ? (
-          <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
-            Enter a contract address above to generate a fresh on-chain risk snapshot.
+        {success ? (
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20">
+              <svg className="h-7 w-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-emerald-300">Research Request Submitted!</h3>
+            <p className="mt-2 text-sm text-slate-300">
+              Our AI is analyzing this token across multiple data sources. You'll receive a detailed
+              risk report at <span className="font-medium text-white">{session?.user?.email}</span> within 5-10 minutes.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSuccess(false)}
+              className="mt-6 rounded-xl bg-slate-800 px-6 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              Research Another Token
+            </button>
           </div>
-        ) : null)}
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label htmlFor="contract-address" className="block text-sm font-medium text-slate-300">
+                  Contract Address <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="contract-address"
+                  type="text"
+                  value={contractAddress}
+                  onChange={(e) => setContractAddress(e.target.value)}
+                  placeholder="0x..."
+                  className="mt-1 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 font-mono text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="coin-name" className="block text-sm font-medium text-slate-300">
+                  Coin Name <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="coin-name"
+                  type="text"
+                  value={coinName}
+                  onChange={(e) => setCoinName(e.target.value)}
+                  placeholder="e.g., Pepe"
+                  className="mt-1 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="coin-symbol" className="block text-sm font-medium text-slate-300">
+                  Symbol <span className="text-slate-500">(optional)</span>
+                </label>
+                <input
+                  id="coin-symbol"
+                  type="text"
+                  value={coinSymbol}
+                  onChange={(e) => setCoinSymbol(e.target.value)}
+                  placeholder="e.g., PEPE"
+                  className="mt-1 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-sm uppercase text-slate-100 placeholder:text-slate-500 placeholder:normal-case focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="chain" className="block text-sm font-medium text-slate-300">
+                  Blockchain
+                </label>
+                <select
+                  id="chain"
+                  value={chain}
+                  onChange={(e) => setChain(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-sm text-slate-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                  disabled={isLoading}
+                >
+                  {CHAINS.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {error && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                {error}
+              </div>
+            )}
+
+            <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
+              <h4 className="text-sm font-medium text-sky-300">What We'll Analyze:</h4>
+              <ul className="mt-2 grid gap-2 text-xs text-slate-400 sm:grid-cols-2">
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                  Contract Security & Audit Status
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                  Trading Mechanics & Taxes
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                  Ownership & Token Distribution
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                  Community & Social Signals
+                </li>
+              </ul>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !session}
+              className="w-full rounded-xl bg-sky-500 px-6 py-3 font-semibold text-white transition hover:bg-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60 disabled:cursor-not-allowed disabled:bg-slate-600"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Submitting...
+                </span>
+              ) : (
+                'Start Deep Research'
+              )}
+            </button>
+
+            {!session && (
+              <p className="text-center text-sm text-slate-400">
+                Please sign in above to submit a research request.
+              </p>
+            )}
+          </form>
+        )}
       </div>
 
       <div className="pointer-events-none absolute -top-48 right-10 h-80 w-80 rounded-full bg-sky-500/30 blur-3xl" />
@@ -249,54 +240,3 @@ export function ScamLikelyApp({ session }) {
 }
 
 export default ScamLikelyApp;
-
-function enrichAnalysis(raw, { query }) {
-  // Use actual API data, only provide fallbacks if missing
-  const score = raw?.risk?.score ?? 0;
-  const verdict = raw?.risk?.verdict ?? (score >= 75 ? 'Critical Risk' : score >= 50 ? 'High Risk' : score >= 25 ? 'Elevated' : 'Low Risk');
-  const flags = raw?.risk?.flags ?? [];
-  const positives = raw?.positives ?? [];
-  const pillars = raw?.pillars ?? [];
-  const nextSteps = raw?.nextSteps ?? ['Verify the contract on the block explorer.'];
-  const narrative = raw?.narrative ?? (
-    flags.length > 0
-      ? `Found ${flags.length} risk indicator${flags.length !== 1 ? 's' : ''}. Review the details below.`
-      : 'No major red flags detected. Continue with standard due diligence.'
-  );
-
-  return {
-    ...raw,
-    query,
-    narrative,
-    nextSteps,
-    pillars,
-    positives,
-    risk: { score, verdict, flags },
-  };
-}
-
-function formatRelativeTime(iso) {
-  if (!iso) return 'recently';
-  const diff = Date.now() - new Date(iso).getTime();
-  if (Number.isNaN(diff)) return 'recently';
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hr${hours === 1 ? '' : 's'} ago`;
-  const days = Math.floor(hours / 24);
-  return `${days} day${days === 1 ? '' : 's'} ago`;
-}
-
-function shortAddress(addr) {
-  if (!addr) return 'unknown';
-  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
-}
-
-function formatNumber(value) {
-  if (value == null) return 'n/a';
-  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(2)}K`;
-  return value.toString();
-}
