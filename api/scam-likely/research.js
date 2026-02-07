@@ -112,21 +112,23 @@ export default async function handler(req, res) {
       throw new Error("Failed to submit research request");
     }
 
-    // Log the request
-    await supabase.from("research_requests").insert({
+    // Log the request (non-blocking, table may not exist yet)
+    supabase.from("research_requests").insert({
       user_id: user.id,
       contract_address: contractAddress.trim(),
       coin_name: coinName.trim(),
       coin_symbol: coinSymbol?.trim() || null,
       chain: chainName,
       status: "pending",
-    }).catch((err) => {
-      console.error("Failed to log research request:", err);
+    }).then(({ error }) => {
+      if (error) {
+        console.log("Research request logging skipped:", error.message);
+      }
     });
 
     return res.status(200).json({
       success: true,
-      message: "Research request submitted. You will receive an email with results.",
+      message: "Research request submitted. Check your email in 5-10 minutes.",
     });
 
   } catch (error) {
