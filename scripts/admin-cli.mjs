@@ -387,94 +387,98 @@ async function runPerplexityCoinScan({ focus }) {
     body: JSON.stringify({
       model: PERPLEXITY_COIN_MODEL,
       max_tokens: Number.parseInt(
-        process.env.PERPLEXITY_MAX_TOKENS ?? "1200",
+        process.env.PERPLEXITY_MAX_TOKENS ?? "4000",
         10,
       ),
       temperature: Number.parseFloat(
         process.env.PERPLEXITY_TEMPERATURE ?? "0.1",
       ),
-      frequency_penalty: 1,
       stream: false,
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "coin_watch_report",
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            properties: {
-              summary: { type: "string" },
-              findings: {
-                type: "array",
-                items: {
-                  type: "object",
-                  additionalProperties: false,
-                  properties: {
-                    token: { type: "string" },
-                    title: { type: "string" },
-                    summary: { type: "string" },
-                    howToAvoid: { type: "string" },
-                    threatLevel: {
-                      type: "string",
-                      enum: ["High", "Medium", "Low"],
-                    },
-                    sources: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        additionalProperties: false,
-                        properties: {
-                          uri: { type: "string" },
-                          title: { type: "string" },
-                        },
-                        required: ["uri"],
-                      },
-                    },
-                  },
-                  required: ["summary"],
-                },
-              },
-              sources: {
-                type: "array",
-                items: {
-                  type: "object",
-                  additionalProperties: false,
-                  properties: {
-                    uri: { type: "string" },
-                    title: { type: "string" },
-                  },
-                  required: ["uri"],
-                },
-              },
-            },
-            required: ["summary"],
-          },
+      messages: [
+        {
+          role: "system",
+          content: "You are a cryptocurrency security analyst. Always respond with valid JSON only. No markdown, no explanations outside the JSON."
         },
-      },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Perplexity request failed: ${response.statusText}`);
+    const errorText = await response.text().catch(() => "");
+    console.error("Perplexity API error:", response.status, errorText);
+    throw new Error(`Perplexity request failed: ${response.status} ${response.statusText}`);
   }
 
   const payload = await response.json();
-  return payload?.choices?.[0]?.message?.content
-    ? JSON.parse(payload.choices[0].message.content)
-    : null;
+  const content = payload?.choices?.[0]?.message?.content;
+
+  if (!content) {
+    return null;
+  }
+
+  // Try to parse JSON from the response
+  try {
+    // Handle case where response might have markdown code blocks
+    let jsonStr = content;
+    if (jsonStr.includes("```json")) {
+      jsonStr = jsonStr.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+    } else if (jsonStr.includes("```")) {
+      jsonStr = jsonStr.replace(/```\n?/g, "");
+    }
+
+    // Find JSON object boundaries
+    const start = jsonStr.indexOf("{");
+    const end = jsonStr.lastIndexOf("}");
+    if (start !== -1 && end !== -1 && end > start) {
+      jsonStr = jsonStr.slice(start, end + 1);
+    }
+
+    return JSON.parse(jsonStr);
+  } catch (parseError) {
+    console.error("Failed to parse Perplexity response:", parseError.message);
+    console.error("Raw content:", content.slice(0, 500));
+    return null;
+  }
 }
 
 function buildPerplexityPrompt({ focus, start, now, windowDays }) {
   const focusLine = focus
-    ? `Focus on developments related to "${focus}".`
-    : "Prioritize highly credible emerging scam activity.";
-  return `You are the investigator for the Scam Watch coin desk.
+    ? `Focus specifically on: ${focus}`
+    : "Focus on the most significant rug pulls, exit scams, and fraud cases.";
 
-Use reputable primary research, regulatory filings, or credible journalist sources between ${start.toISOString()} and ${now.toISOString()} (${windowDays} day window).
+  return `Search for cryptocurrency tokens and projects with CONFIRMED investor losses (rug pulls, exit scams, exploits, phishing) from the past ${windowDays} days (${start.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}).
 
 ${focusLine}
 
-Return JSON with summary plus detailed findings, each containing token, summary, howToAvoid, threatLevel, and sources (uri/title).`;
+Return ONLY valid JSON in this exact format:
+{
+  "summary": "Brief overview of the scam landscape this period",
+  "findings": [
+    {
+      "token": "Token or project name",
+      "title": "Descriptive headline about the incident",
+      "summary": "What happened and how much was lost",
+      "howToAvoid": "Specific advice to avoid similar scams",
+      "threatLevel": "High" or "Medium" or "Low",
+      "sources": [
+        {"uri": "https://...", "title": "Source title"}
+      ]
+    }
+  ],
+  "sources": [
+    {"uri": "https://...", "title": "Source title"}
+  ]
+}
+
+REQUIREMENTS:
+- Only include cases with confirmed/credible evidence of losses
+- Cite real URLs from reputable sources (news, regulatory filings, on-chain analysis)
+- If no credible scams found, return empty findings array with explanatory summary
+- Return ONLY the JSON object, no other text`;
 }
 
 function sanitizeJson(raw) {
