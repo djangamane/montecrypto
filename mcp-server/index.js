@@ -7,6 +7,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 // Configuration from environment
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -79,17 +80,10 @@ async function validateApiKey(apiKey) {
 }
 
 /**
- * Hash API key for secure storage lookup
+ * Hash API key for secure storage lookup (SHA-256)
  */
 function hashApiKey(key) {
-  // Simple hash for lookup - in production use crypto.subtle
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    const char = key.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return `hash_${Math.abs(hash).toString(16)}`;
+  return crypto.createHash("sha256").update(key).digest("hex");
 }
 
 /**
@@ -121,15 +115,16 @@ async function analyzeToken(contractAddress, chain, coinName) {
   const chainId = SUPPORTED_CHAINS[chain.toLowerCase()] || chain;
 
   try {
-    // Call our API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/scam-likely/run`, {
+    // Call our MCP-specific API endpoint (uses API key auth)
+    const response = await fetch(`${API_BASE_URL}/api/scam-likely/mcp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-API-Key": API_KEY,
       },
       body: JSON.stringify({
         contractAddress,
-        chain: chainId,
+        chainId,
         coinName: coinName || undefined,
       }),
     });
