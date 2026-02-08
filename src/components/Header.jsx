@@ -33,6 +33,9 @@ export function Header({ onBookNowClick, session, isSessionLoading }) {
           <a href="#about" className="transition hover:text-brand-text">
             About
           </a>
+          <a href="/api-keys" className="transition hover:text-brand-text">
+            API Keys
+          </a>
         </nav>
         <a
           href="/scam-shooter"

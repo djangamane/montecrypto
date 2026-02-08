@@ -15,11 +15,11 @@ export default function ThankYouInner() {
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const email = searchParams.get("email");
-    const next = searchParams.get("next");
-    const sessionId = searchParams.get("session_id");
-    const paidFlag = searchParams.get("paid");
-    const token = searchParams.get("token");
+    const email = searchParams?.get("email");
+    const next = searchParams?.get("next");
+    const sessionId = searchParams?.get("session_id");
+    const paidFlag = searchParams?.get("paid");
+    const token = searchParams?.get("token");
     const expectedToken = process.env.NEXT_PUBLIC_THANK_YOU_TOKEN || "";
 
     const isAuthorized = !!sessionId || paidFlag === "true" || (expectedToken && token === expectedToken);
