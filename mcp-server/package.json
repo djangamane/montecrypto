@@ -28,6 +28,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aicryptorisk/mcp-server"
-  }
+    "url": "https://github.com/djangamane/montecrypto"
+  },
+  "homepage": "https://aicryptorisk.com"
 }
