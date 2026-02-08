@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "aicryptorisk": {
+      "command": "node",
+      "args": ["./mcp-server/index.js"],
+      "env": {
+        "AICRYPTORISK_API_KEY": "acr_test123",
+        "API_BASE_URL": "https://aicryptorisk.com"
+      }
+    }
+  }
+}

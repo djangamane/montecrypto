@@ -11,7 +11,9 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "npm install --prefix tools/blog-generator",
-    "admin:cli": "node scripts/admin-cli.mjs"
+    "admin:cli": "node scripts/admin-cli.mjs",
+    "mcp:start": "node mcp-server/index.js",
+    "mcp:install": "npm install --prefix mcp-server"
   },
   "dependencies": {
     "@ai-sdk/fireworks": "^0.1.14",
