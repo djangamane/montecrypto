@@ -1,133 +1,134 @@
 # AI Crypto Risk MCP Server
 
-An MCP (Model Context Protocol) server that provides AI assistants with cryptocurrency risk analysis capabilities.
+**The Security Layer for Agentic Crypto Trading**
 
-## Features
+Stop your AI agent from trading into scams. This MCP server provides real-time cryptocurrency risk analysis, protecting users and agents from honeypots, rugpulls, and malicious smart contracts.
 
-- **Token Risk Analysis**: Analyze any crypto token for scam indicators
-- **Deep Research**: Request comprehensive 4-pillar research reports
-- **Multi-Chain Support**: Ethereum, BSC, Polygon, Arbitrum, Base, Solana
-- **Usage Metering**: Built-in API key authentication and usage tracking
+[![npm version](https://img.shields.io/npm/v/@aicryptorisk/mcp-server.svg)](https://www.npmjs.com/package/@aicryptorisk/mcp-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Installation
+## Why Use This?
+
+- **Prevent Losses**: Detect honeypots, blacklist functions, and rugpull patterns before trading
+- **Agent Safety**: Give your AI trading agents a security checkpoint
+- **Liability Shield**: Document due diligence for every transaction
+- **Multi-Chain**: Ethereum, BSC, Polygon, Arbitrum, Base, Solana
+
+## Quick Start
 
 ```bash
-# From npm (when published)
 npm install -g @aicryptorisk/mcp-server
-
-# Or from source
-cd mcp-server
-npm install
 ```
 
-## Configuration
+Get your API key at: **https://aicryptorisk.com/api-keys**
 
-### For Claude Desktop
+### Claude Desktop Configuration
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
+Add to `claude_desktop_config.json`:
+
+**Mac:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "aicryptorisk": {
-      "command": "node",
-      "args": ["/path/to/mcp-server/index.js"],
+      "command": "npx",
+      "args": ["@aicryptorisk/mcp-server"],
       "env": {
-        "AICRYPTORISK_API_KEY": "your-api-key-here"
+        "AICRYPTORISK_API_KEY": "acr_your_key_here"
       }
     }
   }
 }
 ```
 
-### For Claude Code
+Restart Claude Desktop. Done.
 
-Add to your project's `.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "aicryptorisk": {
-      "command": "node",
-      "args": ["./mcp-server/index.js"],
-      "env": {
-        "AICRYPTORISK_API_KEY": "your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-## Available Tools
+## Tools Available
 
 ### `analyze_crypto_risk`
 
-Analyze a token for scam indicators and risk factors.
+Instant risk analysis for any token.
 
-**Input:**
-- `contract_address` (required): Token contract address
-- `chain` (optional): Blockchain network (default: ethereum)
-- `coin_name` (optional): Name for better context
+```
+Input:
+  - contract_address: "0x..." (required)
+  - chain: "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "solana"
+  - coin_name: "Token Name" (optional)
 
-**Returns:**
-- Risk score (0-100)
-- Risk level (Low/Medium/High/Critical)
-- Red flags and warnings
-- Recommendations
+Output:
+  - Risk score: 0-100 (higher = more dangerous)
+  - Verdict: Low Risk / Elevated Risk / High Risk / Critical Risk
+  - Red flags: Honeypot, blacklist, hidden owner, high tax, etc.
+  - Positive signals: Verified source, renounced ownership, etc.
+```
 
 ### `request_deep_research`
 
-Request comprehensive 4-pillar analysis (delivered via email).
-
-**Input:**
-- `contract_address` (required): Token contract address
-- `chain` (required): Blockchain network
-- `coin_name` (required): Token name
-- `symbol` (optional): Token symbol
-- `email` (required): Email for report delivery
+Comprehensive 4-pillar analysis delivered via email:
+1. On-Chain Security
+2. Social Media Intelligence
+3. Institutional Interest
+4. Off-Chain Investigation
 
 ### `get_supported_chains`
 
-Get list of supported blockchain networks.
+Returns list of supported blockchain networks.
 
-## Pricing Tiers
+## Example Prompts
 
-| Tier | Daily Limit | Price |
-|------|-------------|-------|
-| Free | 10 scans | $0 |
-| Pro | 100 scans | $19/mo |
-| Enterprise | Unlimited | Contact us |
+Once configured, just ask Claude:
 
-Get your API key at: https://aicryptorisk.com/api-keys
+> "Check if this token is safe: 0xdAC17F958D2ee523a2206206994597C13D831ec7"
 
-## Example Usage
+> "Analyze the risk of trading PEPE on ethereum"
 
-Once configured, you can ask Claude:
+> "Before I swap, verify this contract: 0x..."
 
-> "Analyze this token for scam risk: 0x1234...abcd on ethereum"
+## Pricing
 
-> "Research this new memecoin PEPE2 at 0xabc... on BSC and send the report to my@email.com"
+| Plan | API Calls/Day | Keys | Price |
+|------|---------------|------|-------|
+| Free | 10 | 2 | $0 |
+| Monthly | 50 | 3 | $9/mo |
+| Yearly | 100 | 5 | $69/yr |
+| Lifetime | 200 | 10 | $199 once |
 
-## Development
+**[Get Your API Key](https://aicryptorisk.com/api-keys)**
 
-```bash
-# Install dependencies
-npm install
+## The Safe-Trade Skill
 
-# Run locally (dev mode, no auth required)
-npm start
+For maximum protection, pair this MCP with our **Safe-Trade Skill** that enforces mandatory risk checks before any transaction:
 
-# With auth (production)
-SUPABASE_URL=your-url \
-SUPABASE_SERVICE_ROLE_KEY=your-key \
-AICRYPTORISK_API_KEY=test-key \
-npm start
+```yaml
+# .claude/skills/safe-trade/SKILL.md
+---
+name: safe-trade
+description: Check crypto risk before any transaction
+---
+BEFORE any crypto transaction, run analyze_crypto_risk.
+If score > 75: REFUSE to proceed.
 ```
 
-## Database Setup
+## Security
 
-Run `schema.sql` in your Supabase SQL editor to create the required tables for API key management and usage tracking.
+- API keys are hashed with SHA-256
+- Usage tracked per key for billing
+- Rate limiting prevents abuse
+- No sensitive data stored
+
+## Support
+
+- Documentation: https://aicryptorisk.com/docs
+- API Keys: https://aicryptorisk.com/api-keys
+- Email: jason@aicryptorisk.com
+- GitHub: https://github.com/djangamane/montecrypto
 
 ## License
 
-MIT
+MIT - Use freely in your agents and applications.
+
+---
+
+**Built for the Agentic Economy.** Protect your users. Protect your agents. Trade safe.
