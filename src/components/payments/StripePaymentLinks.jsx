@@ -5,20 +5,20 @@ import { useEffect, useMemo, useState } from "react";
 const PLAN_CONFIG = [
   {
     id: "monthly",
-    label: "$5 per month",
-    description: "Monthly membership billed at $5. Cancel anytime.",
+    label: "$9 per month",
+    description: "75 scans/month + 50 API calls/day. Cancel anytime.",
     link: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_LINK,
   },
   {
     id: "annual",
-    label: "$50 per year",
-    description: "Annual membership billed at $50 with two months free.",
+    label: "$69 per year",
+    description: "150 scans/month + 100 API calls/day. Save vs monthly!",
     link: process.env.NEXT_PUBLIC_STRIPE_YEARLY_LINK,
   },
   {
     id: "lifetime",
-    label: "$200 lifetime",
-    description: "One-time payment for lifetime access to the workspace.",
+    label: "$199 lifetime",
+    description: "200 scans/month + 200 API calls/day. One-time payment.",
     link: process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK,
   },
 ];
