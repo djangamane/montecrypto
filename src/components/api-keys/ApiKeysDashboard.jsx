@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import { Copy, Key, Plus, Trash2, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { RiskDisclaimer } from "../Disclaimer.jsx";
 
 const TIER_COLORS = {
   free: "bg-gray-500",
@@ -325,6 +326,21 @@ export function ApiKeysDashboard() {
           className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand-link hover:underline"
         >
           View on npm <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+
+      {/* Risk Disclaimer */}
+      <div className="mt-8">
+        <RiskDisclaimer />
+      </div>
+
+      {/* Back to Home */}
+      <div className="mt-8 text-center">
+        <a
+          href="/"
+          className="text-sm text-brand-muted hover:text-brand-text"
+        >
+          &larr; Back to Home
         </a>
       </div>
     </div>

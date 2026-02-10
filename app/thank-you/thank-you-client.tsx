@@ -76,6 +76,14 @@ export default function ThankYouInner() {
         >
           Continue to Scam Shooter
         </a>
+        <div className="pt-4 border-t border-gray-700 mt-4">
+          <a
+            href="/"
+            className="text-sm text-gray-400 hover:text-white"
+          >
+            &larr; Back to Home
+          </a>
+        </div>
       </div>
     </div>
   );

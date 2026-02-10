@@ -51,6 +51,26 @@ export default async function BlogIndexPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
+      {/* Navigation */}
+      <nav className="mb-8 flex items-center justify-between" aria-label="Blog navigation">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-brand-muted hover:text-brand-text"
+          aria-label="Back to home page"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Home
+        </Link>
+        <Link
+          href="/api-keys"
+          className="text-sm font-medium text-brand-link hover:text-brand-text"
+        >
+          API Keys
+        </Link>
+      </nav>
+
       <div className="mb-12 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-brand-text sm:text-5xl">
           AI Crypto Risk Blog
