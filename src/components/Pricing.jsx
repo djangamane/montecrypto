@@ -11,21 +11,23 @@ import { StripePaymentLinks } from "./payments/StripePaymentLinks.jsx";
 const tiers = [
   {
     name: "Monthly",
-    price: "$5",
-    description: "150 scans/month plus weekly Scam Watch newsletter.",
+    price: "$9",
+    description: "75 scans/month plus weekly Scam Watch newsletter.",
     features: [
-      { text: "150 scans per month", icon: ScanLine },
+      { text: "75 scans per month", icon: ScanLine },
+      { text: "50 API calls/day", icon: ScanLine },
       { text: "Weekly newsletter", icon: Newspaper },
       { text: "Email support", icon: LifeBuoy },
     ],
   },
   {
     name: "Yearly",
-    price: "$50",
+    price: "$69",
     description:
-      "Save two months with annual billing. Includes advanced reporting.",
+      "Save with annual billing. Includes advanced reporting.",
     features: [
-      { text: "300 scans per month", icon: ScanLine },
+      { text: "150 scans per month", icon: ScanLine },
+      { text: "100 API calls/day", icon: ScanLine },
       { text: "Weekly newsletter", icon: Newspaper },
       { text: "Email export (coming soon)", icon: Download },
       { text: "Priority support", icon: LifeBuoy },
@@ -33,11 +35,12 @@ const tiers = [
   },
   {
     name: "Lifetime",
-    price: "$200",
+    price: "$199",
     description:
       "One-time payment for lifetime Scam Likely access and updates.",
     features: [
-      { text: "400 scans per month", icon: ScanLine },
+      { text: "200 scans per month", icon: ScanLine },
+      { text: "200 API calls/day", icon: ScanLine },
       { text: "Weekly newsletter", icon: Newspaper },
       { text: "Email export (coming soon)", icon: Download },
       { text: "Lifetime access", icon: Infinity },

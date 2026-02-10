@@ -42,13 +42,13 @@ export async function checkUsageAndEntitlements(userId) {
 
   if (activeProducts.includes('lifetime_access')) {
     plan = 'lifetime';
-    scanLimit = 400; // Monthly
+    scanLimit = 200; // Monthly
   } else if (activeProducts.includes('scam_likely_yearly')) {
     plan = 'yearly';
-    scanLimit = 300; // Monthly
+    scanLimit = 150; // Monthly
   } else if (activeProducts.includes('scam_likely_monthly')) {
     plan = 'monthly';
-    scanLimit = 150; // Monthly
+    scanLimit = 75; // Monthly
   }
 
   const usage = {

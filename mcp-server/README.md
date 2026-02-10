@@ -88,12 +88,12 @@ Once configured, just ask Claude:
 
 ## Pricing
 
-| Plan | API Calls/Day | Keys | Price |
-|------|---------------|------|-------|
-| Free | 10 | 2 | $0 |
-| Monthly | 50 | 3 | $9/mo |
-| Yearly | 100 | 5 | $69/yr |
-| Lifetime | 200 | 10 | $199 once |
+| Plan | Scans/Month | API Calls/Day | Price |
+|------|-------------|---------------|-------|
+| Free | 1/day | 10 | $0 |
+| Monthly | 75 | 50 | $9/mo |
+| Yearly | 150 | 100 | $69/yr |
+| Lifetime | 200 | 200 | $199 once |
 
 **[Get Your API Key](https://aicryptorisk.com/api-keys)**
 

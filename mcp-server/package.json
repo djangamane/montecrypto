@@ -1,6 +1,6 @@
 {
   "name": "@aicryptorisk/mcp-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The security layer for agentic crypto trading. Detect honeypots, rugpulls, and scam tokens before your AI agent trades.",
   "type": "module",
   "main": "index.js",
