@@ -6,20 +6,17 @@ import { Copy, Key, Plus, Trash2, Eye, EyeOff, ExternalLink } from "lucide-react
 
 const TIER_COLORS = {
   free: "bg-gray-500",
-  pro: "bg-blue-500",
-  enterprise: "bg-purple-500",
-};
-
-const TIER_LIMITS = {
-  free: 10,
-  pro: 100,
-  enterprise: "Unlimited",
+  monthly: "bg-blue-500",
+  yearly: "bg-green-500",
+  lifetime: "bg-purple-500",
 };
 
 export function ApiKeysDashboard() {
   const [session, setSession] = useState(null);
   const [keys, setKeys] = useState([]);
   const [userTier, setUserTier] = useState("free");
+  const [dailyLimit, setDailyLimit] = useState(10);
+  const [maxKeys, setMaxKeys] = useState(2);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
@@ -53,6 +50,8 @@ export function ApiKeysDashboard() {
       if (res.ok) {
         setKeys(data.keys || []);
         setUserTier(data.tier || "free");
+        setDailyLimit(data.daily_limit || 10);
+        setMaxKeys(data.max_keys || 2);
       } else {
         setError(data.error);
       }
@@ -151,11 +150,11 @@ export function ApiKeysDashboard() {
 
       {/* Tier Info */}
       <div className="mb-6 flex items-center gap-3 rounded-lg border border-brand-muted/20 bg-brand-bg/50 p-4">
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase text-white ${TIER_COLORS[userTier]}`}>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase text-white ${TIER_COLORS[userTier] || "bg-gray-500"}`}>
           {userTier}
         </span>
         <span className="text-sm text-brand-muted">
-          {TIER_LIMITS[userTier]} calls/day per key
+          {dailyLimit} calls/day per key | {maxKeys} keys max
         </span>
         {userTier === "free" && (
           <a

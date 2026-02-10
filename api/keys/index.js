@@ -8,12 +8,36 @@ import crypto from "crypto";
  * DELETE - Revoke API key
  */
 
-// Tier configurations
-const TIER_LIMITS = {
-  free: 10,
-  pro: 100,
-  enterprise: null, // unlimited
+// Tier configurations based on entitlements
+const TIER_CONFIG = {
+  free: { daily_limit: 10, max_keys: 2 },
+  monthly: { daily_limit: 50, max_keys: 3 },
+  yearly: { daily_limit: 100, max_keys: 5 },
+  lifetime: { daily_limit: 200, max_keys: 10 },
 };
+
+/**
+ * Get user's tier from entitlements table
+ */
+async function getUserTier(userId) {
+  const { data: entitlements } = await supabase
+    .from("entitlements")
+    .select("product")
+    .eq("user_id", userId)
+    .in("status", ["active", "past_due"]);
+
+  if (!entitlements || entitlements.length === 0) {
+    return "free";
+  }
+
+  const products = entitlements.map((e) => e.product);
+
+  if (products.includes("lifetime_access")) return "lifetime";
+  if (products.includes("scam_likely_yearly")) return "yearly";
+  if (products.includes("scam_likely_monthly")) return "monthly";
+
+  return "free";
+}
 
 /**
  * Generate a secure API key
@@ -57,14 +81,9 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // Check user's subscription tier
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("subscription_tier")
-    .eq("id", user.id)
-    .single();
-
-  const tier = profile?.subscription_tier || "free";
+  // Check user's subscription tier from entitlements
+  const tier = await getUserTier(user.id);
+  const tierConfig = TIER_CONFIG[tier] || TIER_CONFIG.free;
 
   if (req.method === "GET") {
     // List user's API keys
@@ -81,7 +100,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       keys,
       tier,
-      limits: TIER_LIMITS,
+      daily_limit: tierConfig.daily_limit,
+      max_keys: tierConfig.max_keys,
     });
   }
 
@@ -95,10 +115,9 @@ export default async function handler(req, res) {
       .eq("user_id", user.id)
       .eq("is_active", true);
 
-    const maxKeys = tier === "enterprise" ? 10 : tier === "pro" ? 5 : 2;
-    if (count >= maxKeys) {
+    if (count >= tierConfig.max_keys) {
       return res.status(400).json({
-        error: `Maximum ${maxKeys} active API keys allowed for ${tier} tier`,
+        error: `Maximum ${tierConfig.max_keys} active API keys allowed for ${tier} tier`,
       });
     }
 
@@ -116,7 +135,7 @@ export default async function handler(req, res) {
         key_prefix: keyPrefix,
         name,
         tier,
-        daily_limit: TIER_LIMITS[tier],
+        daily_limit: tierConfig.daily_limit,
       })
       .select("id, key_prefix, name, tier, daily_limit, created_at")
       .single();
