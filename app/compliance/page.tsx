@@ -69,7 +69,7 @@ export default function CompliancePage() {
                     <span className="font-drama italic text-brand-accent -mt-2 md:-mt-4">By Verification.</span>
                 </h1>
                 <p className="max-w-xl text-xl leading-relaxed text-white/40">
-                    At Montecrypto, our intelligence is built on open standards and verifiable risk frameworks.
+                    Our intelligence is built on open standards and verifiable risk frameworks.
                     We adhere to the EU AI Act and maintain rigorous data sovereignty protocols.
                 </p>
             </header>
@@ -125,7 +125,7 @@ export default function CompliancePage() {
                         <h2 className="text-3xl font-bold md:text-5xl uppercase tracking-tighter">EU AI Act Conformance</h2>
                         <div className="prose prose-invert prose-brand max-w-none text-white/60 font-data text-sm leading-relaxed">
                             <p>
-                                Montecrypto operates as a <strong>High-Transparency Information Service</strong> under Article 53 of the EU AI Act (2024).
+                                AI Crypto Risk operates as a <strong>High-Transparency Information Service</strong> under Article 53 of the EU AI Act (2024).
                                 We provide systemic risk analysis without automated decision-making.
                             </p>
                             <ul className="grid gap-4 md:grid-cols-2 mt-8">
@@ -185,7 +185,7 @@ export default function CompliancePage() {
                             <div className="mt-6 flex flex-col gap-4">
                                 <p className="text-xs text-white/40">
                                     Our &ldquo;Risk Score&rdquo; is a recommendation engine. Final capital allocation decisions must be approved by a human operator.
-                                    The Montecrypto Alpha engine reports hallucinations in 0.04% of high-volatility contexts.
+                                    The Alpha Engine reports hallucinations in 0.04% of high-volatility contexts.
                                 </p>
                                 <div className="flex items-center gap-2 text-xs font-bold uppercase text-brand-accent">
                                     <CheckCircle className="h-4 w-4" />
@@ -201,8 +201,8 @@ export default function CompliancePage() {
             <footer className="reveal-item mt-32 pt-16 border-t border-white/10 text-center space-y-8">
                 <h3 className="text-2xl font-bold uppercase tracking-widest">Compliance Registry</h3>
                 <p className="max-w-md mx-auto text-sm text-white/40">
-                    Need a SOC 2 bridge letter or a detailed technical audit of our risk weighting algorithms?
-                    Contact our compliance node.
+                    Interested in a technical audit of our risk weighting algorithms?
+                    Connect with our lead research node.
                 </p>
                 <button className="btn-magnetic rounded-full bg-white px-10 py-4 text-xs font-black uppercase tracking-[0.2em] text-brand-primary">
                     Open Governance Channel

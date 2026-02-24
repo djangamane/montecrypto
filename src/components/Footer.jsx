@@ -51,17 +51,14 @@ export function Footer() {
             <div className="flex flex-col gap-4">
               <h4 className="text-xs font-black uppercase tracking-widest text-white">Legal</h4>
               <nav className="flex flex-col gap-2">
-                <a href="/compliance" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">Compliance</a>
-                <a href="/compliance" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">Privacy & Compliance</a>
-                <a href="/compliance#eu-ai-act" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">EU AI Regulation</a>
-                <a href="#" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">Terms of Protocol</a>
+                <a href="/compliance" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">AI Trust / Compliance</a>
               </nav>
             </div>
           </div>
 
           <div className="mt-20 flex flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 md:flex-row">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">
-              © {currentYear} Montecrypto Alpha. All signals reserved.
+              © {currentYear} AI Crypto Risk. A <a href="https://diplomacy-ai.tech" target="_blank" rel="noopener noreferrer" className="hover:text-brand-accent transition-colors underline decoration-brand-accent/30 underline-offset-4">Diplomacy AI</a> Segment.
             </p>
             <div className="flex gap-8">
               <span className="font-data text-[10px] text-white/10">SHA-256: 8f2...9a1</span>
