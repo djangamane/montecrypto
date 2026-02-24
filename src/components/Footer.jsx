@@ -44,7 +44,14 @@ export function Footer() {
               <nav className="flex flex-col gap-3">
                 <a href="/api-keys" className="text-sm font-medium text-white/60 transition hover:text-white">Integrations</a>
                 <a href="/scam-shooter" className="text-sm font-medium text-white/60 transition hover:text-white">Simulations</a>
-                <a href="/docs" className="text-sm font-medium text-white/60 transition hover:text-white">Documentation</a>
+                <a
+                  href="https://www.npmjs.com/package/@aicryptorisk/mcp-server"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-white/60 transition hover:text-white"
+                >
+                  Documentation
+                </a>
               </nav>
             </div>
 
