@@ -1,0 +1,65 @@
+{
+  "headline": "Over $400 Million Drained in January Crypto Exploits, Government Accounts Under Scrutiny, and Targeted Phishing Surges",
+  "summary": "January 2026 witnessed a significant escalation in crypto crime, with over $400 million in digital assets stolen, primarily through sophisticated phishing attacks. This surge includes a concerning investigation into a potential $60 million hack on U.S. government-held crypto accounts and a data breach at Betterment leading to targeted scam attempts against its users, highlighting a persistent and evolving threat landscape.",
+  "insights": [
+    {
+      "title": "January 2026 Crypto Exploits Exceed $400 Million, Phishing Dominant",
+      "summary": "In January 2026, hackers and fraudsters stole more than $400 million in digital assets across approximately 40 incidents, making it the highest monthly loss in nearly a year. A single, massive phishing attack accounted for an estimated $284 million of these losses, predominantly targeting individual hardware wallet users.",
+      "howToAvoid": "Always verify the legitimacy of any transaction or investment opportunity through official channels, rather than relying on unsolicited messages. Implement robust hardware wallet security practices, scrutinizing all on-device prompts, and enable multi-factor authentication (MFA) across all cryptocurrency platforms.",
+      "threatLevel": "High"
+    },
+    {
+      "title": "Betterment Data Breach Leads to Targeted Crypto Phishing Campaigns",
+      "summary": "The automated investment platform Betterment confirmed a data breach in January 2026, stemming from a social engineering attack. This breach exposed personal information, including 1.4 million email addresses, enabling attackers to launch highly targeted crypto-related phishing scams that promised high returns for funds sent to fraudulent wallets.",
+      "howToAvoid": "Be extremely cautious of unsolicited messages, especially those offering high returns on investments, particularly after news of a data breach from any service you use. Verify the sender's identity independently and never click on suspicious links or provide sensitive information.",
+      "threatLevel": "High"
+    },
+    {
+      "title": "U.S. Marshals Service Investigates Potential $60 Million Hack of Government Crypto Assets",
+      "summary": "The U.S. Marshals Service is reportedly investigating a possible hack of its digital-asset accounts, where an on-chain investigator alleged that over $60 million in seized or forfeited cryptocurrencies was stolen from government-associated wallet addresses in late 2025. This incident underscores the ongoing security challenges even for institutional custodians of digital assets.",
+      "howToAvoid": "While targeting institutional entities, this highlights the necessity for all crypto holders to employ multi-layered security. For significant holdings, consider cold storage, hardware security modules, stringent access controls, and regular independent security audits to mitigate risks from sophisticated attackers.",
+      "threatLevel": "High"
+    }
+  ],
+  "sources": [
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFbdaVQv4xWUAhPlEYrBgrvVbvz82jjmLYcK1AxbpT09LaL4J2sNN1MRdCzixggG-eBiUKbroNSZ8fuzFFIJ5GFfCCgY4y1DE7uTXBtWQIt1DND-3c60RsJA1yqJnHh1u2kUsyEcKjY1LXolMv-E114uOMN6iPWYmDuN06hc-haz-C9Vg==",
+      "title": "2026 Crypto Crime Report – Illicit Crypto Trends & Typologies | TRM Labs"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH5ouFxPiVZepPgJGCy0hrYa8DjfrEYTtsuikgwz5gLENZF-muxwrY_5oMgrgSlW3kRXn1z4HKuXX6qU5v-biwu8QLCyBUbOJ3WKMa63mnOpNoHQtZSWB8wIYw7EstqfqaWb6n4BksYpJbho2ZpuMj_OS_F2Zkg4NZiZ6j7HCm6OwArCP_VHefMzrW80pKY2vQnEP9rtQaoCDwL9nKO8naX5nohag-vUnADLqO3lQ6PHPghyu5mNfzbLtcBlZaPJ2A0LWiS1W9VhEjE8SM=",
+      "title": "Troutman Pepper Locke Weekly Consumer Financial Services Newsletter – February 4, 2026"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHr6oD5ejHruRudOA4-N7lTU4wfZ0aR1Ou3ODOJ7CMYYnxJe8JqqBuj7JttM6ntiFVgb24upWmWosafEOhvUSZuqzhJ7TmmtiOYFTSZd-Mi92Ga6l4J9ENjk5ySjrYNnxoIxExIVBMg",
+      "title": "Betterment Data Breach - Have I Been Pwned"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGlVKOWvA2e31YcAfFyiS-Zi16FUBCNXA72zEoL8IklzQ9V6w0vHseCrH3iypuGXwzDXYURCkP_MQtJpvBHOAJVFpyS2hyqR2rZ_MG26WppDbknQkuAhdirob95BvXBTrhsi0nxjumdfjv38Lqs3xtuCZqRftUk1k0vaeAOYMXPs22NbvlXrLEB6Ry8Zg==",
+      "title": "$370M lost to crypto exploits as 'wrench attacks' swell: CertiK - CoinGeek"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEnZ2sNIHn-oKMBjOofIWEExHZ2r_1eHlR9kr5fXWab9C-w0EPUXHxv4kVqd7OWgXnh9REAwCHUssyh0bc652kYTFP14Ye1XxrsKFQ4eMoA5y3c38gbKMvjwAfKnon-RWvjIm3QTIYPMv7feP_UcWcB0xVUj3pk1VN5RyVg5aP-xkB13NEc2n9Gv7aNHMFQ7WlQpAL_KNFKOl5C4sSotdXqN6UKJ13nrVmlWkiGvQ3Vcys=",
+      "title": "Crypto Cyberattacks Surge 214% with $370 Million Stolen in January 2026"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQElrxql8DSAjw_zWadASX9vDvV0dP_LA6GE7J1QBOQ4JWbcZrrsddd8Rtw566snh2349McQbFSAccN7aUxE9VIyeg71Co0Y7kiazMZdCYTSNmzA3AnUBSjQ3ve-uQMxhTQu5YJaX96Rd4WORjisFLfMKxXH8ncbvueoKf3jtRZHeCQn1zWDUn5-KkM8CpxM9Vr9lJmIiRHKgMCTRq6ocb_qtfhSHfs=",
+      "title": "Crypto Thefts Exceed $400 Million in January 2026 Amid Phishing Surge - Phemex"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj2UY_o3WLzHbUhgQgfJgh99TxvvEt805mXxuVB0XqGA1MzvmYyJrWzAqxn6maN2MlYiDQ_oZcf8Bn02mZDy00EpVPz2Y3hiBMj_9lejrQjLCokr0QHTQsdL92KM0WhuhKZmpHScOdPYR7VDV6zRBPS1x0vgootYX595CPmgkVDDb-sBUamSDnbWq0q98B3AFirdOtUIlVEmSkIj3VyAOQK0OMkBdQHfAorIAe6Cxz8n6NnXPtNRUxUNfmaAe2W4h35evo",
+      "title": "Scam of the day – January 29, 2026 – How Bitcoin ATM Scams Exploded in Three Years—FTC Issues Major Warning | Scamicide"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEhQESbdS9iQLSH3p45SB3pkk-fu0nBDgqz-1j7MaKo5ifeIZ9mW-6X3Hjn-SFulvnjywrII7d48tsGEbjukPuI2hTTgWE2pq4VsFtCJDw82CkO_3O5nslkQSWayZAzp4-PhLSYi6SpFF3QJBS1r5N0LtUZ1X1MW5F2sSz6JYmUIIHfZkp_DH8uX2RyeuVfCFz2rMbBBuW0UTLYoU60bn7dxL3TKCztDlWI6zky1u5kpQ5A5d1MLw6oLsQ9I6-xnHg_nDbvY7lT8BmVSTS2tEQG3PN-h8U=",
+      "title": "Dr. Tobias Mayer, Baumann Mayer Seidel: “Crypto-fraudsters are highly trained in the art of persuasion and manipulation\" - Leaders League"
+    },
+    {
+      "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyBWcev2hLCLIeNrNZtmDQujGM6iNK2k7reeJ_mDXO2blbl79ZqsrdMZrWA2D1HgUBYj47g5saPkOPQWkdlGc7mkUPeP2rceVS9uttn2vSj2rcvbCzl5GNVNhmtjS0MpxtxjnM_tD8YZKUHQiiJVwBKRdhqvO3WFYn3tJjsVOCjGl90KBXyB6uQCczKDDme9BFuUmKN5JjbRZZvFXIgYJ2wPksvULKZy65w0dBSho=",
+      "title": "CIRO Issues Guidance on Digital Asset Custody for Crypto-Asset Trading Platforms"
+    }
+  ],
+  "status": "draft",
+  "publishedAt": null,
+  "metadata": {}
+}

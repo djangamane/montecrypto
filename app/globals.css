@@ -5,8 +5,33 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    @apply bg-brand-bg font-sans text-brand-text;
+  body {
+    @apply bg-brand-bg text-brand-text selection:bg-brand-accent/30;
+  }
+}
+
+@layer utilities {
+  .noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.05;
+  }
+
+  .rounded-premium {
+    @apply rounded-[2rem] md:rounded-[3rem];
+  }
+
+  .btn-magnetic {
+    @apply transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:scale-[1.03] active:scale-[0.98];
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-0.5;
   }
 }
 

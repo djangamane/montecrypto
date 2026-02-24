@@ -1,63 +1,116 @@
-import { Shield, ArrowRight } from "lucide-react";
-
+import { useState, useEffect, useRef } from "react";
+import { Shield, ArrowRight, Menu, X } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { HeaderAuthBar } from "./auth/HeaderAuthBar.jsx";
 
+gsap.registerPlugin(ScrollTrigger);
+
 export function Header({ onBookNowClick, session, isSessionLoading }) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        start: "top top",
+        end: 100,
+        onUpdate: (self) => {
+          setIsScrolled(self.progress > 0);
+        },
+      });
+    }, headerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const navLinks = [
+    { name: "AI Tool", href: "/#risk-meter" },
+    { name: "Free Course", href: "/#course" },
+    { name: "Blog", href: "/blog" },
+    { name: "API Keys", href: "/api-keys" },
+    { name: "Enterprise", href: "/enterprise" },
+  ];
+
   return (
-    <header className="sticky top-0 z-40 border-b border-brand-muted/20 bg-brand-bg/95 backdrop-blur" role="banner">
-      {/* Skip to main content link for keyboard users */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-link focus:px-4 focus:py-2 focus:text-white"
-      >
-        Skip to main content
-      </a>
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="/" className="flex items-center gap-3 text-brand-text" aria-label="AI Crypto Risk - Go to home page">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-text text-brand-bg shadow-sm" aria-hidden="true">
+    <header
+      ref={headerRef}
+      className={`fixed left-1/2 top-4 z-50 w-[95%] max-w-6xl -translate-x-1/2 transition-all duration-500 ease-out ${isScrolled
+          ? "rounded-full border border-white/10 bg-brand-bg/60 py-3 backdrop-blur-xl shadow-2xl"
+          : "bg-transparent py-5"
+        }`}
+      role="banner"
+    >
+      <div className="flex items-center justify-between px-6 md:px-10">
+        <a href="/" className="flex items-center gap-3 text-brand-text group" aria-label="AI Crypto Risk - Home">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-text text-brand-bg shadow-sm transition-transform group-hover:scale-110" aria-hidden="true">
             <Shield className="h-5 w-5" />
-          </span>
-          <span className="text-2xl font-heading tracking-tight uppercase">
+          </div>
+          <span className="text-xl font-bold tracking-tight uppercase font-heading">
             AI Crypto Risk
           </span>
         </a>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-brand-muted md:flex" aria-label="Main navigation">
-          <a href="/#risk-meter" className="transition hover:text-brand-text">
-            AI Tool
-          </a>
-          <a href="/#course" className="transition hover:text-brand-text">
-            Free Course
-          </a>
-          <a href="/#newsletter" className="transition hover:text-brand-text">
-            Newsletter
-          </a>
-          <a href="/#pricing" className="transition hover:text-brand-text">
-            Pricing
-          </a>
-          <a href="/blog" className="transition hover:text-brand-text">
-            Blog
-          </a>
-          <a href="/#about" className="transition hover:text-brand-text">
-            About
-          </a>
-          <a href="/api-keys" className="transition hover:text-brand-text">
-            API Keys
-          </a>
-          <a href="/enterprise" className="transition hover:text-brand-text">
-            Enterprise
-          </a>
+
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-8 text-sm font-medium text-brand-muted md:flex">
+          {navLinks.map((link) => (
+            <a
+              key={link.name}
+              href={link.href}
+              className="hover-lift transition-colors hover:text-brand-accent active:text-brand-accent/80"
+            >
+              {link.name}
+            </a>
+          ))}
+          <button
+            onClick={onBookNowClick}
+            className="btn-magnetic rounded-full bg-brand-accent px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-brand-text shadow-lg"
+          >
+            Book Now
+          </button>
         </nav>
-        <a
-          href="/scam-shooter"
-          className="hidden items-center gap-2 rounded-xl bg-brand-accent px-4 py-2 text-sm font-semibold text-brand-text shadow md:flex"
-          aria-label="Play Scam Shooter game"
+
+        {/* Mobile Toggle */}
+        <button
+          className="md:hidden text-brand-text"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle navigation"
         >
-          <img src="/sprite_enemy1.png" alt="" className="h-5 w-5" aria-hidden="true" />
-          <span>Play Scam Shooter!</span>
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </a>
+          {isMenuOpen ? <X /> : <Menu />}
+        </button>
       </div>
-      <HeaderAuthBar session={session} isLoading={isSessionLoading} />
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="absolute left-0 top-full mt-4 w-full rounded-3xl border border-white/10 bg-brand-bg/95 p-6 backdrop-blur-2xl shadow-2xl md:hidden">
+          <nav className="flex flex-col gap-4 text-center">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsMenuOpen(false)}
+                className="text-lg font-medium text-brand-text"
+              >
+                {link.name}
+              </a>
+            ))}
+            <button
+              onClick={() => {
+                onBookNowClick();
+                setIsMenuOpen(false);
+              }}
+              className="mt-4 rounded-full bg-brand-accent py-4 font-bold uppercase tracking-widest text-brand-text"
+            >
+              Book Now
+            </button>
+          </nav>
+        </div>
+      )}
+
+      {/* Auth Bar - Hidden on mobile, integrated into pill on desktop? 
+          For now, keeping it simple as per cinematic rules.
+      */}
     </header>
   );
 }

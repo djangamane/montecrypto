@@ -9,12 +9,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-bg': '#F7F5EF',
+        'brand-bg': '#FAF8F5', // Ivory
         'brand-surface': '#FFFFFF',
-        'brand-text': '#121417',
-        'brand-muted': '#6B7168',
-        'brand-accent': '#E5B200',
-        'brand-link': '#3E5F5A',
+        'brand-text': '#0D0D12', // Obsidian
+        'brand-muted': '#2A2A35', // Slate
+        'brand-accent': '#C9A84C', // Champagne
+        'brand-primary': '#0D0D12', // Obsidian
         'risk-low': '#2E7D32',
         'risk-moderate': '#8BC34A',
         'risk-elevated': '#F9A825',
@@ -31,7 +31,9 @@ export default {
         },
       },
       fontFamily: {
-        heading: ['"Bebas Neue"', '"Oswald"', 'sans-serif'],
+        heading: ['Inter', 'sans-serif'],
+        drama: ['"Playfair Display"', 'serif'],
+        data: ['"JetBrains Mono"', 'monospace'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
         retro: ['"VT323"', 'monospace'],
       },
