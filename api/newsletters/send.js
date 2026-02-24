@@ -163,12 +163,12 @@ function renderEmail(newsletter) {
 
   const htmlCoinSummary = coinScan?.summary
     ? coinScan.summary
-        .split(/\n+/)
-        .map(
-          (line) =>
-            `<p style="margin:8px 0;color:#1f2937;line-height:1.5;">${escapeHtml(line)}</p>`,
-        )
-        .join("")
+      .split(/\n+/)
+      .map(
+        (line) =>
+          `<p style="margin:8px 0;color:#1f2937;line-height:1.5;">${escapeHtml(line)}</p>`,
+      )
+      .join("")
     : "";
 
   const htmlCoinFindings = (coinScan?.findings || [])
@@ -179,20 +179,19 @@ function renderEmail(newsletter) {
         <p style="margin:8px 0;color:#1f2937;line-height:1.5;">${escapeHtml(finding.summary || "")}</p>
         <p style="margin:8px 0;color:#111827;font-weight:600;">Risk Level: ${escapeHtml(finding.threatLevel || "High")}</p>
         <p style="margin:8px 0;color:#2563eb;">Defensive move: ${escapeHtml(finding.howToAvoid || "")}</p>
-        ${
-          Array.isArray(finding.sources) && finding.sources.length
-            ? `<ul style="margin:8px 0 0;padding-left:18px;">${finding.sources
-                .map(
-                  (src) => `
+        ${Array.isArray(finding.sources) && finding.sources.length
+          ? `<ul style="margin:8px 0 0;padding-left:18px;">${finding.sources
+            .map(
+              (src) => `
                 <li style="margin-bottom:4px;">
                   <a href="${escapeAttribute(src.uri)}" style="color:#2563eb;text-decoration:none;">
                     ${escapeHtml(src.title || src.uri || "")}
                   </a>
                 </li>
               `,
-                )
-                .join("")}</ul>`
-            : ""
+            )
+            .join("")}</ul>`
+          : ""
         }
       </li>
     `,
@@ -219,27 +218,25 @@ function renderEmail(newsletter) {
       <ul style="list-style:none;padding:0;margin:0 0 24px;background:#ffffff;border-radius:16px;padding:24px;border:1px solid rgba(62,95,90,0.25);">
         ${htmlInsights}
       </ul>
-      ${
-        coinScan
-          ? `
+      ${coinScan
+      ? `
         <section style="margin:0 0 24px;background:#ffffff;border-radius:16px;padding:24px;border:1px solid rgba(62,95,90,0.25);">
           <h2 style="margin:0 0 12px;font-size:18px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.15em;">Coin Watch — Perplexity Deep Research</h2>
           ${htmlCoinSummary}
           ${htmlCoinFindings ? `<ul style="list-style:none;padding:0;margin:24px 0 0;">${htmlCoinFindings}</ul>` : ""}
-          ${
-            htmlCoinSources
-              ? `<div style="margin-top:16px;border-top:1px solid rgba(62,95,90,0.2);padding-top:12px;">
+          ${htmlCoinSources
+        ? `<div style="margin-top:16px;border-top:1px solid rgba(62,95,90,0.2);padding-top:12px;">
                 <h3 style="margin:0 0 8px;font-size:14px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.12em;">Additional URLs</h3>
                 <ul style="list-style:none;padding:0;margin:0;">
                   ${htmlCoinSources}
                 </ul>
               </div>`
-              : ""
-          }
+        : ""
+      }
         </section>
       `
-          : ""
-      }
+      : ""
+    }
       <div style="background:#ffffff;border-radius:16px;padding:20px;border:1px solid rgba(62,95,90,0.2);">
         <h2 style="margin:0 0 12px;font-size:18px;color:#3e5f5a;text-transform:uppercase;letter-spacing:0.15em;">Sources</h2>
         <ul style="list-style:none;padding:0;margin:0;">
@@ -247,7 +244,7 @@ function renderEmail(newsletter) {
         </ul>
       </div>
       <p style="margin-top:32px;font-size:12px;color:#6b7168;">
-        You are receiving the Scam Watch Newsletter as part of your MonteCrypto membership. This message is educational
+        You are receiving the Scam Watch Newsletter as part of your AI Crypto Risk membership. This message is educational
         and not financial advice.
       </p>
     </div>
@@ -262,20 +259,20 @@ function renderEmail(newsletter) {
 
   const textCoinSection = coinScan
     ? [
-        "Coin Watch — Perplexity Deep Research",
-        coinScan.summary,
-        ...(coinScan.findings || []).map(
-          (finding) =>
-            `• ${finding.title || finding.token || "Coin finding"}\n  ${finding.summary}\n  Risk Level: ${finding.threatLevel}\n  Defensive move: ${finding.howToAvoid}`,
-        ),
-        coinScan.sources?.length
-          ? `Additional URLs\n${coinScan.sources
-              .map((source) => `- ${source.title || source.uri}: ${source.uri}`)
-              .join("\n")}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join("\n\n")
+      "Coin Watch — Perplexity Deep Research",
+      coinScan.summary,
+      ...(coinScan.findings || []).map(
+        (finding) =>
+          `• ${finding.title || finding.token || "Coin finding"}\n  ${finding.summary}\n  Risk Level: ${finding.threatLevel}\n  Defensive move: ${finding.howToAvoid}`,
+      ),
+      coinScan.sources?.length
+        ? `Additional URLs\n${coinScan.sources
+          .map((source) => `- ${source.title || source.uri}: ${source.uri}`)
+          .join("\n")}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n")
     : "";
 
   const textSources = (newsletter.sources || [])
@@ -312,14 +309,14 @@ function normalizeCoinScanForEmail(raw) {
 
   const findings = Array.isArray(working.findings)
     ? working.findings
-        .map((item) => normalizeCoinFinding(item))
-        .filter((item) => item && item.summary && item.howToAvoid)
+      .map((item) => normalizeCoinFinding(item))
+      .filter((item) => item && item.summary && item.howToAvoid)
     : [];
 
   let sources = Array.isArray(working.sources)
     ? working.sources
-        .map((item, index) => normalizeCoinSource(item, index))
-        .filter(Boolean)
+      .map((item, index) => normalizeCoinSource(item, index))
+      .filter(Boolean)
     : [];
 
   const trimmedSummary = summary.trim();
@@ -369,8 +366,8 @@ function normalizeCoinFinding(raw) {
   if (!isPlainObject(raw)) return null;
   const sources = Array.isArray(raw.sources)
     ? raw.sources
-        .map((item, index) => normalizeCoinSource(item, index))
-        .filter(Boolean)
+      .map((item, index) => normalizeCoinSource(item, index))
+      .filter(Boolean)
     : [];
 
   return {

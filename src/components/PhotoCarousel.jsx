@@ -5,7 +5,7 @@ const images = [
   { src: '/ccp-vc.jpg', alt: 'Crypto education speaking engagement collage', fit: 'cover' },
   { src: '/office.jpg', alt: 'Office workspace for AI crypto risk research', fit: 'contain' },
   { src: '/mining.jpg', alt: 'Early crypto mining hardware setup', fit: 'contain' },
-  { src: '/old_logo.jpg', alt: 'Legacy MonteCrypto branding mark', fit: 'cover' },
+  { src: '/old_logo.jpg', alt: 'Legacy branding mark', fit: 'cover' },
   { src: '/scam.png', alt: 'Scam Likely risk analysis screenshot', fit: 'cover' },
   { src: '/scamcheck2021.jpg', alt: 'Scam Check 2021 conference appearance', fit: 'contain' },
 ];

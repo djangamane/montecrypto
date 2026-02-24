@@ -59,7 +59,7 @@ export function AboutSection() {
         </div>
 
         <div className="reveal-text mx-auto max-w-2xl text-lg leading-relaxed text-white/40 md:text-xl">
-          We built Montecrypto because the loudest voices in the room are often the ones trying to sell you a scam.
+          We built AI Crypto Risk because the loudest voices in the room are often the ones trying to sell you a scam.
           Our protocol strips away the marketing and exposes the underlying risk mechanics.
         </div>
       </div>
