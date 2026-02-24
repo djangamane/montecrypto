@@ -48,12 +48,13 @@ export function Footer() {
               </nav>
             </div>
 
-            <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-accent">Legal</h4>
-              <nav className="flex flex-col gap-3">
-                <a href="/terms" className="text-sm font-medium text-white/60 transition hover:text-white">Compliance</a>
-                <a href="/privacy" className="text-sm font-medium text-white/60 transition hover:text-white">Privacy Node</a>
-                <button className="text-left text-sm font-medium text-white/60 transition hover:text-white">Audit Rights</button>
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-black uppercase tracking-widest text-white">Legal</h4>
+              <nav className="flex flex-col gap-2">
+                <a href="/compliance" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">Compliance</a>
+                <a href="/compliance" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">Privacy & Compliance</a>
+                <a href="/compliance#eu-ai-act" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">EU AI Regulation</a>
+                <a href="#" className="text-sm text-brand-muted hover:text-brand-accent transition-colors">Terms of Protocol</a>
               </nav>
             </div>
           </div>

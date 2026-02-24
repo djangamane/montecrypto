@@ -22,19 +22,40 @@ export async function GET() {
   if (!supabaseService) {
     posts = getPublishedPreviewPosts(50);
   } else {
-    const { data, error } = await supabaseService
-      .from("posts")
-      .select("title, slug, summary, publish_at")
-      .eq("status", "published")
-      .lte("publish_at", new Date().toISOString())
-      .order("publish_at", { ascending: false })
-      .limit(50);
+    try {
+      const [{ data: postsData }, { data: newsData }] = await Promise.all([
+        supabaseService
+          .from("posts")
+          .select("title, slug, summary, publish_at")
+          .eq("status", "published")
+          .lte("publish_at", new Date().toISOString())
+          .order("publish_at", { ascending: false })
+          .limit(25),
+        supabaseService
+          .from("newsletters")
+          .select("headline, id, summary, published_at")
+          .eq("status", "published")
+          .lte("published_at", new Date().toISOString())
+          .order("published_at", { ascending: false })
+          .limit(25)
+      ]);
 
-    if (error) {
-      console.error("RSS feed fetch error", error.message);
+      const combined = [
+        ...(postsData || []).map(p => ({ ...p })),
+        ...(newsData || []).map(n => ({
+          title: n.headline,
+          slug: n.id,
+          summary: n.summary,
+          publish_at: n.published_at
+        }))
+      ];
+
+      posts = combined.sort((a, b) =>
+        new Date(b.publish_at || 0).getTime() - new Date(a.publish_at || 0).getTime()
+      ).slice(0, 50);
+    } catch (error) {
+      console.error("RSS feed fetch error", error);
       posts = [];
-    } else {
-      posts = data ?? [];
     }
   }
 

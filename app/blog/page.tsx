@@ -22,25 +22,57 @@ export default function BlogIndexPage() {
           slug: post.slug,
           summary: post.summary,
           publish_at: post.publish_at,
+          type: 'post'
         }));
       } else {
-        const { data: fetchResult, error } = await supabaseService
-          .from("posts")
-          .select("id, title, slug, summary, publish_at, status")
-          .eq("status", "published")
-          .lte("publish_at", new Date().toISOString())
-          .order("publish_at", { ascending: false });
+        try {
+          // Fetch from posts table
+          const { data: postsData, error: postsError } = await supabaseService
+            .from("posts")
+            .select("id, title, slug, summary, publish_at, status")
+            .eq("status", "published")
+            .lte("publish_at", new Date().toISOString())
+            .order("publish_at", { ascending: false });
 
-        if (error) {
-          console.error("Blog list fetch error", error.message);
-        } else if (fetchResult) {
-          data = fetchResult.map((post) => ({
-            id: post.id,
-            title: post.title,
-            slug: post.slug,
-            summary: post.summary,
-            publish_at: post.publish_at,
-          }));
+          // Fetch from newsletters table as fallback/additional briefings
+          const { data: newsData, error: newsError } = await supabaseService
+            .from("newsletters")
+            .select("id, headline, summary, published_at, status")
+            .eq("status", "published")
+            .lte("published_at", new Date().toISOString())
+            .order("published_at", { ascending: false });
+
+          let combinedPosts: any[] = [];
+
+          if (postsData) {
+            combinedPosts = [...combinedPosts, ...postsData.map(p => ({
+              id: p.id,
+              title: p.title,
+              slug: p.slug,
+              summary: p.summary,
+              publish_at: p.publish_at,
+              type: 'post'
+            }))];
+          }
+
+          if (newsData) {
+            combinedPosts = [...combinedPosts, ...newsData.map(n => ({
+              id: n.id,
+              title: n.headline,
+              slug: n.id, // Use ID as slug for newsletters since they lack a slug field
+              summary: n.summary,
+              publish_at: n.published_at,
+              type: 'briefing'
+            }))];
+          }
+
+          // Sort combined by date
+          data = combinedPosts.sort((a, b) =>
+            new Date(b.publish_at || 0).getTime() - new Date(a.publish_at || 0).getTime()
+          );
+
+        } catch (err) {
+          console.error("Blog load error", err);
         }
       }
       setPosts(data);
@@ -123,7 +155,7 @@ export default function BlogIndexPage() {
                       {post.publish_at ? new Date(post.publish_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Draft'}
                     </span>
                     <span className="h-1 w-1 rounded-full bg-white/20" />
-                    <span>Investigative Report</span>
+                    <span>{post.type === 'briefing' ? 'Intelligence Briefing' : 'Investigative Report'}</span>
                   </div>
 
                   <Link href={`/blog/${post.slug}`} className="mb-4 block">

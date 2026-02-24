@@ -29,20 +29,49 @@ async function fetchPost(slug: string): Promise<BlogPost | null> {
     return preview;
   }
 
-  const { data, error } = await supabaseService
+  // First try 'posts' table by slug
+  const { data: postData, error: postError } = await supabaseService
     .from("posts")
     .select("title, slug, body_md, summary, hero_image_url, publish_at, status")
     .eq("slug", slug)
     .eq("status", "published")
-    .lte("publish_at", new Date().toISOString())
     .maybeSingle();
 
-  if (error) {
-    console.error("Blog detail fetch error", error.message);
-    return null;
+  if (postData) return postData;
+
+  // Fallback to 'newsletters' table by ID (since newsletters use ID as slug in the list)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+  if (isUuid) {
+    const { data: newsData, error: newsError } = await supabaseService
+      .from("newsletters")
+      .select("headline, summary, insights, published_at, status")
+      .eq("id", slug)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (newsData) {
+      // Map newsletter insights (jsonb) to body_md if it's an array or string
+      let bodyMd = "";
+      if (typeof newsData.insights === "string") {
+        bodyMd = newsData.insights;
+      } else if (Array.isArray(newsData.insights)) {
+        bodyMd = newsData.insights.map(i => `### ${i.title || ''}\n${i.content || ''}`).join("\n\n");
+      } else if (newsData.insights && typeof newsData.insights === "object") {
+        bodyMd = JSON.stringify(newsData.insights, null, 2);
+      }
+
+      return {
+        title: newsData.headline,
+        slug: slug,
+        body_md: bodyMd,
+        summary: newsData.summary,
+        hero_image_url: null,
+        publish_at: newsData.published_at
+      };
+    }
   }
 
-  return data ?? null;
+  return null;
 }
 
 export default async function BlogPostPage({ params }: PageParams) {
@@ -74,22 +103,22 @@ export default async function BlogPostPage({ params }: PageParams) {
 
       <article className="prose prose-lg prose-slate">
         <h1>{post.title}</h1>
-      {date && (
-        <p className="text-sm text-brand-muted">
-          {date.toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-      )}
-      {post.hero_image_url && (
-        <img
-          src={post.hero_image_url}
-          alt={post.title}
-          className="my-6 w-full rounded-xl"
-        />
-      )}
+        {date && (
+          <p className="text-sm text-brand-muted">
+            {date.toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        )}
+        {post.hero_image_url && (
+          <img
+            src={post.hero_image_url}
+            alt={post.title}
+            className="my-6 w-full rounded-xl"
+          />
+        )}
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </article>
 
