@@ -168,7 +168,7 @@ See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for environment setup, Supabase schema
 - Rate limiting prevents abuse
 - No sensitive data stored
 
-Report vulnerabilities to jason@aicryptorisk.com.
+Report vulnerabilities to info@diplomacy-ai.tech.
 
 ---
 

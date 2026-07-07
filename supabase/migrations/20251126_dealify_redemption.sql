@@ -40,7 +40,7 @@ CREATE POLICY "Service role full access (redemption_codes)"
 CREATE POLICY "Admin users manage redemption codes"
   ON public.redemption_codes
   FOR ALL
-  USING (auth.jwt() ->> 'email' IN ('jason@aicryptorisk.com'))
-  WITH CHECK (auth.jwt() ->> 'email' IN ('jason@aicryptorisk.com'));
+  USING (auth.jwt() ->> 'email' IN ('info@diplomacy-ai.tech'))
+  WITH CHECK (auth.jwt() ->> 'email' IN ('info@diplomacy-ai.tech'));
 
 -- No public access (implicit by enabling RLS and not adding other policies)

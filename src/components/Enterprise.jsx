@@ -50,7 +50,7 @@ const pricingTiers = [
       { text: "Email support", icon: LifeBuoy },
     ],
     cta: "Get Started",
-    href: "mailto:jason@aicryptorisk.com?subject=Starter%20API%20Plan%20Inquiry",
+    href: "mailto:info@diplomacy-ai.tech?subject=Starter%20API%20Plan%20Inquiry",
   },
   {
     name: "Growth",
@@ -65,7 +65,7 @@ const pricingTiers = [
       { text: "Priority support", icon: LifeBuoy },
     ],
     cta: "Get Started",
-    href: "mailto:jason@aicryptorisk.com?subject=Growth%20API%20Plan%20Inquiry",
+    href: "mailto:info@diplomacy-ai.tech?subject=Growth%20API%20Plan%20Inquiry",
     highlighted: true,
   },
   {
@@ -81,7 +81,7 @@ const pricingTiers = [
       { text: "Dedicated support", icon: Users },
     ],
     cta: "Book a Call",
-    href: "mailto:jason@aicryptorisk.com?subject=Enterprise%20API%20Inquiry",
+    href: "mailto:info@diplomacy-ai.tech?subject=Enterprise%20API%20Inquiry",
   },
 ];
 
@@ -106,7 +106,7 @@ export function Enterprise() {
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
-              href="mailto:jason@aicryptorisk.com?subject=Enterprise%20API%20Inquiry"
+              href="mailto:info@diplomacy-ai.tech?subject=Enterprise%20API%20Inquiry"
               className="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 text-base font-semibold text-brand-text shadow transition hover:opacity-90"
             >
               <Mail className="mr-2 h-4 w-4" />
@@ -283,7 +283,7 @@ export function Enterprise() {
           </p>
           <div className="mt-8">
             <a
-              href="mailto:jason@aicryptorisk.com?subject=Enterprise%20API%20Inquiry"
+              href="mailto:info@diplomacy-ai.tech?subject=Enterprise%20API%20Inquiry"
               className="inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-3 text-base font-semibold text-brand-text shadow transition hover:opacity-90"
             >
               <Mail className="mr-2 h-4 w-4" />
@@ -293,10 +293,10 @@ export function Enterprise() {
           <p className="mt-6 text-sm text-brand-muted">
             Or email us directly at{" "}
             <a
-              href="mailto:jason@aicryptorisk.com"
+              href="mailto:info@diplomacy-ai.tech"
               className="font-semibold text-brand-link"
             >
-              jason@aicryptorisk.com
+              info@diplomacy-ai.tech
             </a>
           </p>
         </div>

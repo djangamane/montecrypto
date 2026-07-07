@@ -245,9 +245,9 @@ begin
   ) then
     create policy "Admin users manage newsletters"
       on public.newsletters for all using (auth.jwt() ->> 'email' in (
-        'jason@aicryptorisk.com'
+        'info@diplomacy-ai.tech'
       )) with check (auth.jwt() ->> 'email' in (
-        'jason@aicryptorisk.com'
+        'info@diplomacy-ai.tech'
       ));
   end if;
 

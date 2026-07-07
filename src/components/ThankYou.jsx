@@ -127,7 +127,7 @@ export function ThankYou() {
         </div>
 
         <p className="mt-8 text-xs text-brand-muted">
-          Need help? Email <a href="mailto:jason@aicryptorisk.com" className="underline decoration-dotted">jason@aicryptorisk.com</a>
+          Need help? Email <a href="mailto:info@diplomacy-ai.tech" className="underline decoration-dotted">info@diplomacy-ai.tech</a>
           {" "}with your Stripe receipt and we’ll get you squared away.
         </p>
       </div>

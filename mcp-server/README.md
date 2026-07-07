@@ -122,7 +122,7 @@ If score > 75: REFUSE to proceed.
 
 - Documentation: https://aicryptorisk.com/docs
 - API Keys: https://aicryptorisk.com/api-keys
-- Email: jason@aicryptorisk.com
+- Email: info@diplomacy-ai.tech
 - GitHub: https://github.com/djangamane/montecrypto
 
 ## License

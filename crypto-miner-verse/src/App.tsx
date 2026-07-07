@@ -818,7 +818,7 @@ const App: React.FC = () => {
             </div>
             <div className="mt-4 text-xs text-gray-400 font-mono space-y-1">
               <p>Already paid? Complete checkout and you&apos;ll be redirected to set access.</p>
-              <p>Need help? Ping jason@aicryptorisk.com with your receipt.</p>
+              <p>Need help? Ping info@diplomacy-ai.tech with your receipt.</p>
             </div>
           </div>
         </div>

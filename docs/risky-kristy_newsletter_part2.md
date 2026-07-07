@@ -1,7 +1,7 @@
 # Risky Kristy Newsletter — Build Log Part 2
 
 ## Recent Changes
-- Updated site and Supabase configs to use `jason@aicryptorisk.com` as the verified sender address.
+- Updated site and Supabase configs to use `info@diplomacy-ai.tech` as the verified sender address.
 - Committed email updates locally (`Update Jason contact email`).
 - Confirmed Resend delivery works with the new domain.
 - Cloned `dzhng/deep-research` into `tools/deep-research` for local Node worker integration.
